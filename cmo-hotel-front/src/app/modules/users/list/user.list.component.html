@@ -1,0 +1,170 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+        <div class="min-w-0 flex-1">
+            <!-- Breadcrumbs -->
+            <div class="flex flex-wrap items-center font-medium">
+                <div>
+                    <a class="whitespace-nowrap text-primary-500">Administration</a>
+                </div>
+            </div>
+            <!-- Title -->
+            <div class="mt-2">
+                <div class="flex items-center">
+                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'heroicons_solid:user'"></mat-icon>
+                    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+                        Utilisateurs
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-6">
+        <div class="w-full bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+
+            <div class="flex items-start justify-between">
+                <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded min-w-64">
+                    <mat-icon class="icon-size-5" matPrefix [svgIcon]="'search'"></mat-icon>
+                    <input
+                        matInput
+                        #input
+                        [matTooltip]="'Chercher'"
+                        [autocomplete]="'off'"
+                        (input)="search(input.value)"
+                        [placeholder]="'Search'">
+                </mat-form-field>
+                <button *hasPermission="[APP_PERMISSIONS.ADMIN_USERS_CREATE]" class="ml-4" mat-flat-button [color]="'primary'" [routerLink]="'./create'" >
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-2 mr-1">Ajouter</span>
+                </button>
+            </div>
+
+                <table mat-table [dataSource]="dataSource" >
+
+                    <ng-container matColumnDef="username">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent"> IDENTIFIANT </th>
+                        <td mat-cell *matCellDef="let row">
+                            <p class="font-semibold" [innerHTML]="row?.username | highlight:key"></p>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="fullName">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent"> NOM </th>
+                        <td mat-cell *matCellDef="let row">
+                            <p [innerHTML]="(row?.firstName + ' '+  row?.lastName) | highlight:key"></p>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="roles">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent"> ROLES </th>
+                        <td mat-cell *matCellDef="let row">
+                            <ul>
+                                @for (r of row?.rolesDto;track r) {
+                                    <li class="list-disc list-inside ">
+                                        {{r?.title}}
+                                    </li>
+                                }
+                            </ul>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="sites">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent"> IMPLANTATIONS </th>
+                        <td mat-cell *matCellDef="let row">
+                            @if (row.showAllSites ? row.sites : (row.sites | slice:0:3); as displayList) {
+                                <ul class="space-y-1">
+                                    @for (p of displayList; track p.id) {
+                                        <li class="list-disc list-inside text-secondary">
+                                            {{p?.name}}
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            @if (row?.sites?.length > 3) {
+                                <button
+                                    mat-button
+                                    color="primary"
+                                    class="mt-1 h-8 min-h-8 px-2 text-xs w-fit"
+                                    (click)="row.showAllSites = !row.showAllSites">
+                                    <div class="flex items-center">
+                                        <mat-icon class="icon-size-4 mr-1"
+                                                  [svgIcon]="row.showAllSites ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'">
+                                        </mat-icon>
+                                        <span>
+                                            {{ row.showAllSites ? 'Voir moins' : 'Voir ' + (row.sites.length - 3) + ' de plus' }}
+                                        </span>
+                                    </div>
+                                </button>
+                            }
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="status">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent">STATUT</th>
+                        <td mat-cell *matCellDef="let row">
+                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide"
+                                [ngClass]="{
+                                        'bg-red-200 text-red-800 dark:bg-red-600 dark:text-red-50':
+                                            !row.status,
+                                        'bg-green-200 text-green-800 dark:bg-green-600 dark:text-green-50':
+                                            row.status,
+                                    }"
+                            >
+                                    <span class="whitespace-nowrap leading-relaxed">{{ row.status ? 'active' : 'désactivé' }}</span>
+                                </span>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="action">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 5%">  </th>
+                        <td mat-cell *matCellDef="let row">
+                            <button mat-icon-button [matMenuTriggerFor]="menuAction">
+                                <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
+                            </button>
+                            <mat-menu #menuAction="matMenu" >
+                                <button *hasPermission="[APP_PERMISSIONS.ADMIN_USERS_UPDATE]" mat-menu-item (click)="raiseUpdateUserModel(row)" >
+                                    <mat-icon svgIcon="mat_outline:edit_note" ></mat-icon>
+                                    <span>Modifier</span>
+                                </button>
+                                <button *hasPermission="[APP_PERMISSIONS.ADMIN_USERS_PASSWORD_MODIFY]" mat-menu-item (click)="raisePasswordChangeModel(row)" >
+                                    <mat-icon svgIcon="mat_outline:password" ></mat-icon>
+                                    <span>Changer Mpd</span>
+                                </button>
+                                <button *hasPermission="[APP_PERMISSIONS.ADMIN_USERS_ASSIGN_ROLES]" mat-menu-item (click)="raiseRolesAssignModel(row)" >
+                                    <mat-icon svgIcon="mat_outline:verified_user" ></mat-icon>
+                                    <span>Gérer rôles</span>
+                                </button>
+                                <button *hasPermission="[APP_PERMISSIONS.ADMIN_USERS_ASSIGN_SITES]" mat-menu-item (click)="raiseSitesAssignModel(row)" >
+                                    <mat-icon svgIcon="heroicons_outline:building-library" ></mat-icon>
+                                    <span>Gérer sites</span>
+                                </button>
+
+                                <button mat-menu-item class="text-red-800 dark:text-red-50 ">
+                                    <mat-icon class="text-red-800 dark:text-red-50" svgIcon="mat_solid:delete_forever" ></mat-icon>
+                                    <span class="font-semibold">Supprimer</span>
+                                </button>
+                            </mat-menu>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let element; columns: displayedColumns;" class="example-element-row"></tr>
+
+                    <tr class="mat-row" *matNoDataRow>
+                        <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+
+                            <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                                @if (!isLoading){
+                                    Aucune donnée trouvée
+                                } @else {
+                                    Chargement
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+    </div>
+</div>

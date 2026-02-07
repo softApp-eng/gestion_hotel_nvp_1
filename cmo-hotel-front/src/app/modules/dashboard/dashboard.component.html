@@ -1,0 +1,45 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="bg-card">
+        <div class="mx-auto flex w-full max-w-screen-xl flex-col px-6 sm:px-8">
+            <div
+                class="my-8 flex min-w-0 flex-auto flex-col sm:my-12 sm:flex-row sm:items-center"
+            >
+                <!-- Avatar and name -->
+                <div class="flex min-w-0 flex-auto items-center">
+                    <div class="h-16 w-16 flex-0 overflow-hidden rounded-full">
+                        @if (user && user.avatar) {
+                            <img class="h-full w-full object-cover" [src]="user.avatar"  alt="" referrerpolicy="no-referrer"/>
+                        } @else {
+                            <mat-icon class="h-full w-full object-cover" [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
+                        }
+                    </div>
+                    <div class="ml-4 flex min-w-0 flex-col">
+
+                        <div
+                            class="truncate text-2xl font-semibold leading-7 tracking-tight md:text-5xl md:leading-snug"
+                        >
+                            Bienvenue, {{user?.firstName}}!
+                        </div>
+
+                        <div class="flex items-center">
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="'heroicons_solid:star'"
+                            ></mat-icon>
+                            <div class="text-secondary ml-1.5 truncate leading-6">
+                                Fondation Mohammed V pour la Solidarité
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="-mt-px flex-auto border-t pt-4 sm:pt-6 p-6">
+
+
+    </div>
+</div>

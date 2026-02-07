@@ -1,0 +1,159 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+        <div class="min-w-0 flex-1">
+            <!-- Breadcrumbs -->
+            <div class="flex flex-wrap items-center font-medium">
+                <div>
+                    <a class="whitespace-nowrap text-primary-500">Paramétres</a>
+                </div>
+            </div>
+            <!-- Title -->
+            <div class="mt-2">
+                <div class="flex items-center">
+                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'mat_solid:person_search'"></mat-icon>
+                    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+                        Clients
+                    </h2>
+                </div>
+            </div>
+
+        </div>
+        <div class="flex">
+            <a class="text-secondary -ml-1.5 inline-flex items-center font-medium" [routerLink]="'/settings/guests'">
+                <mat-icon class="text-secondary icon-size-5" [svgIcon]="'heroicons_solid:chevron-left'"></mat-icon>
+                <span class="ml-1">Retour</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-6">
+        <div class="w-full bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+
+            <!-- Alert -->
+            @if (showAlert) {
+                <fuse-alert
+                    class="mt-8"
+                    [appearance]="'outline'"
+                    [showIcon]="false"
+                    [type]="alert.type"
+                    [@shake]="alert.type === 'error'"
+                >
+                    {{ alert.message }}
+                </fuse-alert>
+            }
+
+            <form [formGroup]="form">
+                <div class="mb-6">
+                    <p class="text-lg font-medium">{{personId?'Modifier':'Nouveau'}} client</p>
+                    @if (!personId){
+                        <p class="text-secondary">Ajouter un nouveau client à la plateforme.</p>
+                    }
+                </div>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Grade</mat-label>
+                    <mat-select [formControlName]="'gradeId'">
+                        @for (g of grades; track g.id) {
+                            <mat-option [value]="g.id">{{g.name}}</mat-option>
+                        }
+                    </mat-select>
+                    @if (form.get('gradeId').hasError('required')) {
+                        <mat-error>Champ obligatoire</mat-error>
+                    }
+                </mat-form-field>
+
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Identité</mat-label>
+                    <input matInput [formControlName]="'identity'" placeholder="Identité">
+                    @if (form.get('identity').hasError('required')) {
+                        <mat-error>Champ obligatoire</mat-error>
+                    }
+                </mat-form-field>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Prénom</mat-label>
+                    <input matInput [formControlName]="'firstName'" placeholder="Prénom">
+                    @if (form.get('firstName').hasError('required')) {
+                        <mat-error>Champ obligatoire</mat-error>
+                    }
+                </mat-form-field>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Nom</mat-label>
+                    <input matInput [formControlName]="'lastName'" placeholder="Nom">
+                    @if (form.get('lastName').hasError('required')) {
+                        <mat-error>Champ obligatoire</mat-error>
+                    }
+                </mat-form-field>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Sexe</mat-label>
+                    <mat-select [formControlName]="'gender'">
+                        <mat-option value="M">Masculin</mat-option>
+                        <mat-option value="F">Féminin</mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>email</mat-label>
+                    <input matInput [formControlName]="'email'" placeholder="email">
+                </mat-form-field>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Téléphone</mat-label>
+                    <input matInput [formControlName]="'phoneNumber'" placeholder="Téléphone">
+                </mat-form-field>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Nationalité</mat-label>
+                    <input matInput [formControlName]="'nationality'" placeholder="Nationalité">
+                </mat-form-field>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Langue</mat-label>
+                    <input matInput [formControlName]="'language'" placeholder="langue">
+                </mat-form-field>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>matricule</mat-label>
+                    <input matInput [formControlName]="'matricule'" placeholder="matricule">
+                </mat-form-field>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>unite</mat-label>
+                    <input matInput [formControlName]="'unite'" placeholder="unite">
+                </mat-form-field>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'" [subscriptSizing]="'dynamic'">
+                    <mat-label>Date de naissance</mat-label>
+                    <input [formControlName]="'birthDate'" matInput [matDatepicker]="dp3" >
+                    <mat-datepicker-toggle matIconSuffix [for]="dp3"></mat-datepicker-toggle>
+                    <mat-datepicker #dp3></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Observation</mat-label>
+                    <textarea
+                        [formControlName]="'observation'"
+                        matInput
+                        cdkTextareaAutosize
+                        cdkAutosizeMinRows="2"
+                        cdkAutosizeMaxRows="5"
+                        #autosize="cdkTextareaAutosize">
+                    </textarea>
+                </mat-form-field>
+
+
+
+                <div class="flex items-end justify-end mx-3 mt-8">
+                    <button mat-flat-button [color]="'primary'" [disabled]="form.disabled || form.invalid" (click)="save()">
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+            </div>
+    </div>
+</div>

@@ -1,0 +1,163 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+        <div class="min-w-0 flex-1">
+            <!-- Breadcrumbs -->
+            <div class="flex flex-wrap items-center font-medium">
+                <div>
+                    <a class="whitespace-nowrap text-primary-500">Administration</a>
+                </div>
+            </div>
+            <!-- Title -->
+            <div class="mt-2">
+                <div class="flex items-center">
+                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'vpn_key'"></mat-icon>
+                    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+                        Roles
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-6">
+        <div class="w-full bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+
+            <div class="flex items-start justify-between">
+                <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded min-w-64">
+                    <mat-icon class="icon-size-5" matPrefix [svgIcon]="'search'"></mat-icon>
+                    <input
+                        matInput
+                        #input
+                        [matTooltip]="'Chercher'"
+                        [autocomplete]="'off'"
+                        (input)="search(input.value)"
+                        [placeholder]="'Chercher'">
+                </mat-form-field>
+                <button class="ml-4" mat-flat-button [color]="'primary'" [routerLink]="'./create'" >
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-2 mr-1">Ajouter</span>
+                </button>
+            </div>
+
+                <table mat-table [dataSource]="dataSource" matSort >
+
+                    <ng-container matColumnDef="title" >
+                        <th mat-header-cell mat-sort-header *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 15%"> Nom </th>
+                        <td mat-cell *matCellDef="let row">
+                            <div class="flex flex-col ml-1">
+                                <p class="font-semibold" [innerHTML]="row?.title | highlight:key"></p>
+                                <span class="text-xs text-hint ">{{ row?.name }}</span>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="isSystem">
+                        <th mat-header-cell mat-sort-header *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 15%"> TYPE </th>
+                        <td mat-cell *matCellDef="let row">
+                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide"
+                                  [ngClass]="{'bg-red-200 text-red-800 dark:bg-red-600 dark:text-red-50':row.isSystem}">
+                                    <span class="whitespace-nowrap leading-relaxed">{{ row.isSystem ? 'Système' : '' }}</span>
+                                </span>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="description">
+                        <th mat-header-cell mat-sort-header *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 40%"> DESCRIPTION </th>
+                        <td mat-cell *matCellDef="let row">
+                            <p [innerHTML]="row?.description | highlight:key"></p>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="permissions">
+                        <th mat-header-cell mat-sort-header *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 25%"> PERMISSIONS </th>
+                        <td mat-cell *matCellDef="let row">
+                            <div class="flex flex-col py-2">
+                                @if (row.showAllPermissions ? row.permissions : (row.permissions | slice:0:3); as displayList) {
+                                    <ul class="space-y-1">
+                                        @for (p of displayList; track p.id) {
+                                            <li class="list-disc list-inside text-secondary">
+                                                {{p?.title}}
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+
+                                @if (row?.permissions?.length > 3) {
+                                    <button
+                                        mat-button
+                                        color="primary"
+                                        class="mt-1 h-8 min-h-8 px-2 text-xs w-fit"
+                                        (click)="row.showAllPermissions = !row.showAllPermissions">
+                                        <div class="flex items-center">
+                                            <mat-icon class="icon-size-4 mr-1"
+                                                      [svgIcon]="row.showAllPermissions ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'">
+                                            </mat-icon>
+                                            <span>
+                                                {{ row.showAllPermissions ? 'Voir moins' : 'Voir ' + (row.permissions.length - 3) + ' de plus' }}
+                                            </span>
+                                        </div>
+                                    </button>
+                                }
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="action">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 5%">  </th>
+                        <td mat-cell *matCellDef="let row">
+                            <button mat-icon-button [matMenuTriggerFor]="menuAction">
+                                <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
+                            </button>
+                            <mat-menu #menuAction="matMenu" >
+                                @if (!row.isSystem){
+                                    <button mat-menu-item [routerLink]="'./edit/' + row?.id" >
+                                        <mat-icon svgIcon="edit" ></mat-icon>
+                                        <span>Modifier</span>
+                                    </button>
+                                }
+
+                                <button mat-menu-item (click)="cloneRole(row)" >
+                                    <mat-icon svgIcon="edit" ></mat-icon>
+                                    <span>Dupliquer</span>
+                                </button>
+
+                                @if (!row.isSystem){
+                                    <button mat-menu-item class="text-red-800 dark:text-red-50 " (click)="deleteRole(row)">
+                                        <mat-icon class="text-red-800 dark:text-red-50" svgIcon="mat_solid:delete_forever" ></mat-icon>
+                                        <span class="font-semibold">Supprimer</span>
+                                    </button>
+                                }
+                            </mat-menu>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let element; columns: displayedColumns;" class="example-element-row"></tr>
+
+                    <tr class="mat-row" *matNoDataRow>
+                        <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+
+                            <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                                @if (!isLoading){
+                                    Aucune donnée trouvée
+                                } @else {
+                                    Chargement
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            <mat-paginator
+                class="w-full border-b dark:bg-transparent"
+                showFirstLastButtons="true"
+                #paginator
+                [length]="totalRows"
+                [pageIndex]="currentPage"
+                [pageSize]="10"
+                [pageSizeOptions]="[10, 20, 50]"
+            ></mat-paginator>
+            </div>
+    </div>
+</div>

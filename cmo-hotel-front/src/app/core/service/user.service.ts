@@ -1,0 +1,25 @@
+import {Injectable} from "@angular/core";
+import {HttpClient} from "@angular/common/http";
+import {environment} from "../../../environments/environment.development";
+
+@Injectable({
+  providedIn: 'root'
+})
+export class UserApiService
+{
+  /**
+   * Constructor
+   */
+  constructor(private _httpClient: HttpClient)
+  {
+  }
+
+  getProfile(roles:boolean=false,permissions:boolean=false){
+    return this._httpClient.get(environment.solidarityApi+`/v1/profile/me?roles=${roles}&permissions=${permissions}`);
+  }
+
+  updateProfile(payload){
+    return this._httpClient.put(environment.solidarityApi+`/v1/profile/me`,payload);
+  }
+
+}

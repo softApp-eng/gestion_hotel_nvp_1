@@ -1,0 +1,41 @@
+package med.goeasy.cmohotel.security.enums;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+import java.util.EnumSet;
+import java.util.Set;
+
+@AllArgsConstructor
+@Getter
+public enum ERoleSystem {
+    DEFAULT("default",
+            "Profil d'accès minimal attribué par défaut à tout nouvel utilisateur authentifié.",
+            EnumSet.of(
+                    EPermissions.DEFAULT
+            )),
+
+    ADMIN("administrateur",
+            "Détient un accès global sans restriction à l'ensemble des fonctionnalités de la plateforme. Responsable de la configuration globale, de la gestion des référentiels, ainsi que de l'administration des utilisateurs, des rôles et de la sécurité du système.",
+            EnumSet.allOf(EPermissions.class)
+    ),
+
+
+    ;
+
+    private final String title;
+    private final String description;
+    private final Set<EPermissions> permissions;
+
+    public String getRoleName() {
+        return "ROLE_" + name();
+    }
+
+    private static Set<EPermissions> combine(ERoleSystem... roles) {
+        Set<EPermissions> all = EnumSet.noneOf(EPermissions.class);
+        for (ERoleSystem role : roles) {
+            all.addAll(role.getPermissions());
+        }
+        return all;
+    }
+}

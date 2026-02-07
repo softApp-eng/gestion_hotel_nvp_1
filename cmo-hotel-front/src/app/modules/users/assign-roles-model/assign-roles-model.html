@@ -1,0 +1,61 @@
+<div class="-m-6 flex flex-auto flex-col md:w-160 md:min-w-160 overflow-hidden">
+    <mat-toolbar class=" mat-accent h-14 min-h-14 px-2 m-0 flex-none">
+        <div class="flex items-center w-full justify-between">
+            <div class="flex items-center" >
+                <mat-icon class="icon-size-5 mr-3 text-white" [svgIcon]="'heroicons_solid:filter'"></mat-icon>
+                <span class="text-xl  text-white">Fiche de renseignement</span>
+            </div>
+            <button mat-icon-button (click)="matDialogRef.close()" aria-label="fermer" class="text-white">
+                <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
+            </button>
+        </div>
+    </mat-toolbar>
+
+    <div class="m-6">
+
+
+            <ng-container>
+                <div class="h-48 overflow-y-auto border-gray-300 leading-none dark:border-gray-500">
+                    @for (r of roles; track r){
+                        <div class="flex flex-row items-center justify-between px-0.5 py-4">
+                            <div class="flex flex-col">
+                                <div class="font-medium">
+                                    {{ r.title }}
+                                </div>
+                                <div class="-ml-0.5 mt-2 flex flex-col space-y-1 sm:mt-1 sm:flex-row sm:items-center sm:space-x-3 sm:space-y-0">
+
+                                        <div class="flex items-center">
+                                            <mat-icon class="text-hint icon-size-5" [svgIcon]="'heroicons_solid:clock'"></mat-icon>
+                                            <div class="text-secondary ml-1.5 text-md">
+                                                {{ r.name }}
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+                            <mat-checkbox
+                                class="flex h-10 min-h-10 items-center pl-1 pr-4"
+                                [color]="'primary'"
+                                [checked]="isModuleSelected(r?.id)"
+                                (change)="toggleModule(r?.id, $event.checked)"
+                            >
+                            </mat-checkbox>
+                        </div>
+                    }
+                </div>
+                <hr class="my-2 border-t border-gray-200" />
+            </ng-container>
+
+        <div class="flex flex-0 flex-col bg-gray-50 px-8 pt-4 dark:bg-transparent">
+            <div class="flex items-center w-full">
+                <div class="flex flex-auto cursor-pointer items-center mr-4">
+                    <button mat-flat-button color="primary" class="w-full" (click)="save()">
+                        Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+</div>

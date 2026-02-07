@@ -1,0 +1,6 @@
+export const AppAccountTypes = {
+    ADMINISTRATOR:'ADMINISTRATOR',
+    PROPERTY:'PROPERTY',
+    SUB_PROPERTY:'SUB_PROPERTY',
+    CLIENT:'CLIENT',
+}

@@ -1,0 +1,123 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+        <div class="min-w-0 flex-1">
+            <!-- Breadcrumbs -->
+            <div class="flex flex-wrap items-center font-medium">
+                <div>
+                    <a class="whitespace-nowrap text-primary-500">Administration</a>
+                </div>
+            </div>
+            <!-- Title -->
+            <div class="mt-2">
+                <div class="flex items-center">
+                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'vpn_key'"></mat-icon>
+                    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+                        Roles
+                    </h2>
+                </div>
+            </div>
+
+        </div>
+        <div class="flex">
+            <a class="text-secondary -ml-1.5 inline-flex items-center font-medium" [routerLink]="'/admin/roles'">
+                <mat-icon class="text-secondary icon-size-5" [svgIcon]="'heroicons_solid:chevron-left'"></mat-icon>
+                <span class="ml-1">Retour</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-6">
+        <div class="w-full bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+
+            <!-- Alert -->
+            <form [formGroup]="form">
+
+                @if (showAlert) {
+                    <fuse-alert
+                        class="my-4"
+                        [appearance]="'outline'"
+                        [showIcon]="false"
+                        [type]="alert.type"
+                        [@shake]="alert.type === 'error'"
+                    >
+                        {{ alert.message }}
+                    </fuse-alert>
+                }
+
+                <div class="mb-6">
+                    <p class="text-lg font-medium">{{roleId?'Modifier':'Nouveau'}} role</p>
+                    @if (!roleId){
+                        <p class="text-secondary">Ajouter un nouveau rôle à la plateforme.</p>
+                    }
+                </div>
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Nom</mat-label>
+                    <input matInput [formControlName]="'title'" placeholder="Nom">
+                    @if (form.get('title').hasError('required')) {
+                        <mat-error>Champ obligatoire</mat-error>
+                    }
+                </mat-form-field>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Description</mat-label>
+                    <input matInput [formControlName]="'description'" placeholder="description">
+                </mat-form-field>
+
+                <h2 class="font-semibold my-4">Gestion des Permissions</h2>
+
+                <mat-accordion multi class="example-headers-align">
+                    @for (module of modules(); track module.name; let mIdx = $index) {
+                        <mat-expansion-panel class="mb-2 shadow-none border border-gray-200 dark:border-gray-700">
+
+                            <mat-expansion-panel-header class="h-14">
+                                <mat-panel-title class="flex items-center">
+                                    <mat-checkbox
+                                        [disabled]="isSaving"
+                                        [checked]="module.completed"
+                                        [indeterminate]="isIndeterminate(module)"
+                                        (change)="update(mIdx, $event.checked)"
+                                        (click)="$event.stopPropagation()"
+                                        class="font-bold text-primary"
+                                    >
+                                        {{ module.expandedName }}
+                                    </mat-checkbox>
+                                </mat-panel-title>
+
+                                <mat-panel-description class="text-xs text-secondary justify-end mr-4">
+                                    {{ module.subtasks.length }} permissions
+                                </mat-panel-description>
+                            </mat-expansion-panel-header>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 py-2">
+                                @for (subtask of module.subtasks; track subtask.id; let sIdx = $index) {
+                                    <div class="flex items-center">
+                                        <mat-checkbox
+                                            [disabled]="isSaving"
+                                            [checked]="subtask.completed"
+                                            (change)="update(mIdx, $event.checked, sIdx)"
+                                            class="w-full"
+                                        >
+                                            <div class="flex flex-col ml-1">
+                                                <span class="text-sm font-medium">{{ subtask.title }}</span>
+                                                <span class="text-xs text-hint">{{ subtask.name }}</span>
+                                            </div>
+                                        </mat-checkbox>
+                                    </div>
+                                }
+                            </div>
+
+                        </mat-expansion-panel>
+                    }
+                </mat-accordion>
+
+                <div class="flex items-end justify-end mx-3 mt-8">
+                    <button mat-flat-button [color]="'primary'" [disabled]="form.disabled || form.invalid" (click)="save()">
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+            </div>
+    </div>
+</div>
