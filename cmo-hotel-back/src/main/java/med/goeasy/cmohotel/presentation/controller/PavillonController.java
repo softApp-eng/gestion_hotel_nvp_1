@@ -2,6 +2,7 @@ package med.goeasy.cmohotel.presentation.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import med.goeasy.cmohotel.presentation.dto.ApiResponse;
@@ -32,7 +33,7 @@ public class PavillonController {
     ResponseEntity<ApiResponse> update(
             Authentication authentication,
             @Valid @RequestBody PavillonRequestDto dto,
-            @Valid @NotBlank(message = "pavillon id requis") @RequestParam() Long id
+            @Valid @NotNull(message = "pavillon id requis") @RequestParam() Long id
     ){
         pavillonService.update(authentication,dto,id);
         return ResponseEntity.ok(ApiResponse.builder().message("pavillon modifiée").build());
@@ -49,7 +50,7 @@ public class PavillonController {
     @GetMapping("/one")
     ResponseEntity<PavillonResponseDto> one(
             Authentication authentication,
-            @Valid @NotBlank(message = "id pavillon requis") @RequestParam() Long id
+            @Valid @NotNull(message = "id pavillon requis") @RequestParam() Long id
     ){
         return ResponseEntity.ok(pavillonService.findById(authentication, id));
     }

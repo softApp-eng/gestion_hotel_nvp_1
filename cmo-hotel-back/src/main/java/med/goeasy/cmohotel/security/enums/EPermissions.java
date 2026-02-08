@@ -49,7 +49,18 @@ public enum EPermissions {
     ROOM_UPDATE(EPermissionsModule.ROOM, "room:update", "Modifier une chambre", EPermissionsGroup.UPDATE,true,""),
     ROOM_LIST(EPermissionsModule.ROOM, "room:list", "lister les chambres", EPermissionsGroup.READ,true,""),
     ROOM_SELECT_ONE(EPermissionsModule.ROOM, "room:one", "charger une chambre", EPermissionsGroup.READ,true,""),
-
+    // ROOMS TYPES
+    ROOM_TYPE_CREATE(EPermissionsModule.ROOM, "type:create", "Créer un type de chambre", EPermissionsGroup.CREATE,true,""),
+    ROOM_TYPE_UPDATE(EPermissionsModule.ROOM, "type:update", "Modifier type de chambre", EPermissionsGroup.UPDATE,true,""),
+    ROOM_TYPE_LIST(EPermissionsModule.ROOM, "type:list", "lister les types de chambres", EPermissionsGroup.READ,true,""),
+    ROOM_TYPE_SELECT_ONE(EPermissionsModule.ROOM, "type:one", "charger un type de chambre", EPermissionsGroup.READ,true,""),
+    ROOM_TYPE_DELETE(EPermissionsModule.ROOM, "type:delete", "supprimer un type de chambre", EPermissionsGroup.DELETE,true,""),
+    // ROOMS PRICES
+    ROOM_PRICE_CREATE(EPermissionsModule.ROOM, "price:create", "Créer un price de chambre", EPermissionsGroup.CREATE,true,""),
+    ROOM_PRICE_UPDATE(EPermissionsModule.ROOM, "price:update", "Modifier price de chambre", EPermissionsGroup.UPDATE,true,""),
+    ROOM_PRICE_LIST(EPermissionsModule.ROOM, "price:list", "lister les prices de chambres", EPermissionsGroup.READ,true,""),
+    ROOM_PRICE_SELECT_ONE(EPermissionsModule.ROOM, "price:one", "charger un price de chambre", EPermissionsGroup.READ,true,""),
+    ROOM_PRICE_DELETE(EPermissionsModule.ROOM, "price:delete", "supprimer un price de chambre", EPermissionsGroup.DELETE,true,""),
 
     ;
 

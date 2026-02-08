@@ -21,5 +21,8 @@ public class Pavillon {
     private String name;
     private String email;
     private String phoneNumber;
+    private Integer starsNumber;
+    private String description;
+
 
 }

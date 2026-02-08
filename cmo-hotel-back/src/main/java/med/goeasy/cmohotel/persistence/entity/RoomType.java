@@ -12,6 +12,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -31,13 +33,8 @@ public class RoomType {
 
     private String description;
 
-//    @ManyToMany(fetch = FetchType.LAZY)
-//    @JoinTable(
-//            name = "room_type_prices",
-//            joinColumns = @JoinColumn(name = "type_id"),
-//            inverseJoinColumns = @JoinColumn(name = "price_id")
-//    )
-//    private List<RoomPrice> prices;
+    @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RoomPrice> prices = new ArrayList<>();
 
     // audit
     @CreatedBy

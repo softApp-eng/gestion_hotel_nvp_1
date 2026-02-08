@@ -4,5 +4,6 @@ import med.goeasy.cmohotel.persistence.entity.RoomType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RoomTypeRepository extends JpaRepository<RoomType, Long> {
-
+    boolean existsByType(String type);
+    boolean existsByTypeAndIdNot(String type,Long id);
 }

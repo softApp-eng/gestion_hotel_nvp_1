@@ -1,0 +1,118 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+        <div class="min-w-0 flex-1">
+            <!-- Breadcrumbs -->
+            <div class="flex flex-wrap items-center font-medium">
+                <div>
+                    <a class="whitespace-nowrap text-primary-500">Paramétres</a>
+                </div>
+            </div>
+            <!-- Title -->
+            <div class="mt-2">
+                <div class="flex items-center">
+                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'mat_solid:local_hotel'"></mat-icon>
+                    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+                        Chambre
+                    </h2>
+                </div>
+            </div>
+
+        </div>
+        <div class="flex">
+            <a class="text-secondary -ml-1.5 inline-flex items-center font-medium" [routerLink]="'/settings/pavillon/'+pavillon?.id+'/rooms'">
+                <mat-icon class="text-secondary icon-size-5" [svgIcon]="'heroicons_solid:chevron-left'"></mat-icon>
+                <span class="ml-1">Retour</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-6">
+        <div class="w-full bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+
+            <!-- Alert -->
+            @if (showAlert) {
+                <fuse-alert
+                    class="mt-8"
+                    [appearance]="'outline'"
+                    [showIcon]="false"
+                    [type]="alert.type"
+                    [@shake]="alert.type === 'error'"
+                >
+                    {{ alert.message }}
+                </fuse-alert>
+            }
+
+            <form [formGroup]="form">
+                <div class="mb-6">
+                    <p class="text-lg font-medium">{{roomId?'Modifier':'Nouveau'}} chambre</p>
+                    @if (!roomId){
+                        <p class="text-secondary">Ajouter un nouveau chambre à la plateforme.</p>
+                    }
+                </div>
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Nom</mat-label>
+                    <input matInput [formControlName]="'name'" placeholder="Nom">
+                    @if (form.get('name').hasError('required')) {
+                        <mat-error>Champ obligatoire</mat-error>
+                    }
+                </mat-form-field>
+
+                <div class="gt-xs:flex-row flex flex-col">
+                    <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                        <mat-label>Type</mat-label>
+                        <mat-select [formControlName]="'roomTypeId'">
+                            @for (t of roomTypes; track t) {
+                                <mat-option [value]="t.id">{{t.type}}</mat-option>
+                            }
+                        </mat-select>
+                        @if (form.get('roomTypeId').hasError('required')) {
+                            <mat-error>Champ obligatoire</mat-error>
+                        }
+                    </mat-form-field>
+                </div>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Code</mat-label>
+                    <input matInput [formControlName]="'code'" placeholder="code">
+                    @if (form.get('code').hasError('required')) {
+                        <mat-error>Champ obligatoire</mat-error>
+                    }
+                </mat-form-field>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Capacité</mat-label>
+                    <input type="number" matInput [formControlName]="'capacity'" placeholder="Capacité">
+                    @if (form.get('capacity').hasError('required')) {
+                        <mat-error>Champ obligatoire</mat-error>
+                    }
+                </mat-form-field>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Etage</mat-label>
+                    <input type="number" matInput [formControlName]="'floor'" placeholder="Etage">
+                </mat-form-field>
+
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Observation</mat-label>
+                    <textarea
+                        [formControlName]="'description'"
+                        matInput
+                        cdkTextareaAutosize
+                        cdkAutosizeMinRows="2"
+                        cdkAutosizeMaxRows="5"
+                        #autosize="cdkTextareaAutosize">
+                    </textarea>
+                </mat-form-field>
+
+
+                <div class="flex items-end justify-end mx-3 mt-8">
+                    <button mat-flat-button [color]="'primary'" [disabled]="form.disabled || form.invalid" (click)="save()">
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+            </div>
+    </div>
+</div>

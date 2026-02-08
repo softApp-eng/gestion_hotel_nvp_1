@@ -1,6 +1,8 @@
 package med.goeasy.cmohotel;
 
 import med.goeasy.cmohotel.config.ConfigProperties;
+import med.goeasy.cmohotel.security.enums.EPermissions;
+import med.goeasy.cmohotel.security.enums.ERoleSystem;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -29,7 +31,7 @@ public class CmoHotelBackApplication {
         return args -> {
             //feeder.feed();
             //feeder.grantPermissionToRole(EPermissions.ASSISTANCE_CONSOLIDATION_REPORT_EXCEL_DOWNLOAD,ERoleSystem.ADMIN);
-            //feeder.grantPermissionToRole(EPermissions.CALLS_CASE_UPDATE,ERoleSystem.BCC);
+            //feeder.grantPermissionToRole(EPermissions.ROOM_TYPE_DELETE,ERoleSystem.ADMIN);
             //feeder.resetRolePermissions(ERoleSystem.ADMIN);
             //Feed database
             if (shouldFeed)

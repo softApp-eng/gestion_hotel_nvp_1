@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import med.goeasy.cmohotel.exception.BadRequestException;
 import med.goeasy.cmohotel.persistence.entity.Pavillon;
 import med.goeasy.cmohotel.persistence.repository.PavillonRepository;
+import med.goeasy.cmohotel.persistence.repository.RoomRepository;
 import med.goeasy.cmohotel.presentation.dto.pavillon.PavillonRequestDto;
 import med.goeasy.cmohotel.presentation.dto.pavillon.PavillonResponseDto;
 import org.springframework.security.core.Authentication;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,6 +22,7 @@ import java.util.List;
 public class PavillonService {
 
     private final PavillonRepository pavillonRepository;
+    private final RoomRepository roomRepository;
 
     @Transactional
     public void create(Authentication authentication, PavillonRequestDto dto) {
@@ -46,7 +50,13 @@ public class PavillonService {
 
     public List<PavillonResponseDto> getPavillons(Authentication authentication) {
         log.info("{} get pavillons", authentication.getName());
-        return  pavillonRepository.getPavillons().stream().map(PavillonResponseDto::mapToDto).toList();
+        return pavillonRepository.getPavillons()
+                .stream()
+                .map(pavillon -> {
+                    Map<String, Long> count = getRoomTypeDistributionByPavillon(pavillon.getId());
+                    return PavillonResponseDto.mapToDto(pavillon, count);
+                })
+                .toList();
     }
 
     public PavillonResponseDto findById(Authentication authentication,Long id) {
@@ -63,5 +73,15 @@ public class PavillonService {
     protected Pavillon getPavillonById(Long id){
         return pavillonRepository.findById(id)
                 .orElseThrow(()-> new BadRequestException("Pavillon n'existe pas"));
+    }
+
+    protected Map<String, Long> getRoomTypeDistributionByPavillon(Long pavillonId) {
+        List<Object[]> results = roomRepository.countRoomsByTypeByPavillonId(pavillonId);
+
+        return results.stream()
+                .collect(Collectors.toMap(
+                        row -> (String) row[0], // Nom du RoomType
+                        row -> (Long) row[1]    // Nombre total de chambres
+                ));
     }
 }

@@ -1,0 +1,135 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+        <div class="min-w-0 flex-1">
+            <!-- Breadcrumbs -->
+            <div class="flex flex-wrap items-center font-medium">
+                <div>
+                    <a class="whitespace-nowrap text-primary-500">Paramétres</a>
+                </div>
+            </div>
+            <!-- Title -->
+            <div class="mt-2">
+                <div class="flex items-center">
+                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'mat_solid:local_hotel'"></mat-icon>
+                    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+                        Chambres {{pavillon ? '('+pavillon?.name + ')':''}}
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-6">
+        <div class="w-full bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+
+            <div class="flex items-start justify-between">
+                <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded min-w-64">
+                    <mat-icon class="icon-size-5" matPrefix [svgIcon]="'search'"></mat-icon>
+                    <input
+                        matInput
+                        #input
+                        [matTooltip]="'Chercher'"
+                        [autocomplete]="'off'"
+                        (input)="search(input.value)"
+                        [placeholder]="'Search'">
+                </mat-form-field>
+                <button *hasPermission="[APP_PERMISSIONS.ROOM_CREATE]" class="ml-4" mat-flat-button [color]="'primary'" [routerLink]="'./create'" >
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-2 mr-1">Ajouter</span>
+                </button>
+            </div>
+
+                <table mat-table [dataSource]="dataSource" matSort >
+
+                    <ng-container matColumnDef="name">
+                        <th mat-header-cell mat-sort-header *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 25%"> NOM </th>
+                        <td mat-cell *matCellDef="let row">
+                            <p class="font-semibold" [innerHTML]="row?.name | highlight:key"></p>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="code">
+                        <th mat-header-cell mat-sort-header *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 25%"> CODE </th>
+                        <td mat-cell *matCellDef="let row">
+                            <p class="font-semibold" [innerHTML]="row?.code | highlight:key"></p>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="type">
+                        <th mat-header-cell mat-sort-header *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 20%"> TYPE </th>
+                        <td mat-cell *matCellDef="let row">
+                            <p [innerHTML]="row?.roomType?.type | highlight:key"></p>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="capacity">
+                        <th mat-header-cell mat-sort-header *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 20%"> CAPACITE </th>
+                        <td mat-cell *matCellDef="let row">
+                            <p [innerHTML]="row?.capacity | highlight:key"></p>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="floor">
+                        <th mat-header-cell mat-sort-header *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 20%"> ETAGE </th>
+                        <td mat-cell *matCellDef="let row">
+                            <p [innerHTML]="row?.floor | highlight:key"></p>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="description">
+                        <th mat-header-cell mat-sort-header *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 20%"> OBSERVATION </th>
+                        <td mat-cell *matCellDef="let row">
+                            <p [innerHTML]="row?.description | highlight:key"></p>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="action">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 5%">  </th>
+                        <td mat-cell *matCellDef="let row">
+                            <button mat-icon-button [matMenuTriggerFor]="menuAction">
+                                <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
+                            </button>
+                            <mat-menu #menuAction="matMenu" >
+                                <button mat-menu-item [routerLink]="'./edit/' + row?.id" >
+                                    <mat-icon svgIcon="edit" ></mat-icon>
+                                    <span>Modifier</span>
+                                </button>
+
+                                <button mat-menu-item class="text-red-800 dark:text-red-50 ">
+                                    <mat-icon class="text-red-800 dark:text-red-50" svgIcon="mat_solid:delete_forever" ></mat-icon>
+                                    <span class="font-semibold">Supprimer</span>
+                                </button>
+                            </mat-menu>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let element; columns: displayedColumns;" class="example-element-row"></tr>
+
+                    <tr class="mat-row" *matNoDataRow>
+                        <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+
+                            <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                                @if (!isLoading){
+                                    Aucune donnée trouvée
+                                } @else {
+                                    Chargement
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            <mat-paginator
+                class="w-full border-b bg-gray-50 dark:bg-transparent"
+                showFirstLastButtons="true"
+                #paginator
+                [length]="totalRows"
+                [pageIndex]="currentPage"
+                [pageSize]="10"
+                [pageSizeOptions]="[10, 20, 50]"
+            ></mat-paginator>
+            </div>
+    </div>
+</div>

@@ -19,6 +19,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @EntityListeners(AuditingEntityListener.class)
+@Table(uniqueConstraints = {
+        @UniqueConstraint(name = "room_categ_price_unique", columnNames = {"room_type_id", "category"})
+})
 @Entity
 public class RoomPrice {
 

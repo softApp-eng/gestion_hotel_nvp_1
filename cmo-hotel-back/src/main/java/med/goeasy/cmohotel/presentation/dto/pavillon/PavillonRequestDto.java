@@ -7,7 +7,9 @@ public record PavillonRequestDto(
         @NotBlank(message = "nom obligatoire")
         String name,
         String email,
-        String phoneNumber
+        String phoneNumber,
+        Integer starsNumber,
+        String description
 ) {
         public static Pavillon mapToEntity(PavillonRequestDto dto){
                 if (dto == null)
@@ -16,6 +18,8 @@ public record PavillonRequestDto(
                         .name(dto.name())
                         .email(dto.email())
                         .phoneNumber(dto.phoneNumber())
+                        .starsNumber(dto.starsNumber())
+                        .description(dto.description())
                         .build();
         }
 }

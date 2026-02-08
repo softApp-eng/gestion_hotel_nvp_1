@@ -21,6 +21,7 @@ public record RoomResponseDto(
                 if (entity == null)
                         return null;
                 return RoomResponseDto.builder()
+                        .id(entity.getId())
                         .pavillon(PavillonResponseDto.mapToDto(entity.getPavillon()))
                         .roomType(RoomTypeDto.mapToDto(entity.getRoomType()))
                         .code(entity.getCode())

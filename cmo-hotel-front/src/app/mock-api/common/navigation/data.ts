@@ -37,7 +37,27 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type: 'basic',
                 icon: 'mat_outline:person_search',
                 link: '/settings/guests',
-            }
+            },{
+                id: 'settings.Hébergement',
+                title: 'Hébergement',
+                type: 'basic',
+                icon: 'mat_outline:local_hotel',
+                link: '/settings/pavillon',
+            },
+            {
+                id: 'settings.prices',
+                title: 'Tarrifs',
+                type: 'collapsable',
+                icon: 'mat_outline:attach_money',
+                children: [
+                    {
+                        id: 'settings.prices.rooms',
+                        title: 'Chambres',
+                        type: 'basic',
+                        link: '/settings/prices/room/types',
+                    },
+                ],
+            },
         ],
     },
     {

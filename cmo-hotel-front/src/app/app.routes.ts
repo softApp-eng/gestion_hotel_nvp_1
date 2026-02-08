@@ -78,6 +78,16 @@ export const appRoutes: Route[] = [
                 data: {
                     module:[APP_MODULES.PERSON]
                 },
+            },
+            {
+                path: 'pavillon',
+                loadChildren: () => import('app/modules/pavillon/pavillon.routes'),
+                data: {
+                    module:[APP_MODULES.PAVILLON]
+                },
+            },{
+                path: 'prices',
+                loadChildren: () => import('app/modules/prices/prices.routes'),
             }
         ]
     },

@@ -1,8 +1,10 @@
 package med.goeasy.cmohotel.persistence.repository;
 
 import med.goeasy.cmohotel.persistence.entity.Room;
+import med.goeasy.cmohotel.persistence.entity.RoomType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -12,4 +14,17 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     @Query("FROM Room r join r.pavillon p where (?1 is null or p.id = ?1) order by r.code")
     List<Room> getRooms(Long pavillonId);
+
+    @Query("FROM Room r where r.roomType = ?1 order by r.code")
+    List<Room> findByRoomType(RoomType type);
+
+    @Query()
+    long countRoomByPavillon_Id(Long pavillonId);
+
+    @Query("""
+            SELECT r.roomType.type, COUNT(r) FROM Room r
+            WHERE r.pavillon.id = :pavillonId
+            GROUP BY r.roomType.type
+    """)
+    List<Object[]> countRoomsByTypeByPavillonId(@Param("pavillonId") Long pavillonId);
 }

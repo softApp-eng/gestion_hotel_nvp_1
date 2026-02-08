@@ -1,0 +1,123 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+        <div class="min-w-0 flex-1">
+            <!-- Breadcrumbs -->
+            <div class="flex flex-wrap items-center font-medium">
+                <div>
+                    <a class="whitespace-nowrap text-primary-500">Paramétres</a>
+                </div>
+            </div>
+            <!-- Title -->
+            <div class="mt-2">
+                <div class="flex items-center">
+                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'mat_solid:local_hotel'"></mat-icon>
+                    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+                        Hébergement
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex flex-auto p-6 sm:p-10">
+
+
+        <div class="mx-auto flex w-full max-w-xs flex-auto flex-col sm:max-w-5xl">
+            <!-- Filters -->
+            <div class="flex items-end justify-end">
+                <button *hasPermission="[APP_PERMISSIONS.PAVILLON_CREATE]" class="ml-4" mat-flat-button [color]="'primary'" (click)="raiseSavePavillon(null)" >
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-2 mr-1">Ajouter</span>
+                </button>
+            </div>
+            <!-- Courses -->
+            @if (this.pavillons.length) {
+                <div class="mt-8 grid grid-cols-1 gap-8 sm:mt-10 sm:grid-cols-2 lg:grid-cols-3">
+                    @for ( p of pavillons;track p.id) {
+                        <!-- Course -->
+                        <div class="bg-card flex h-96 flex-col overflow-hidden rounded-2xl shadow">
+                            <div class="flex flex-col p-6">
+                                <div class="flex items-center justify-between">
+                                    <!-- Course category -->
+                                        <div class="rounded-full px-3 py-0.5 text-sm font-semibold bg-blue-100 text-blue-800 dark:bg-blue-500 dark:text-blue-50">
+                                            {{p.starsNumber + ' ETOILES'}}
+                                        </div>
+                                    <!-- Completed at least once -->
+                                    <div class="flex items-center">
+                                        <button mat-icon-button [matMenuTriggerFor]="menuAction">
+                                            <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
+                                        </button>
+                                        <mat-menu #menuAction="matMenu" >
+                                            <button *hasPermission="[APP_PERMISSIONS.ADMIN_USERS_UPDATE]" mat-menu-item (click)="raiseSavePavillon(p)" >
+                                                <mat-icon svgIcon="mat_outline:edit_note" ></mat-icon>
+                                                <span>Modifier</span>
+                                            </button>
+
+                                            <button mat-menu-item class="text-red-800 dark:text-red-50 ">
+                                                <mat-icon class="text-red-800 dark:text-red-50" svgIcon="mat_solid:delete_forever" ></mat-icon>
+                                                <span class="font-semibold">Supprimer</span>
+                                            </button>
+                                        </mat-menu>
+                                    </div>
+                                </div>
+                                <!-- Course title & description -->
+                                <div class="mt-4 text-lg font-medium">
+                                    {{ p.name }}
+                                </div>
+                                <div class="text-secondary mt-0.5 line-clamp-2">
+                                    {{ p.description }}
+                                </div>
+                                <div class="my-6 h-1 w-12 border-t-2"></div>
+                                <!-- Course time -->
+                                @for (item of p?.roomCount | keyvalue; track item.key) {
+                                    <div class="text-secondary flex items-center text-md leading-5 mt-1">
+                                        <mat-icon class="text-hint icon-size-5" [svgIcon]="'mat_outline:hotel'"></mat-icon>
+                                        <div class="ml-1.5 ">
+                                            <b>{{ item.value }}</b> chambre(s) {{ item.key | titlecase }}
+                                        </div>
+                                    </div>
+                                } @empty {
+                                    <div class="text-hint text-sm italic">Aucune chambre configurée</div>
+                                }
+
+                                <div class="text-secondary flex items-center text-md leading-5">
+                                    <mat-icon class="text-hint icon-size-5" [svgIcon]="'mat_outline:bookmark_added'"></mat-icon>
+                                    <div class="ml-1.5">
+                                        500 reservation
+                                    </div>
+                                </div>
+                                <!-- Course completion -->
+
+                            </div>
+                            <!-- Footer -->
+                            <div class="mt-auto flex w-full flex-col">
+                                <!-- Course progress -->
+
+                                <!-- Course launch button -->
+                                <div class="bg-gray-50 px-6 py-4 text-right dark:bg-transparent">
+                                    <a mat-stroked-button [routerLink]="'./'+p.id+'/rooms'">
+                                        <span class="inline-flex items-center">
+                                            <span>Chambres</span>
+                                            <mat-icon class="ml-1.5 icon-size-5" [svgIcon]="'heroicons_solid:arrow-small-right'"></mat-icon>
+                                        </span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            } @else {
+                <div class="flex flex-auto flex-col items-center justify-center bg-gray-100 dark:bg-transparent">
+                    <mat-icon class="icon-size-24" [svgIcon]="'heroicons_outline:building-office-2'"></mat-icon>
+                    <div class="text-secondary mt-6 text-2xl font-semibold tracking-tight">
+                        Aucun pavillon encore!
+                    </div>
+                </div>
+            }
+
+            <!-- No courses -->
+        </div>
+    </div>
+</div>
