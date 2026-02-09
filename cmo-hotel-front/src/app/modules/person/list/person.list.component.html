@@ -158,16 +158,16 @@
                         <table mat-table [dataSource]="dataSource" >
 
                             <ng-container matColumnDef="grade">
-                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> GRADE </th>
-                                <td mat-cell *matCellDef="let row">
-                                    <p [innerHTML]="row?.grade?.name | highlight:key"></p>
-                                </td>
-                            </ng-container>
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> GRADE </th>
+                            <td mat-cell *matCellDef="let row">
+                                <p [innerHTML]="row?.grade?.name | highlight:key"></p>
+                            </td>
+                        </ng-container>
 
                             <ng-container matColumnDef="name">
                                 <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> NOM </th>
                                 <td mat-cell *matCellDef="let row" >
-                                    <p [innerHTML]="(row?.gender == 'F')?'Mme ':(row?.gender == 'M')?'Mr ':'' + row?.firstName + ' ' + row?.lastName | highlight:key"></p>
+                                    <p [innerHTML]="(((row?.gender == 'F')?'Mme ':(row?.gender == 'M')?'Mr ':'') + row?.firstName + ' ' + row?.lastName) | highlight:key"></p>
                                 </td>
                             </ng-container>
 

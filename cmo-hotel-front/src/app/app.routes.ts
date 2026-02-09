@@ -91,6 +91,19 @@ export const appRoutes: Route[] = [
             }
         ]
     },
+    {
+        path: 'managements',
+        canActivate: [AuthGuard],
+        canActivateChild: [AuthGuard],
+        //data: {accountType:[AppAccountTypes.ADMINISTRATOR]},
+        component: LayoutComponent,
+        resolve: {
+            initialData: initialDataResolver
+        },
+        children: [
+            {path: 'reservations', loadChildren: () => import('app/modules/reservation/reservation.routes'),},
+        ]
+    },
 
     {
         path: '',

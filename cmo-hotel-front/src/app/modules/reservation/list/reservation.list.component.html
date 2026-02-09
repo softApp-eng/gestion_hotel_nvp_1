@@ -1,0 +1,96 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+        <div class="min-w-0 flex-1">
+            <!-- Breadcrumbs -->
+            <div class="flex flex-wrap items-center font-medium">
+                <div>
+                    <a class="whitespace-nowrap text-primary-500">Reservations</a>
+                </div>
+            </div>
+            <!-- Title -->
+            <div class="mt-2">
+                <div class="flex items-center">
+                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'heroicons_solid:clipboard-document-check'"></mat-icon>
+                    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+                        Tableau
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-6">
+        <div class="w-full bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+
+            <div class="flex items-start justify-between">
+                <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded min-w-64">
+                    <mat-icon class="icon-size-5" matPrefix [svgIcon]="'search'"></mat-icon>
+                    <input
+                        matInput
+                        #input
+                        [matTooltip]="'Chercher'"
+                        [autocomplete]="'off'"
+                        [placeholder]="'Chercher'">
+                </mat-form-field>
+                <button class="ml-4" mat-flat-button [color]="'primary'" [routerLink]="'./create'" >
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-2 mr-1">Ajouter</span>
+                </button>
+            </div>
+
+                <table mat-table [dataSource]="dataSource" >
+
+                    <ng-container matColumnDef="name" >
+                        <th mat-header-cell  *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 15%"> Nom </th>
+                        <td mat-cell *matCellDef="let row">
+                            <p class="font-semibold" [innerHTML]="row?.title | highlight:key"></p>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="action">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 5%">  </th>
+                        <td mat-cell *matCellDef="let row">
+                            <button mat-icon-button [matMenuTriggerFor]="menuAction">
+                                <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
+                            </button>
+                            <mat-menu #menuAction="matMenu" >
+
+                                <button mat-menu-item >
+                                    <mat-icon svgIcon="edit" ></mat-icon>
+                                    <span>Dupliquer</span>
+                                </button>
+
+                            </mat-menu>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let element; columns: displayedColumns;" class="example-element-row"></tr>
+
+                    <tr class="mat-row" *matNoDataRow>
+                        <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+
+                            <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                                @if (!isLoading){
+                                    Aucune donnée trouvée
+                                } @else {
+                                    Chargement
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            <mat-paginator
+                class="w-full border-b dark:bg-transparent"
+                showFirstLastButtons="true"
+                #paginator
+                [length]="totalRows"
+                [pageIndex]="currentPage"
+                [pageSize]="10"
+                [pageSizeOptions]="[10, 20, 50]"
+            ></mat-paginator>
+            </div>
+    </div>
+</div>

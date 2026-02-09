@@ -25,7 +25,7 @@ public class PersonService {
     private final CommonService commonService;
 
     @Transactional
-    public void create(Authentication authentication, PersonRequestDto dto) {
+    public PersonResponseDto create(Authentication authentication, PersonRequestDto dto) {
         Person person = PersonRequestDto.mapToEntity(dto);
         if (person.getPrimaryPerson() != null && person.getRelationshipType() == null)
             throw new BadRequestException("Type de relation obligatoire");
@@ -38,10 +38,13 @@ public class PersonService {
         person.setArchived(false);
         person = personRepository.save(person);
         log.info("{} save new person with id {}", authentication.getName(), person.getId());
+        return PersonResponseDto.mapToDto(
+                person
+        );
     }
 
     @Transactional
-    public void update(Authentication authentication, PersonRequestDto dto,String personId) {
+    public PersonResponseDto update(Authentication authentication, PersonRequestDto dto,String personId) {
         Person personDb = getPersonById(personId);
         Person person = PersonRequestDto.mapToEntity(dto);
         if (person.getPrimaryPerson() != null && person.getRelationshipType() == null)
@@ -57,6 +60,9 @@ public class PersonService {
 
         person = personRepository.save(person);
         log.info("{} update person with id {}", authentication.getName(), person.getId());
+        return PersonResponseDto.mapToDto(
+                person
+        );
     }
 
     public PageDto<PersonResponseDto> search(Authentication authentication,String key,Integer page,Integer size) {

@@ -10,14 +10,30 @@ export const defaultNavigation: FuseNavigationItem[] = [
         title: 'Dashboards',
         subtitle: 'Unique dashboard designs',
         type: 'group',
-        icon: 'heroicons_outline:home',
+        icon: 'heroicons_outline:chart-pie',
         children: [
             {
                 id: 'dashboards.accueil',
                 title: 'Accueil',
                 type: 'basic',
-                icon: 'heroicons_outline:clipboard-document-check',
+                icon: 'heroicons_outline:chart-pie',
                 link: '/accueil',
+            },
+        ],
+    },
+    {
+        id: 'reservations',
+        title: 'Reservations',
+        subtitle: 'Gérer les reservations',
+        type: 'group',
+        icon: 'heroicons_outline:clipboard-document-check',
+        children: [
+            {
+                id: 'reservations.list',
+                title: 'Reservations',
+                type: 'basic',
+                icon: 'heroicons_outline:clipboard-document-check',
+                link: '/managements/reservations',
             },
         ],
     },

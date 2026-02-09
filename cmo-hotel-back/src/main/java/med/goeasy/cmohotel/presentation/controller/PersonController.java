@@ -24,19 +24,17 @@ public class PersonController {
     private final PersonService personService;
 
     @PostMapping("/create")
-    ResponseEntity<ApiResponse> create(Authentication authentication,@Valid @RequestBody PersonRequestDto dto){
-        personService.create(authentication,dto);
-        return ResponseEntity.ok(ApiResponse.builder().message("personne crée").build());
+    ResponseEntity<PersonResponseDto> create(Authentication authentication,@Valid @RequestBody PersonRequestDto dto){
+        return ResponseEntity.ok(personService.create(authentication,dto));
     }
 
     @PutMapping("/update")
-    ResponseEntity<ApiResponse> update(
+    ResponseEntity<PersonResponseDto> update(
             Authentication authentication,
             @Valid @RequestBody PersonRequestDto dto,
             @Valid @NotBlank(message = "person id requis") @RequestParam() String personId
     ){
-        personService.update(authentication,dto,personId);
-        return ResponseEntity.ok(ApiResponse.builder().message("personne modifiée").build());
+        return ResponseEntity.ok(personService.update(authentication,dto,personId));
     }
 
 
