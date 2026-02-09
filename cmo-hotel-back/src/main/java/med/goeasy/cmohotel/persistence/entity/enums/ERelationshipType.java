@@ -9,6 +9,8 @@ public enum ERelationshipType {
 
     WIFE,
     SON,
+    FATHER,
+    MATHER,
 
     ;
 

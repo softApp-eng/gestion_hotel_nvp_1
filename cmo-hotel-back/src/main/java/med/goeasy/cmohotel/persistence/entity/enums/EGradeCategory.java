@@ -7,8 +7,11 @@ import lombok.Getter;
 @Getter
 public enum EGradeCategory {
 
+    OFFICIERS_GENERAUX,
+    OFFICIERS_GENERAUX_COLONEL_MAJOR,
     OFFICIER_SUPERIEUR,
     OFFICIER_SUBALTERNE,
+    SOUS_OFFICIER,
     CIVIL,
     ;
 

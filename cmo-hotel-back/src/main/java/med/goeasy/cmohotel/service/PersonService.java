@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import med.goeasy.cmohotel.exception.BadRequestException;
 import med.goeasy.cmohotel.persistence.entity.Person;
+import med.goeasy.cmohotel.persistence.entity.enums.ERelationshipType;
 import med.goeasy.cmohotel.persistence.repository.PersonRepository;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
 import med.goeasy.cmohotel.presentation.dto.person.PersonRequestDto;
@@ -27,14 +28,21 @@ public class PersonService {
     @Transactional
     public PersonResponseDto create(Authentication authentication, PersonRequestDto dto) {
         Person person = PersonRequestDto.mapToEntity(dto);
-        if (person.getPrimaryPerson() != null && person.getRelationshipType() == null)
-            throw new BadRequestException("Type de relation obligatoire");
+        if (dto.primaryPersonId() != null && !dto.primaryPersonId().isBlank()) {
+            // then the person has a primary person
+            if (person.getPrimaryPerson() != null && person.getRelationshipType() == null)
+                throw new BadRequestException("Type de relation obligatoire");
+            Person primaryPerson = getPersonById(dto.primaryPersonId());
+            person.setPrimaryPerson(primaryPerson);
+            person.setRelationshipType(ERelationshipType.valueOf(dto.relationshipType()));
+        }
+
         person.setGrade(
                 commonService.getGradeById(dto.gradeId())
         );
-        if (person.getPrimaryPerson() != null) {
-            person.setPrimaryPerson(getPersonById(dto.primaryPersonId()));
-        }
+//        if (person.getPrimaryPerson() != null) {
+//            person.setPrimaryPerson(getPersonById(dto.primaryPersonId()));
+//        }
         person.setArchived(false);
         person = personRepository.save(person);
         log.info("{} save new person with id {}", authentication.getName(), person.getId());
@@ -47,14 +55,11 @@ public class PersonService {
     public PersonResponseDto update(Authentication authentication, PersonRequestDto dto,String personId) {
         Person personDb = getPersonById(personId);
         Person person = PersonRequestDto.mapToEntity(dto);
-        if (person.getPrimaryPerson() != null && person.getRelationshipType() == null)
-            throw new BadRequestException("Type de relation obligatoire");
+        person.setPrimaryPerson(personDb.getPrimaryPerson());
+        person.setRelationshipType(personDb.getRelationshipType());
         person.setGrade(
                 commonService.getGradeById(dto.gradeId())
         );
-        if (person.getPrimaryPerson() != null) {
-            person.setPrimaryPerson(getPersonById(dto.primaryPersonId()));
-        }
         person.setArchived(false);
         person.setId(personDb.getId());
 

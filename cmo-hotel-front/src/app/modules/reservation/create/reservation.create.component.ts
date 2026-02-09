@@ -10,7 +10,7 @@ import {
     Validators,
 } from '@angular/forms';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatSelectModule } from '@angular/material/select';
+import { MatOption, MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { FuseAlertComponent, FuseAlertType } from '../../../../@fuse/components/alert';
@@ -28,6 +28,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { PersonManageModel } from '../dialog-manage-person/person-manage.model';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltip } from '@angular/material/tooltip';
+import { JsonPipe } from '@angular/common';
 
 @Component({
     selector: 'reservation-add',
@@ -47,6 +48,9 @@ import { MatTooltip } from '@angular/material/tooltip';
         MatDatepickerModule,
         MatMenuModule,
         MatTooltip,
+        MatOption,
+        MatSelectModule,
+        MatSlideToggleModule,
     ],
 })
 export class ReservationCreateComponent implements OnInit {
@@ -65,6 +69,35 @@ export class ReservationCreateComponent implements OnInit {
     endAt: Date | null = null;
     durationInDays: number | null = null;
     persons: any[] = [];
+
+    groupedAction:boolean = false;
+
+    roles = [
+        {
+            code: 'PRINCIPAL',
+            name: 'Titulaire Principal',
+            description:
+                "L'invité militaire titulaire de la réservation et responsable principal.",
+        },
+        {
+            code: 'VICE',
+            name: 'Mandataire / Secondant',
+            description:
+                "Responsable désigné agissant au nom du titulaire en cas d'absence de ce dernier.",
+        },
+        {
+            code: 'FAMILY',
+            name: 'Membre Famille',
+            description:
+                'Membre de la famille (conjoint, ascendant) accompagnant le titulaire.',
+        },
+        {
+            code: 'CHILD',
+            name: 'Enfant',
+            description:
+                'Enfant à charge du titulaire militaire bénéficiant du séjour.',
+        },
+    ];
 
     /**
      * Constructor
@@ -147,7 +180,7 @@ export class ReservationCreateComponent implements OnInit {
     raisePersonAddDialog() {
         this._matDialog
             .open(PersonManageModel, {
-                data: {selectedPersons: [...this.persons]},
+                data: { selectedPersons: [...this.persons] },
                 disableClose: true,
             })
             .afterClosed()
@@ -159,12 +192,16 @@ export class ReservationCreateComponent implements OnInit {
             });
     }
 
-    initializeForm() {
-
-    }
+    initializeForm() {}
 
     unSelectPerson(person: any) {
         if (!person || !person.id) return;
-        this.persons = this.persons.filter(p => p.id !== person.id);
+        this.persons = this.persons.filter((p) => p.id !== person.id);
+    }
+
+    getRoleName(code: string): string {
+        if (!code) return 'Choisir...';
+        // Cherche le rôle dans votre tableau roles et retourne son nom
+        return this.roles.find(r => r.code === code)?.name || code;
     }
 }

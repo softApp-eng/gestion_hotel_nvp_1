@@ -44,6 +44,12 @@ export class PersonCreateModel implements OnInit {
     form: UntypedFormGroup;
     person;
     grades;
+    relationTypes = [
+        'WIFE',
+        'SON',
+        'FATHER',
+        'MATHER',
+    ]
 
     /**
      * Constructor
@@ -76,6 +82,7 @@ export class PersonCreateModel implements OnInit {
             observation: [''],
         });
         this.person = data.person;
+        console.log('AIT',data);
         if(data.isFamille){
             this.form.patchValue({
                 primaryPersonId: this.person.id
@@ -85,8 +92,8 @@ export class PersonCreateModel implements OnInit {
             //initialize
             this.form.patchValue({
                 gradeId: this.person?.grade?.id,
-                //primaryPersonId: data?.primaryPersonId,
-                //relationshipType: data?.relationshipType,
+                primaryPersonId: this.person?.primaryPersonId || '',
+                relationshipType: this.person?.relationshipType || '',
                 identity: this.person?.identity,
                 firstName: this.person?.firstName,
                 lastName: this.person?.lastName,
@@ -131,7 +138,7 @@ export class PersonCreateModel implements OnInit {
             );
         }
 
-        if (this.person) {
+        if (this.person && !this.data.isFamille) {
             this._apiPersonService
                 .update(payload, this.person.id)
                 .pipe(

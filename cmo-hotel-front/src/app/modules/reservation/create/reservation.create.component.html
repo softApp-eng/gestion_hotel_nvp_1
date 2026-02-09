@@ -78,38 +78,107 @@
                 </mat-form-field>
 
 
-                <div class="flex items-center space-x-4 my-4">
-                    <h2 class="font-semibold my-4">Gérer les invités</h2>
+                <div class="flex items-center space-x-4 my-4 w-full">
+                    <h2 class="font-semibold">Gérer les invités ({{persons.length}})</h2>
+
                     <a mat-stroked-button class="h-8 min-h-8" (click)="raisePersonAddDialog()">
                         <span class="inline-flex items-center text-sm">
                             <span>Ajouter</span>
                             <mat-icon class="ml-1 icon-size-4" [svgIcon]="'mat_solid:person_add_alt_1'"></mat-icon>
                         </span>
                     </a>
+
+                    <div class="flex-auto"></div>
+
+                    @if (persons.length > 0){
+                        @if (groupedAction) {
+                            <a mat-stroked-button
+                               class="h-8 min-h-8"
+                               [matMenuTriggerFor]="groupActionMenu">
+                        <span class="inline-flex items-center text-sm">
+                            <span>Action groupée</span>
+                            <mat-icon class="ml-1 icon-size-4" [svgIcon]="'heroicons_solid:chevron-down'"></mat-icon>
+                        </span>
+                            </a>
+                        }
+
+                        <mat-slide-toggle class="example-margin"
+                                          matTooltip="Action groupée?"
+                                          [checked]="groupedAction"
+                                          (change)="groupedAction = $event.checked">
+                        </mat-slide-toggle>
+                    }
+
+
+                    <mat-menu #groupActionMenu="matMenu" [xPosition]="'before'">
+                        <button mat-menu-item >
+                            <mat-icon class="icon-size-4" [svgIcon]="'heroicons_outline:home'"></mat-icon>
+                            <span>Affecter à une chambre</span>
+                        </button>
+                        <button mat-menu-item >
+                            <mat-icon class="icon-size-4" [svgIcon]="'heroicons_outline:tag'"></mat-icon>
+                            <span>Ajouter un rôle</span>
+                        </button>
+                    </mat-menu>
                 </div>
 
-                @for (p of persons; track p) {
-                    <div class="mx-6 mb-4 mt-6 flex items-center sm:mx-8">
-                        <mat-icon class="mr-4 h-6 w-6 rounded-full" [svgIcon]="'heroicons_outline:user-group'"></mat-icon>
-                        <div class="flex flex-col">
-                            <span class="font-semibold leading-none">
-                                {{ (((p?.gender == 'F')?'Mme ':(p?.gender == 'M')?'Mr ':'') + p?.firstName + ' ' + p?.lastName) }}
-                            </span>
-                            <span class="text-secondary mt-1 text-sm leading-none">
-                                {{ p?.grade?.name }}
-                            </span>
+                <div class="mt-8 flex flex-col divide-y border-b border-t">
+                    @for (p of persons; track p.id) {
+                        <div class="flex flex-col py-6 sm:flex-row sm:items-center">
+                            <div class="flex items-center">
+                                @if (groupedAction) {
+                                    <mat-checkbox
+                                        class="flex h-10 min-h-10 items-center pl-1 pr-4"
+                                        [color]="'primary'"
+                                    >
+                                    </mat-checkbox>
+                                } @else {
+                                    <div class="flex h-10 w-10 flex-0 items-center justify-center overflow-hidden rounded-full">
+                                        <mat-icon class="h-full w-full object-cover" [svgIcon]="'heroicons_outline:user-group'"></mat-icon>
+                                    </div>
+                                }
+
+                                <div class="ml-4">
+                                    <div class="font-medium">
+                                        {{ (((p?.gender == 'F')?'Mme ':(p?.gender == 'M')?'Mr ':'') + p?.firstName + ' ' + p?.lastName) }}
+                                    </div>
+                                    <div class="text-secondary">
+                                        {{ p?.grade?.name }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center sm:ml-auto sm:mt-0">
+                                <div class="order-2 ml-4 sm:order-1 sm:ml-0">
+                                    <mat-form-field class="fuse-mat-dense w-56" [subscriptSizing]="'dynamic'">
+                                        <mat-select [panelClass]="'w-72 min-w-72 max-w-72 h-auto max-h-none'" disableOptionCentering #roleSelect="matSelect" placeholder="Choisir un role..">
+                                            <mat-select-trigger class="text-md">
+                                                <span>Role:</span>
+                                                <span class="ml-1 font-medium">
+                                                        {{ getRoleName(roleSelect.value) }}
+                                                </span>
+                                            </mat-select-trigger>
+                                            @for (role of roles; track role) {
+                                                <mat-option class="h-auto py-4 leading-none" [value]="role.code">
+                                                    <div class="font-medium">
+                                                        {{ role.name }}
+                                                    </div>
+                                                    <div class="text-secondary mt-1.5 whitespace-normal text-sm leading-normal">
+                                                        {{ role.description }}
+                                                    </div>
+                                                </mat-option>
+                                            }
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
+                                <div class="order-1 sm:order-2 sm:ml-3">
+                                    <button mat-icon-button (click)="unSelectPerson(p)">
+                                        <mat-icon class="text-red-800 dark:text-red-50" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <button mat-icon-button class="-mr-4 ml-auto text-red-800 dark:text-red-50 " (click)="unSelectPerson(p)">
-                            <mat-icon class="text-red-800 dark:text-red-50 icon-size-5" svgIcon="mat_solid:delete_forever" matTooltip="Retirer" ></mat-icon>
-                        </button>
-                    </div>
-                }
-
-
-
-
-
-
+                    }
+                </div>
 
 
                 <div class="flex items-end justify-end mx-3 mt-8">
