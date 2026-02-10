@@ -42,7 +42,17 @@
                         [type]="alert.type"
                         [@shake]="alert.type === 'error'"
                     >
-                        {{ alert.message }}
+                        <div class="flex flex-col">
+                            <span class="font-bold mb-2">Veuillez corriger les points suivants :</span>
+
+                            <ul class="list-disc list-inside space-y-1">
+                                @for (msg of alert.message.split('|'); track msg) {
+                                    <li class="text-sm leading-relaxed">
+                                        {{ msg.trim() }}
+                                    </li>
+                                }
+                            </ul>
+                        </div>
                     </fuse-alert>
                 }
 
@@ -74,6 +84,18 @@
                         <mat-error>
                             Champ obligatoire
                         </mat-error>
+                    }
+                </mat-form-field>
+
+                <mat-form-field class="w-full text-2xl" [appearance]="'outline'">
+                    <mat-label>Categorie</mat-label>
+                    <mat-select formControlName="category">
+                        @for (c of categories; track c.code) {
+                            <mat-option [value]="c.code">{{c.name}}</mat-option>
+                        }
+                    </mat-select>
+                    @if (form.get('category').hasError('required') && form.get('category').touched) {
+                        <mat-error>La catégorie est obligatoire</mat-error>
                     }
                 </mat-form-field>
 
@@ -114,7 +136,7 @@
                         @if (persons.length > selectedGroupedPersons.length){
                             <button mat-menu-item (click)="selectAll(true)">
                                 <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:done_all'"></mat-icon>
-                                <span>sélectionnertout </span>
+                                <span>sélectionner tout </span>
                             </button>
                         } @else {
                             <button mat-menu-item (click)="selectAll(false)">
@@ -176,8 +198,12 @@
                                 @if (p?.room) {
                                     <div class="mt-6 flex items-center space-x-6 lg:mt-0">
                                         <div class="flex flex-col items-center">
-                                            <span class="font-bold">{{p?.room?.code}}</span>
-                                            <span class="text-secondary text-sm font-medium">{{p?.room?.roomType?.type}}</span>
+                                            <span class="font-bold">
+                                                {{p?.room?.code}}
+                                            </span>
+                                            <span class="text-secondary text-sm font-medium">
+                                                {{p?.room?.roomType?.type}}
+                                            </span>
                                         </div>
                                     </div>
 

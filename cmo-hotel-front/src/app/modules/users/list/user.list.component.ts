@@ -10,11 +10,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDialog } from '@angular/material/dialog';
 import { HighlightPipe } from '../../../../@fuse/pipes/HighlightPipe';
 import { ApiUsersService } from '../api.users.service';
-import { NgClass, SlicePipe } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { UserUpdateModel } from '../update-model/user-update';
 import { UserUpdateMdpModel } from '../update-mdp-model/user.update-mdp.model';
 import { AssignRolesModel } from '../assign-roles-model/assign-roles-model';
-import { AssignSitesModel } from '../assign-sites-model/assign-sites-model';
 import { HasPermissionDirective } from '../../../core/auth/HasPermissionDirective';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
 
@@ -34,7 +33,6 @@ import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
         NgClass,
         RouterLink,
         HasPermissionDirective,
-        SlicePipe,
     ],
 })
 export class UserListComponent implements OnInit {
@@ -44,7 +42,6 @@ export class UserListComponent implements OnInit {
         'username',
         'fullName',
         'roles',
-        'sites',
         'status',
         'action',
     ];
@@ -117,17 +114,6 @@ export class UserListComponent implements OnInit {
     raiseRolesAssignModel(user) {
         this._matDialog
             .open(AssignRolesModel, { data: { user: user } })
-            .afterClosed()
-            .subscribe((value) => {
-                if (value?.reload) {
-                    this.loadUsers();
-                }
-            });
-    }
-
-    raiseSitesAssignModel(user) {
-        this._matDialog
-            .open(AssignSitesModel, { data: { user: user } })
             .afterClosed()
             .subscribe((value) => {
                 if (value?.reload) {

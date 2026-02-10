@@ -1,23 +1,20 @@
 import {
     AfterViewInit,
-    ChangeDetectorRef,
     Component,
-    OnDestroy,
     OnInit,
     ViewChild,
     ViewEncapsulation,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { finalize, Subject, takeUntil } from 'rxjs';
+import { finalize } from 'rxjs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatDrawer, MatDrawerContainer, MatSidenavModule } from '@angular/material/sidenav';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatTabsModule } from '@angular/material/tabs';
 import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../../../@fuse/services/confirmation';
 import { Toastr } from '../../../../../core/service/toastr.service';
@@ -126,9 +123,9 @@ export class RoomTypesListComponent implements OnInit, AfterViewInit {
             .open(RoomPriceManageModel, { data: { type: type },disableClose: true })
             .afterClosed()
             .subscribe(data=>{
-                if (data?.reload) {
+                //if (data?.reload) {
                     this.loadTypes();
-                }
+                //}
             });
     }
 

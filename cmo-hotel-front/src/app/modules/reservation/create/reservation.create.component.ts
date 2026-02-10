@@ -1,18 +1,17 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import {
+    FormsModule,
     ReactiveFormsModule,
     UntypedFormBuilder,
     UntypedFormGroup,
     Validators,
 } from '@angular/forms';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatOption, MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
 import { FuseAlertComponent, FuseAlertType } from '../../../../@fuse/components/alert';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { Toastr } from '../../../core/service/toastr.service';
@@ -20,16 +19,14 @@ import { ApiReservationService } from '../api.reservation.service';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { fuseAnimations } from '../../../../@fuse/animations';
-import { APP_MODULES } from '../../../core/data/app-modules';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { UtilsService } from '../../../core/service/utils.service';
-import { PavillonCreateModel } from '../../pavillon/create/pavillon-create.model';
 import { MatDialog } from '@angular/material/dialog';
 import { PersonManageModel } from '../dialog-manage-person/person-manage.model';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltip } from '@angular/material/tooltip';
-import { JsonPipe } from '@angular/common';
 import { AssignRoomsModel } from '../room-assign/assign-rooms.model';
+import {finalize} from "rxjs";
 
 @Component({
     selector: 'reservation-add',
@@ -52,6 +49,7 @@ import { AssignRoomsModel } from '../room-assign/assign-rooms.model';
         MatOption,
         MatSelectModule,
         MatSlideToggleModule,
+        FormsModule,
     ],
 })
 export class ReservationCreateComponent implements OnInit {
@@ -71,7 +69,7 @@ export class ReservationCreateComponent implements OnInit {
     durationInDays: number | null = null;
     persons: any[] = [];
 
-    groupedAction:boolean = false;
+    groupedAction: boolean = false;
     selectedGroupedPersons = [];
 
     roles = [
@@ -101,6 +99,12 @@ export class ReservationCreateComponent implements OnInit {
         },
     ];
 
+    categories = [
+        { code: 'SINGLE', name: 'SINGLE' },
+        { code: 'DELEGATION', name: 'DELEGATION' },
+        { code: 'FAMILY', name: 'FAMILY' },
+    ];
+
     /**
      * Constructor
      */
@@ -116,6 +120,7 @@ export class ReservationCreateComponent implements OnInit {
 
     ngOnInit(): void {
         this.form = this._formBuilder.group({
+            category: [null, [Validators.required]],
             dateRange: this._formBuilder.group(
                 {
                     start: [null, [Validators.required]],
@@ -131,7 +136,10 @@ export class ReservationCreateComponent implements OnInit {
             if (val.start && val.end) {
                 this.startAt = val.start;
                 this.endAt = val.end;
-                this.calculateDuration();
+                this.durationInDays = this._utilsService.calculateDuration(
+                    this.startAt,
+                    this.endAt
+                );
             }
         });
 
@@ -140,60 +148,88 @@ export class ReservationCreateComponent implements OnInit {
         }
     }
 
-    calculateDuration() {
-        console.log('calculate days', this.startAt, this.endAt);
+    save(){
+        this.showAlert = false; // Reset l'alerte
+        const errors: string[] = [];
 
-        if (this.startAt && this.endAt) {
-            // Conversion en objets Date valides
-            const start = new Date(this.startAt);
-            const end = new Date(this.endAt);
-
-            // Calcul de la différence en millisecondes
-            const diffInMs = end.getTime() - start.getTime();
-
-            // Conversion Ms -> Jours
-            // (1000ms * 60s * 60m * 24h) = 86,400,000
-            const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
-
-            // On arrondit et on ajoute +1 pour inclure le jour de départ
-            this.durationInDays = Math.round(diffInDays) + 1;
-
-            console.log('Nombre de jours:', this.durationInDays);
-        } else {
-            this.durationInDays = null;
+        // 1. Validation des dates
+        const dateRange = this.form.get('dateRange')?.value;
+        if (!dateRange?.start || !dateRange?.end) {
+            errors.push("Veuillez sélectionner une période valide (Date début et fin).");
         }
-    }
 
-    save() {
-        // Do nothing if the form is invalid
-        if (this.form.invalid) {
+        // 2. Validation de la liste des personnes
+        if (this.persons.length === 0) {
+            errors.push("Veuillez ajouter au moins un invité.");
+        }
+
+        // 3. Validation des détails de chaque personne (ID, Room, Role)
+        this.persons.forEach((p, index) => {
+            const name = `${p.firstName} ${p.lastName}`;
+
+            if (!p.id) {
+                errors.push(`Données d'identité manquantes pour l'invité n°${index + 1}.`);
+            }
+            if (!p.role) {
+                errors.push(`Le rôle n'a pas été défini pour ${name}.`);
+            }
+            if (!p.room || !p.room.id) {
+                errors.push(`La chambre n'a pas été affectée pour ${name}.`);
+            }
+        });
+
+        // 4. Affichage des messages d'erreur si présents
+        if (errors.length > 0) {
+            this.alert = {
+                type: 'error',
+                message: errors.join('|') // Ou une liste HTML si votre composant d'alerte le supporte
+            };
+            this.showAlert = true;
+
+            // Optionnel : Scroll vers l'alerte
+            setTimeout(() => {
+                const alertElement = document.querySelector('fuse-alert');
+                if (alertElement) {
+                    alertElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 0);
             return;
         }
 
-        const dateRange = this.form.get('dateRange').value;
-
+        // 5. Si tout est valide, construction du Payload
         const reservationData = {
-            startDate: dateRange.start,
-            endDate: dateRange.end,
+            startDate: this._utilsService.convertToDate(dateRange.start),
+            endDate: this._utilsService.convertToDate(dateRange.end),
+            category:  this.form.get('category')?.value,
             persons: this.persons.map(p => ({
-                id: p.id,
-                role: p.role || 'FAMILY', // Fallback
-                roomId: p.room?.id || null
+                personId: p.id,
+                role: p.role,
+                roomId: p.room.id
             }))
         };
 
-        console.log('PAYLOAD:', reservationData);
+        console.log('PAYLOAD VALIDE:', reservationData);
 
-        //console.log('OBJET FINAL À ENREGISTRER :', reservationData);
-        return;
-
-        // Disable the form
-        this.form.disable();
+        // Démarrage de la sauvegarde réelle
         this.isSaving = true;
-        //const payload = {...this.form.value, permissions: this.getFinalSelection()};
-        // Hide the alert
-        this.showAlert = false;
-        console.log('SAVED!!!');
+        this.form.disable();
+
+        // Appel au service
+        this._apiReservationService.create(reservationData)
+            .pipe(finalize(() => {
+                this.isSaving = false;
+                this.form.enable();
+            }))
+            .subscribe({
+                next: (response) => {
+                    this._toastr.success('Réservation enregistrée avec succès');
+                    this._router.navigate(['../'], { relativeTo: this._activeRoute });
+                },
+                error: (err) => {
+                    this.alert = { type: 'error', message: 'Erreur lors de la sauvegarde.' };
+                    this.showAlert = true;
+                }
+            });
     }
 
     raisePersonAddDialog() {
@@ -214,31 +250,34 @@ export class ReservationCreateComponent implements OnInit {
     raiseRoomAssignDialog() {
         this._matDialog
             .open(AssignRoomsModel, {
-                data: { },
+                data: {},
                 disableClose: true,
             })
             .afterClosed()
             .subscribe((result) => {
-                    if (result && result.room) {
+                if (result && result.room) {
+                    // 1. Get the IDs of currently selected persons for easy lookup
+                    const selectedIds = this.selectedGroupedPersons.map(
+                        (p) => p.id
+                    );
 
-                        // 1. Get the IDs of currently selected persons for easy lookup
-                        const selectedIds = this.selectedGroupedPersons.map(p => p.id);
+                    // 2. Map through the main persons array to update the room
+                    this.persons = this.persons.map((person) => {
+                        if (selectedIds.includes(person.id)) {
+                            return {
+                                ...person,
+                                room: result.room, // Assign the room object/ID
+                            };
+                        }
+                        return person;
+                    });
 
-                        // 2. Map through the main persons array to update the room
-                        this.persons = this.persons.map(person => {
-                            if (selectedIds.includes(person.id)) {
-                                return {
-                                    ...person,
-                                    room: result.room // Assign the room object/ID
-                                };
-                            }
-                            return person;
-                        });
-
-                        // 3. Optional: Provide feedback and reset UI
-                        this._toastr.success(`${this.selectedGroupedPersons.length} personne(s) affectée(s) à la chambre.`);
-                        //this.selectedGroupedPersons = [];
-                        //this.groupedAction = false;
+                    // 3. Optional: Provide feedback and reset UI
+                    this._toastr.success(
+                        `${this.selectedGroupedPersons.length} personne(s) affectée(s) à la chambre.`
+                    );
+                    //this.selectedGroupedPersons = [];
+                    //this.groupedAction = false;
                 }
             });
     }
@@ -253,14 +292,16 @@ export class ReservationCreateComponent implements OnInit {
     getRoleName(code: string): string {
         if (!code) return 'Choisir...';
         // Cherche le rôle dans votre tableau roles et retourne son nom
-        return this.roles.find(r => r.code === code)?.name || code;
+        return this.roles.find((r) => r.code === code)?.name || code;
     }
 
     toggleSelection(person: any, checked: boolean): void {
         if (checked) {
             this.selectedGroupedPersons.push(person);
         } else {
-            this.selectedGroupedPersons = this.selectedGroupedPersons.filter(p => p.id !== person.id);
+            this.selectedGroupedPersons = this.selectedGroupedPersons.filter(
+                (p) => p.id !== person.id
+            );
         }
     }
 
@@ -268,8 +309,12 @@ export class ReservationCreateComponent implements OnInit {
         if (this.selectedGroupedPersons.length === 0) return;
 
         // Update the role in the main persons array
-        this.persons.forEach(p => {
-            if (this.selectedGroupedPersons.find(selected => selected.id === p.id)) {
+        this.persons.forEach((p) => {
+            if (
+                this.selectedGroupedPersons.find(
+                    (selected) => selected.id === p.id
+                )
+            ) {
                 p.role = roleCode;
             }
         });
@@ -282,14 +327,12 @@ export class ReservationCreateComponent implements OnInit {
     }
 
     isPersonSelected(person: any): boolean {
-        return this.selectedGroupedPersons.some(p => p.id === person.id);
+        return this.selectedGroupedPersons.some((p) => p.id === person.id);
     }
 
     selectAll(s) {
-        if (s){
-            this.selectedGroupedPersons = this.persons.map(p => p);
-        } else
-            this.selectedGroupedPersons = [];
-
+        if (s) {
+            this.selectedGroupedPersons = this.persons.map((p) => p);
+        } else this.selectedGroupedPersons = [];
     }
 }

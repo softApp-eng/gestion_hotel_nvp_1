@@ -1,96 +1,320 @@
-<div class="flex min-w-0 flex-auto flex-col">
-    <!-- Header -->
-    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
-        <div class="min-w-0 flex-1">
-            <!-- Breadcrumbs -->
-            <div class="flex flex-wrap items-center font-medium">
-                <div>
-                    <a class="whitespace-nowrap text-primary-500">Reservations</a>
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-hidden">
+    <mat-drawer-container class="bg-card h-full flex-auto dark:bg-transparent">
+        <!-- Drawer -->
+        <mat-drawer
+            class="w-full dark:bg-gray-900 sm:w-100"
+            [mode]="drawerMode"
+            [opened]="false"
+            [position]="'end'"
+            [disableClose]="true"
+            #matDrawer
+        >
+            <div class="flex flex-auto flex-col p-6 md:p-8">
+                <!-- Close button -->
+                <div class="flex items-center justify-end">
+                    <a mat-icon-button (click)="closeDrawer()">
+                        <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+                    </a>
+                </div>
+
+                <!-- Name & Type -->
+                <div class="flex items-center mt-4">
+                    <mat-icon class="icon-size-6 mr-3" [svgIcon]="'mat_outline:grade'"></mat-icon>
+                    <div class="text-lg font-medium leading-6">
+                        Categorie
+                    </div>
+                </div>
+                <div class="mt-2 flex flex-col items-start">
+                    <div class="mt-1 rounded px-1.5 text-sm font-semibold leading-5 text-white" [ngClass]="{
+                                                            'bg-red-800  dark:bg-red-600 ':
+                                                                selectedItem?.grade?.category === 'OFFICIERS_GENERAUX' || selectedItem?.grade?.category === 'OFFICIERS_GENERAUX_COLONEL_MAJOR',
+                                                            'bg-green-800   dark:bg-green-600 dark:text-green-50':
+                                                                selectedItem?.grade?.category === 'OFFICIER_SUPERIEUR',
+                                                            'bg-blue-800  dark:bg-blue-600 dark:text-blue-50':
+                                                                selectedItem?.grade?.category === 'OFFICIER_SUBALTERNE',
+                                                            'bg-yellow-800  dark:bg-yellow-600 dark:text-yellow-50':
+                                                                selectedItem?.grade?.category === 'CIVIL',
+                                                            'bg-purple-800  dark:bg-purple-600 dark:text-purple-50':
+                                                                selectedItem?.grade?.category === 'SOUS_OFFICIER'
+                                                        }">
+
+                        {{ selectedItem?.grade?.category }}
+                    </div>
+                </div>
+
+                <div class="flex items-center mt-4">
+                    <mat-icon class="icon-size-6 mr-3" [svgIcon]="'heroicons_outline:briefcase'"></mat-icon>
+                    <div class="text-lg font-medium leading-6">
+                        Informations personnelles
+                    </div>
+                </div>
+
+                <div class="mt-4 flex flex-col font-medium">
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Grade</div>
+                        <div>{{selectedItem?.grade?.name | titlecase}}</div>
+                    </div>
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Nom</div>
+                        <div>{{ selectedItem?.firstName }}</div>
+                    </div>
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Prénom</div>
+                        <div>{{ selectedItem?.lastName }}</div>
+                    </div>
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Sexe</div>
+                        <div>{{ (selectedItem?.gender == 'M')?'Masculin':(selectedItem?.gender == 'F')?'Féminin':'' }}</div>
+                    </div>
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Date de naissance</div>
+                        <div>{{ selectedItem?.birthDate }}</div>
+                    </div>
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Téléphone</div>
+                        <div>{{ selectedItem?.phoneNumber }}</div>
+                    </div>
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Nationalité</div>
+                        <div>{{ selectedItem?.nationality }}</div>
+                    </div>
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Langue</div>
+                        <div>{{ selectedItem?.language }}</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center  mt-4">
+                    <mat-icon class="icon-size-6 mr-3" [svgIcon]="'mat_outline:credit_card'"></mat-icon>
+                    <div class="text-lg font-medium leading-6">
+                        Identité
+                    </div>
+                </div>
+
+                <div class="mt-4 flex flex-col font-medium">
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Cine/Passport</div>
+                        <div>{{ selectedItem?.identity }}</div>
+                    </div>
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Matricule</div>
+                        <div>{{ selectedItem?.matricule }}</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center mt-4">
+                    <mat-icon class="icon-size-6 mr-3" [svgIcon]="'mat_outline:location_on'"></mat-icon>
+                    <div class="text-lg font-medium leading-6">
+                        Position
+                    </div>
+                </div>
+                <div class="mt-4 flex flex-col font-medium">
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Unité</div>
+                        <div>{{ selectedItem?.unite }}</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center mt-4">
+                    <mat-icon class="icon-size-6 mr-3" [svgIcon]="'mat_outline:lightbulb'"></mat-icon>
+                    <div class="text-lg font-medium leading-6">
+                        Observation
+                    </div>
+                </div>
+                <div class="mt-4 flex flex-col font-medium">
+                    <div class="flex items-center justify-between py-3">
+                        <div>{{ selectedItem?.observation }}</div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="mt-8 grid w-full grid-cols-2 gap-4">
+                    <button class="flex-auto" mat-flat-button [color]="'primary'" *hasPermission="[APP_PERMISSIONS.PERSON_UPDATE]" [routerLink]="'./edit/' + selectedItem?.id">
+                        Modifier
+                    </button>
+                    <button *hasPermission="[APP_PERMISSIONS.PERSON_DELETE]" class="flex-auto" mat-stroked-button>Supprimer</button>
                 </div>
             </div>
-            <!-- Title -->
-            <div class="mt-2">
-                <div class="flex items-center">
-                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'heroicons_solid:clipboard-document-check'"></mat-icon>
-                    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
-                        Tableau
-                    </h2>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Main -->
-    <div class="flex-auto p-4 sm:p-6">
-        <div class="w-full bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+        </mat-drawer>
 
-            <div class="flex items-start justify-between">
-                <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded min-w-64">
-                    <mat-icon class="icon-size-5" matPrefix [svgIcon]="'search'"></mat-icon>
-                    <input
-                        matInput
-                        #input
-                        [matTooltip]="'Chercher'"
-                        [autocomplete]="'off'"
-                        [placeholder]="'Chercher'">
-                </mat-form-field>
-                <button class="ml-4" mat-flat-button [color]="'primary'" [routerLink]="'./create'" >
-                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
-                    <span class="ml-2 mr-1">Ajouter</span>
-                </button>
-            </div>
-
-                <table mat-table [dataSource]="dataSource" >
-
-                    <ng-container matColumnDef="name" >
-                        <th mat-header-cell  *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 15%"> Nom </th>
-                        <td mat-cell *matCellDef="let row">
-                            <p class="font-semibold" [innerHTML]="row?.title | highlight:key"></p>
-                        </td>
-                    </ng-container>
-
-                    <ng-container matColumnDef="action">
-                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 5%">  </th>
-                        <td mat-cell *matCellDef="let row">
-                            <button mat-icon-button [matMenuTriggerFor]="menuAction">
-                                <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
-                            </button>
-                            <mat-menu #menuAction="matMenu" >
-
-                                <button mat-menu-item >
-                                    <mat-icon svgIcon="edit" ></mat-icon>
-                                    <span>Dupliquer</span>
-                                </button>
-
-                            </mat-menu>
-                        </td>
-                    </ng-container>
-
-                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                    <tr mat-row *matRowDef="let element; columns: displayedColumns;" class="example-element-row"></tr>
-
-                    <tr class="mat-row" *matNoDataRow>
-                        <td class="mat-cell" [attr.colspan]="displayedColumns.length">
-
-                            <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
-                                @if (!isLoading){
-                                    Aucune donnée trouvée
-                                } @else {
-                                    Chargement
-                                }
+        <mat-drawer-content class="flex flex-col bg-gray-100 dark:bg-transparent">
+            <!-- Main -->
+            <div class="flex flex-auto flex-col">
+                <!-- Header -->
+                <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+                    <div class="min-w-0 flex-1">
+                        <!-- Breadcrumbs -->
+                        <div class="flex flex-wrap items-center font-medium">
+                            <div>
+                                <a class="whitespace-nowrap text-primary-500">Réservations</a>
                             </div>
-                        </td>
-                    </tr>
-                </table>
-            <mat-paginator
-                class="w-full border-b dark:bg-transparent"
-                showFirstLastButtons="true"
-                #paginator
-                [length]="totalRows"
-                [pageIndex]="currentPage"
-                [pageSize]="10"
-                [pageSizeOptions]="[10, 20, 50]"
-            ></mat-paginator>
+                        </div>
+                        <!-- Title -->
+                        <div class="mt-2">
+                            <div class="flex items-center">
+                                <mat-icon class="icon-size-25 mr-4" [svgIcon]="'heroicons-solid:clipboard-do'"></mat-icon>
+                                <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+                                    Réservations
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items list -->
+                <div class="space-y-8 p-6 md:p-8">
+                    <div class="bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+
+                        <div class="flex flex-0 flex-col sm:flex-row sm:items-center sm:justify-between">
+                            <div class="min-w-0 flex-1">
+                                <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded min-w-64">
+                                    <mat-icon class="icon-size-5" matPrefix [svgIcon]="'search'"></mat-icon>
+                                    <input
+                                        matInput
+                                        #inputKey
+                                        matTooltip="chercher"
+                                        [autocomplete]="'off'"
+                                        (keyup.enter)="key = inputKey.value;search()"
+                                        [placeholder]="'chercher'">
+                                </mat-form-field>
+                            </div>
+                            <!-- Actions -->
+                            <div class="flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                                <button mat-flat-button [color]="'primary'" *hasPermission="[APP_PERMISSIONS.PERSON_CREATE]" [routerLink]="'./create'">
+                                    <mat-icon class="icon-size-4" [svgIcon]="'heroicons_mini:plus'"></mat-icon>
+                                    <span class="ml-2">Ajouter</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <table mat-table [dataSource]="dataSource" >
+
+                            <ng-container matColumnDef="info">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 2%">  </th>
+                                <td mat-cell *matCellDef="let row">
+                                    <button mat-icon-button (click)="openDrawer(row)" matTooltip="Plus d'informations">
+                                        @if (selectedItem?.id == row.id && this.matDrawer.opened) {
+                                            <mat-icon [color]="'primary'" class="icon-size-5 " [svgIcon]=" 'heroicons_outline:chevron-double-right' " ></mat-icon>
+                                        } @else {
+                                            <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_outline:information-circle' " ></mat-icon>
+                                        }
+
+                                    </button>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="code">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> NUM </th>
+                                <td mat-cell *matCellDef="let row">
+                                    <p [innerHTML]="row?.details.code"></p>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="checkin">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> CHECK-IN </th>
+                                <td mat-cell *matCellDef="let row">
+                                    @if (row?.checkin) {
+                                        {{row.checkin | date:'dd/MM/yyyy':'':'en-US'}}
+                                    } @else {
+                                        <span class="text-md font-medium text-blue-400 italic">
+                                        {{row.details.plannedStart | date:'dd/MM/yyyy':'':'en-US'}}
+                                    </span>
+                                    }
+
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="checkout">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> CHECK-OUT </th>
+                                <td mat-cell *matCellDef="let row">
+                                    <p [innerHTML]="row?.checkout"></p>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="room">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> CHAMBRE </th>
+                                <td mat-cell *matCellDef="let row" >
+                                    <p [innerHTML]="row?.room?.name | highlight:key"></p>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="person">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> INVITE </th>
+                                <td mat-cell *matCellDef="let row" >
+                                    <p [innerHTML]="row?.person?.firstName | highlight:key"></p>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="status">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> STATUT </th>
+                                <td mat-cell *matCellDef="let row" >
+                                    <span
+                                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide"
+                                        [ngClass]="{
+                                            'bg-red-200 text-red-800 dark:bg-red-600 dark:text-red-50':
+                                                row.status === 'CANCELED',
+                                            'bg-green-200 text-green-800 dark:bg-green-600 dark:text-green-50':
+                                                row.status === 'CONFIRMED',
+                                            'bg-blue-200 text-blue-800 dark:bg-blue-600 dark:text-blue-50':
+                                                row.status === 'PENDING',
+                                        }"
+                                    >
+                                        <span class="whitespace-nowrap leading-relaxed">
+                                            {{
+                                                row?.status === 'PENDING' ? 'En cours':
+                                                    row?.status === 'CONFIRMED' ? 'Confirmée':
+                                                    row?.status === 'CANCELED' ? 'Annulée':''
+
+                                            }}
+                                        </span>
+                                    </span>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="action">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 2%">  </th>
+                                <td mat-cell *matCellDef="let row">
+                                    <button mat-icon-button [matMenuTriggerFor]="menuAction">
+                                        <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
+                                    </button>
+                                    <mat-menu #menuAction="matMenu" >
+                                        <button mat-menu-item [routerLink]="'./edit/' + row?.id" >
+                                            <mat-icon svgIcon="edit" ></mat-icon>
+                                            <span>Modifier</span>
+                                        </button>
+                                    </mat-menu>
+                                </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{ 'bg-gray-100': selectedItem?.id === row.id && matDrawer.opened }"></tr>
+
+                            <tr class="mat-row" *matNoDataRow>
+                                <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+
+                                    <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                                        @if (!isLoading){
+                                            Aucune ligne trouvée
+                                        } @else {
+                                            Chargement...
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                        <mat-paginator
+                            [ngClass]="{ 'pointer-events-none': isLoading }"
+                            showFirstLastButtons="true"
+                            [length]="totalRows"
+                            [pageIndex]="currentPage"
+                            [pageSize]="pageSize"
+                            [pageSizeOptions]="pageSizeOptions"
+                            (page)="pageChanged($event)"
+                        ></mat-paginator>
+                    </div>
+                </div>
             </div>
-    </div>
+        </mat-drawer-content>
+    </mat-drawer-container>
 </div>
