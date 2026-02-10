@@ -105,20 +105,42 @@
                         <mat-slide-toggle class="example-margin"
                                           matTooltip="Action groupée?"
                                           [checked]="groupedAction"
-                                          (change)="groupedAction = $event.checked">
+                                          (change)="selectedGroupedPersons = [];groupedAction = $event.checked">
                         </mat-slide-toggle>
                     }
 
 
                     <mat-menu #groupActionMenu="matMenu" [xPosition]="'before'">
-                        <button mat-menu-item >
-                            <mat-icon class="icon-size-4" [svgIcon]="'heroicons_outline:home'"></mat-icon>
+                        @if (persons.length > selectedGroupedPersons.length){
+                            <button mat-menu-item (click)="selectAll(true)">
+                                <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:done_all'"></mat-icon>
+                                <span>sélectionnertout </span>
+                            </button>
+                        } @else {
+                            <button mat-menu-item (click)="selectAll(false)">
+                                <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:remove_done'"></mat-icon>
+                                <span>désélectionner tout</span>
+                            </button>
+                        }
+
+                        <button mat-menu-item (click)="raiseRoomAssignDialog()" [disabled]="selectedGroupedPersons.length == 0">
+                            <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:hotel'"></mat-icon>
                             <span>Affecter à une chambre</span>
                         </button>
-                        <button mat-menu-item >
-                            <mat-icon class="icon-size-4" [svgIcon]="'heroicons_outline:tag'"></mat-icon>
+                        <button mat-menu-item [matMenuTriggerFor]="rolesMenu" [disabled]="selectedGroupedPersons.length == 0" >
+                            <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:person_pin'"></mat-icon>
                             <span>Ajouter un rôle</span>
                         </button>
+                    </mat-menu>
+
+                    <mat-menu #rolesMenu="matMenu" [xPosition]="'before'">
+                        @for (r of roles; track r.code) {
+                            <button mat-menu-item (click)="assignRole(r.code)" >
+                                <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:person_pin'"></mat-icon>
+                                <span>{{r.name}}</span>
+                            </button>
+                        }
+
                     </mat-menu>
                 </div>
 
@@ -130,6 +152,8 @@
                                     <mat-checkbox
                                         class="flex h-10 min-h-10 items-center pl-1 pr-4"
                                         [color]="'primary'"
+                                        [checked]="isPersonSelected(p)"
+                                        (change)="toggleSelection(p, $event.checked)"
                                     >
                                     </mat-checkbox>
                                 } @else {
@@ -148,13 +172,32 @@
                                 </div>
                             </div>
                             <div class="mt-4 flex items-center sm:ml-auto sm:mt-0">
+                                <!-- room -->
+                                @if (p?.room) {
+                                    <div class="mt-6 flex items-center space-x-6 lg:mt-0">
+                                        <div class="flex flex-col items-center">
+                                            <span class="font-bold">{{p?.room?.code}}</span>
+                                            <span class="text-secondary text-sm font-medium">{{p?.room?.roomType?.type}}</span>
+                                        </div>
+                                    </div>
+
+
+                                } @else {
+                                    <div class="mt-6 flex items-center space-x-6 lg:mt-0">
+                                        <div class="flex flex-col items-center">
+                                            <span class="text-sm font-medium text-red-400 italic">Aucune chambre affectée</span>
+                                        </div>
+                                    </div>
+                                }
+                                <div class="mx-8 hidden h-8 border-l-2 lg:flex"></div>
+
                                 <div class="order-2 ml-4 sm:order-1 sm:ml-0">
                                     <mat-form-field class="fuse-mat-dense w-56" [subscriptSizing]="'dynamic'">
-                                        <mat-select [panelClass]="'w-72 min-w-72 max-w-72 h-auto max-h-none'" disableOptionCentering #roleSelect="matSelect" placeholder="Choisir un role..">
+                                        <mat-select [(value)]="p.role" [panelClass]="'w-72 min-w-72 max-w-72 h-auto max-h-none'" disableOptionCentering #roleSelect="matSelect" placeholder="Choisir un role..">
                                             <mat-select-trigger class="text-md">
                                                 <span>Role:</span>
                                                 <span class="ml-1 font-medium">
-                                                        {{ getRoleName(roleSelect.value) }}
+                                                        {{ getRoleName(p.role) }}
                                                 </span>
                                             </mat-select-trigger>
                                             @for (role of roles; track role) {

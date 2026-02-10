@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import med.goeasy.cmohotel.persistence.entity.enums.EGuestRole;
+import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -13,7 +14,6 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -29,10 +29,6 @@ public class Reservation {
 
     @ManyToOne
     private ReservationDetails details;
-
-    @CreatedDate
-    private LocalDateTime createdDate;
-    @LastModifiedDate
 
     @ManyToOne
     private Person person;

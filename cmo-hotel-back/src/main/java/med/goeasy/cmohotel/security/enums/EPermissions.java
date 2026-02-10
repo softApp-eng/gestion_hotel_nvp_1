@@ -62,6 +62,12 @@ public enum EPermissions {
     ROOM_PRICE_SELECT_ONE(EPermissionsModule.ROOM, "price:one", "charger un price de chambre", EPermissionsGroup.READ,true,""),
     ROOM_PRICE_DELETE(EPermissionsModule.ROOM, "price:delete", "supprimer un price de chambre", EPermissionsGroup.DELETE,true,""),
 
+    // RESERVATIONS
+    RESERVATION_CREATE(EPermissionsModule.RESERVATION, "reservation:create", "Créer une réservation", EPermissionsGroup.CREATE,true,""),
+    RESERVATION_LIST(EPermissionsModule.RESERVATION, "reservation:list", "lister les réservations", EPermissionsGroup.READ,true,""),
+
+
+
     ;
 
 

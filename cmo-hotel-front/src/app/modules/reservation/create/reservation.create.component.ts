@@ -29,6 +29,7 @@ import { PersonManageModel } from '../dialog-manage-person/person-manage.model';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltip } from '@angular/material/tooltip';
 import { JsonPipe } from '@angular/common';
+import { AssignRoomsModel } from '../room-assign/assign-rooms.model';
 
 @Component({
     selector: 'reservation-add',
@@ -71,6 +72,7 @@ export class ReservationCreateComponent implements OnInit {
     persons: any[] = [];
 
     groupedAction:boolean = false;
+    selectedGroupedPersons = [];
 
     roles = [
         {
@@ -168,6 +170,23 @@ export class ReservationCreateComponent implements OnInit {
             return;
         }
 
+        const dateRange = this.form.get('dateRange').value;
+
+        const reservationData = {
+            startDate: dateRange.start,
+            endDate: dateRange.end,
+            persons: this.persons.map(p => ({
+                id: p.id,
+                role: p.role || 'FAMILY', // Fallback
+                roomId: p.room?.id || null
+            }))
+        };
+
+        console.log('PAYLOAD:', reservationData);
+
+        //console.log('OBJET FINAL À ENREGISTRER :', reservationData);
+        return;
+
         // Disable the form
         this.form.disable();
         this.isSaving = true;
@@ -192,6 +211,38 @@ export class ReservationCreateComponent implements OnInit {
             });
     }
 
+    raiseRoomAssignDialog() {
+        this._matDialog
+            .open(AssignRoomsModel, {
+                data: { },
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((result) => {
+                    if (result && result.room) {
+
+                        // 1. Get the IDs of currently selected persons for easy lookup
+                        const selectedIds = this.selectedGroupedPersons.map(p => p.id);
+
+                        // 2. Map through the main persons array to update the room
+                        this.persons = this.persons.map(person => {
+                            if (selectedIds.includes(person.id)) {
+                                return {
+                                    ...person,
+                                    room: result.room // Assign the room object/ID
+                                };
+                            }
+                            return person;
+                        });
+
+                        // 3. Optional: Provide feedback and reset UI
+                        this._toastr.success(`${this.selectedGroupedPersons.length} personne(s) affectée(s) à la chambre.`);
+                        //this.selectedGroupedPersons = [];
+                        //this.groupedAction = false;
+                }
+            });
+    }
+
     initializeForm() {}
 
     unSelectPerson(person: any) {
@@ -203,5 +254,42 @@ export class ReservationCreateComponent implements OnInit {
         if (!code) return 'Choisir...';
         // Cherche le rôle dans votre tableau roles et retourne son nom
         return this.roles.find(r => r.code === code)?.name || code;
+    }
+
+    toggleSelection(person: any, checked: boolean): void {
+        if (checked) {
+            this.selectedGroupedPersons.push(person);
+        } else {
+            this.selectedGroupedPersons = this.selectedGroupedPersons.filter(p => p.id !== person.id);
+        }
+    }
+
+    assignRole(roleCode: string): void {
+        if (this.selectedGroupedPersons.length === 0) return;
+
+        // Update the role in the main persons array
+        this.persons.forEach(p => {
+            if (this.selectedGroupedPersons.find(selected => selected.id === p.id)) {
+                p.role = roleCode;
+            }
+        });
+
+        // Optional: Clear selection and close toggle after bulk action
+        this.selectedGroupedPersons = [];
+        this.groupedAction = false;
+
+        this._toastr.success('Rôles mis à jour pour la sélection');
+    }
+
+    isPersonSelected(person: any): boolean {
+        return this.selectedGroupedPersons.some(p => p.id === person.id);
+    }
+
+    selectAll(s) {
+        if (s){
+            this.selectedGroupedPersons = this.persons.map(p => p);
+        } else
+            this.selectedGroupedPersons = [];
+
     }
 }

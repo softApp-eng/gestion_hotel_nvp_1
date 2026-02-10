@@ -80,7 +80,7 @@ export class ReservationListComponent implements OnInit {
         this.isLoading = true;
         this.dataSource.data = [];
         this._apiReservationService
-            .search(this.key, this.currentPage, this.pageSize)
+            .search(this.currentPage, this.pageSize)
             .pipe(
                 finalize(() => {
                     this.isLoading = false;

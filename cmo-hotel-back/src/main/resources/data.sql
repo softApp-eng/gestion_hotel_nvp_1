@@ -64,7 +64,7 @@ insert into room_price (id ,room_type_id,category,price) values(19,6,'OFFICIERS_
 insert into room_price (id ,room_type_id,category,price) values(20,6,'OFFICIER_SUPERIEUR',300);
 insert into room_price (id ,room_type_id,category,price) values(21,6,'CIVIL',500);
 
-SELECT setval('public."seq-room-type"', (SELECT MAX(id) FROM room_price));
+SELECT setval('public."seq-room-price"', (SELECT MAX(id) FROM room_price));
 
 
 ------------------------------------------------------ room --------------------------------------------------------
@@ -77,7 +77,7 @@ insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean
 insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(5,2,2,'MS1','desc2','MS1','1',true,2,false);
 insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(6,2,3,'CS1','desc2','CS1','1',true,2,false);
 
-SELECT setval('public."seq-room-type"', (SELECT MAX(id) FROM room));
+SELECT setval('public."seq-room"', (SELECT MAX(id) FROM room));
 
 -- =========================================
 -- PERSON : 20 PRINCIPAUX + 40 FAMILLES

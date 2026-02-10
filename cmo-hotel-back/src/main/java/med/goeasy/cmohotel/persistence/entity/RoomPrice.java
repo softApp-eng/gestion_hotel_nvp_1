@@ -26,8 +26,8 @@ import java.time.LocalDateTime;
 public class RoomPrice {
 
     @Id
-    @GeneratedValue(generator="seq-room-type")
-    @SequenceGenerator(name="seq-room-type",sequenceName="seq-room-type", allocationSize=1)
+    @GeneratedValue(generator="seq-room-price")
+    @SequenceGenerator(name="seq-room-price",sequenceName="seq-room-price", allocationSize=1)
     private Long id;
 
     @ManyToOne(optional = false)

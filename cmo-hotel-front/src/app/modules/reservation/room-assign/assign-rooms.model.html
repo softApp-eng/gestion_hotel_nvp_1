@@ -1,0 +1,50 @@
+<div class="-m-6 flex flex-col max-h-[95vh] md:w-160 md:min-w-160 overflow-hidden">
+    <mat-toolbar class=" mat-accent h-14 min-h-14 px-2 m-0 flex-none">
+        <div class="flex items-center w-full justify-between">
+            <div class="flex items-center" >
+                <mat-icon class="icon-size-5 mr-3 text-white" [svgIcon]="'heroicons_solid:filter'"></mat-icon>
+                <span class="text-xl  text-white">{{title}}</span>
+            </div>
+            <button mat-icon-button (click)="matDialogRef.close()" aria-label="fermer" class="text-white">
+                <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
+            </button>
+        </div>
+    </mat-toolbar>
+
+    <div class="flex-auto overflow-y-auto p-6">
+        <form>
+
+            <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'" >
+                <mat-label>Pavillon</mat-label>
+                <mat-select (selectionChange)="loadRooms($event.value)">
+                    @for (p of pavillons; track p.id) {
+                        <mat-option [value]="p.id">{{p.name}}</mat-option>
+                    }
+                </mat-select>
+            </mat-form-field>
+
+            @if (rooms.length > 0){
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'" disabled="isRoomLoading">
+                    <mat-label>Chambre</mat-label>
+                    <mat-select [(ngModel)]="selectedRoom" name="selectedRoom">
+                        @for (r of rooms; track r.id) {
+                            <mat-option [value]="r">{{r.roomType?.type + ' (' + r.code + ')'}}</mat-option>
+                        }
+                    </mat-select>
+                </mat-form-field>
+            }
+
+
+            <div class="flex items-start justify-between mx-3 mt-8">
+                <button mat-stroked-button (click)="matDialogRef.close()">
+                    Annuler
+                </button>
+                <button mat-flat-button [color]="'primary'" [disabled]="!selectedRoom" (click)="saveAndClose()">
+                    Affecter
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>

@@ -12,9 +12,10 @@ public enum EPermissionsModule {
     ROLES("roles","Roles"),
     MANAGEMENT("managements","Management"),
     REPORTING("reporting","Generer des rapports"),
-    PERSON("persons","Gestion les personnes"),
-    PAVILLON("pavillons","Gestion les pavillons"),
-    ROOM("rooms","Gestion les chambres"),
+    PERSON("persons","Gestion des personnes"),
+    PAVILLON("pavillons","Gestion des pavillons"),
+    ROOM("rooms","Gestion des chambres"),
+    RESERVATION("reservations","Gestion des réservation"),
     ;
 
     private final String name;

@@ -17,9 +17,13 @@ export class ApiReservationService {
   {
   }
 
-    search(key='',page=0,size=20): Observable<any>{
-        let params = new HttpParams().set('key', key).set('page', page).set('size', size);
+    search(page=0,size=20): Observable<any>{
+        let params = new HttpParams().set('page', page).set('size', size);
         return this._httpClient.get(`${this.API_URL}/search`, { params });
+    }
+
+    create(payload): Observable<any>{
+        return this._httpClient.post(`${this.API_URL}/create`, payload);
     }
 
 }
