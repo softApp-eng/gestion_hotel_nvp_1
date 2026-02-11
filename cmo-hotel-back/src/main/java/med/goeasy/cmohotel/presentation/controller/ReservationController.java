@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import med.goeasy.cmohotel.presentation.dto.ApiResponse;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
+import med.goeasy.cmohotel.presentation.dto.reservation.ReservationDetailsResponseDto;
 import med.goeasy.cmohotel.presentation.dto.reservation.ReservationRequestDto;
 import med.goeasy.cmohotel.presentation.dto.reservation.ReservationResponseDto;
 import med.goeasy.cmohotel.service.ReservationService;
@@ -27,7 +28,7 @@ public class ReservationController {
     }
 
     @GetMapping("/search")
-    ResponseEntity<PageDto<ReservationResponseDto>> search(
+    ResponseEntity<PageDto<ReservationDetailsResponseDto>> search(
             Authentication authentication,
             //@RequestParam(defaultValue = "") String key,
             @RequestParam(defaultValue = "0") Integer page,

@@ -43,9 +43,8 @@ public class Reservation {
     private LocalDateTime checkin;
     private LocalDateTime checkout;
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private EReservationStatus status;
+    private EReservationStatus exceptionPersonStatus;
 
     // audit
     @CreatedBy

@@ -10,6 +10,7 @@ import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 import med.goeasy.cmohotel.persistence.repository.ReservationDetailsRepository;
 import med.goeasy.cmohotel.persistence.repository.ReservationRepository;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
+import med.goeasy.cmohotel.presentation.dto.reservation.ReservationDetailsResponseDto;
 import med.goeasy.cmohotel.presentation.dto.reservation.ReservationPersonsRequestDto;
 import med.goeasy.cmohotel.presentation.dto.reservation.ReservationRequestDto;
 import med.goeasy.cmohotel.presentation.dto.reservation.ReservationResponseDto;
@@ -39,11 +40,17 @@ public class ReservationService {
         if (!EnumUtils.isValidEnum(EReservationCategory.class, dto.category())) {
             throw new BadRequestException("categorie invalide : " + dto.category());
         }
+
+        if (dto.persons() == null || dto.persons().isEmpty())
+            throw new BadRequestException("Aucun client ajouté");
+
         EReservationCategory category = EReservationCategory.valueOf(dto.category());
         ReservationDetails details = ReservationDetails.builder()
                 .plannedStart(dto.startDate())
                 .plannedEnd(dto.endDate())
                 .category(category)
+                .status(EReservationStatus.PENDING)
+                .observation(dto.observation())
                 .build();
         details = reservationDetailsRepository.save(details);
         for(ReservationPersonsRequestDto person : dto.persons()){
@@ -58,7 +65,7 @@ public class ReservationService {
                     .person(p)
                     .role(role)
                     .room(room)
-                    .status(EReservationStatus.PENDING)
+                    //.status(EReservationStatus.PENDING)
                     .build();
             reservationRepository.save(reservation);
         }
@@ -67,9 +74,9 @@ public class ReservationService {
     }
 
 
-    public PageDto<ReservationResponseDto> search(Authentication authentication, Integer page, Integer size) {
-        Page<Reservation> reservations = reservationRepository.search(PageRequest.of(page, size));
-        List<ReservationResponseDto> list = reservations.stream().map(ReservationResponseDto::mapToDto).toList();
+    public PageDto<ReservationDetailsResponseDto> search(Authentication authentication, Integer page, Integer size) {
+        Page<ReservationDetails> reservations = reservationDetailsRepository.search(PageRequest.of(page, size));
+        List<ReservationDetailsResponseDto> list = reservations.stream().map(ReservationDetailsResponseDto::mapToDto).toList();
         log.info("{} get reservations", authentication.getName());
         return PageDto.of(
                 list,

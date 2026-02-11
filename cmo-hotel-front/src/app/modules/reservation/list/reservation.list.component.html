@@ -17,103 +17,34 @@
                     </a>
                 </div>
 
-                <!-- Name & Type -->
                 <div class="flex items-center mt-4">
-                    <mat-icon class="icon-size-6 mr-3" [svgIcon]="'mat_outline:grade'"></mat-icon>
+                    <mat-icon class="icon-size-6 mr-3" [svgIcon]="'heroicons_outline:briefcase'"></mat-icon>
                     <div class="text-lg font-medium leading-6">
-                        Categorie
+                        détails de reservation
                     </div>
                 </div>
-                <div class="mt-2 flex flex-col items-start">
-                    <div class="mt-1 rounded px-1.5 text-sm font-semibold leading-5 text-white" [ngClass]="{
-                                                            'bg-red-800  dark:bg-red-600 ':
-                                                                selectedItem?.grade?.category === 'OFFICIERS_GENERAUX' || selectedItem?.grade?.category === 'OFFICIERS_GENERAUX_COLONEL_MAJOR',
-                                                            'bg-green-800   dark:bg-green-600 dark:text-green-50':
-                                                                selectedItem?.grade?.category === 'OFFICIER_SUPERIEUR',
-                                                            'bg-blue-800  dark:bg-blue-600 dark:text-blue-50':
-                                                                selectedItem?.grade?.category === 'OFFICIER_SUBALTERNE',
-                                                            'bg-yellow-800  dark:bg-yellow-600 dark:text-yellow-50':
-                                                                selectedItem?.grade?.category === 'CIVIL',
-                                                            'bg-purple-800  dark:bg-purple-600 dark:text-purple-50':
-                                                                selectedItem?.grade?.category === 'SOUS_OFFICIER'
-                                                        }">
-
-                        {{ selectedItem?.grade?.category }}
+                <div class="mt-4 flex flex-col font-medium">
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Code</div>
+                        <div>{{selectedItem?.code}}</div>
+                    </div>
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Date debut prévue</div>
+                        <div>{{ selectedItem?.plannedStart | date:'dd/MM/yyyy':'':'en-US'}}</div>
+                    </div>
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Date fin prévue</div>
+                        <div>{{ selectedItem?.plannedStart | date:'dd/MM/yyyy':'':'en-US'}}</div>
                     </div>
                 </div>
 
                 <div class="flex items-center mt-4">
                     <mat-icon class="icon-size-6 mr-3" [svgIcon]="'heroicons_outline:briefcase'"></mat-icon>
                     <div class="text-lg font-medium leading-6">
-                        Informations personnelles
+                        Invités
                     </div>
                 </div>
 
-                <div class="mt-4 flex flex-col font-medium">
-                    <div class="flex items-center justify-between py-3">
-                        <div class="text-secondary">Grade</div>
-                        <div>{{selectedItem?.grade?.name | titlecase}}</div>
-                    </div>
-                    <div class="flex items-center justify-between py-3">
-                        <div class="text-secondary">Nom</div>
-                        <div>{{ selectedItem?.firstName }}</div>
-                    </div>
-                    <div class="flex items-center justify-between py-3">
-                        <div class="text-secondary">Prénom</div>
-                        <div>{{ selectedItem?.lastName }}</div>
-                    </div>
-                    <div class="flex items-center justify-between py-3">
-                        <div class="text-secondary">Sexe</div>
-                        <div>{{ (selectedItem?.gender == 'M')?'Masculin':(selectedItem?.gender == 'F')?'Féminin':'' }}</div>
-                    </div>
-                    <div class="flex items-center justify-between py-3">
-                        <div class="text-secondary">Date de naissance</div>
-                        <div>{{ selectedItem?.birthDate }}</div>
-                    </div>
-                    <div class="flex items-center justify-between py-3">
-                        <div class="text-secondary">Téléphone</div>
-                        <div>{{ selectedItem?.phoneNumber }}</div>
-                    </div>
-                    <div class="flex items-center justify-between py-3">
-                        <div class="text-secondary">Nationalité</div>
-                        <div>{{ selectedItem?.nationality }}</div>
-                    </div>
-                    <div class="flex items-center justify-between py-3">
-                        <div class="text-secondary">Langue</div>
-                        <div>{{ selectedItem?.language }}</div>
-                    </div>
-                </div>
-
-                <div class="flex items-center  mt-4">
-                    <mat-icon class="icon-size-6 mr-3" [svgIcon]="'mat_outline:credit_card'"></mat-icon>
-                    <div class="text-lg font-medium leading-6">
-                        Identité
-                    </div>
-                </div>
-
-                <div class="mt-4 flex flex-col font-medium">
-                    <div class="flex items-center justify-between py-3">
-                        <div class="text-secondary">Cine/Passport</div>
-                        <div>{{ selectedItem?.identity }}</div>
-                    </div>
-                    <div class="flex items-center justify-between py-3">
-                        <div class="text-secondary">Matricule</div>
-                        <div>{{ selectedItem?.matricule }}</div>
-                    </div>
-                </div>
-
-                <div class="flex items-center mt-4">
-                    <mat-icon class="icon-size-6 mr-3" [svgIcon]="'mat_outline:location_on'"></mat-icon>
-                    <div class="text-lg font-medium leading-6">
-                        Position
-                    </div>
-                </div>
-                <div class="mt-4 flex flex-col font-medium">
-                    <div class="flex items-center justify-between py-3">
-                        <div class="text-secondary">Unité</div>
-                        <div>{{ selectedItem?.unite }}</div>
-                    </div>
-                </div>
 
                 <div class="flex items-center mt-4">
                     <mat-icon class="icon-size-6 mr-3" [svgIcon]="'mat_outline:lightbulb'"></mat-icon>
@@ -125,14 +56,6 @@
                     <div class="flex items-center justify-between py-3">
                         <div>{{ selectedItem?.observation }}</div>
                     </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="mt-8 grid w-full grid-cols-2 gap-4">
-                    <button class="flex-auto" mat-flat-button [color]="'primary'" *hasPermission="[APP_PERMISSIONS.PERSON_UPDATE]" [routerLink]="'./edit/' + selectedItem?.id">
-                        Modifier
-                    </button>
-                    <button *hasPermission="[APP_PERMISSIONS.PERSON_DELETE]" class="flex-auto" mat-stroked-button>Supprimer</button>
                 </div>
             </div>
 
@@ -153,12 +76,19 @@
                         <!-- Title -->
                         <div class="mt-2">
                             <div class="flex items-center">
-                                <mat-icon class="icon-size-25 mr-4" [svgIcon]="'heroicons-solid:clipboard-do'"></mat-icon>
+                                <mat-icon class="icon-size-25 mr-4" [svgIcon]="'heroicons_outline:clipboard-document'"></mat-icon>
                                 <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
                                     Réservations
                                 </h2>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                        <button mat-flat-button [color]="'primary'" *hasPermission="[APP_PERMISSIONS.PERSON_CREATE]" [routerLink]="'./create'">
+                            <mat-icon class="icon-size-4" [svgIcon]="'heroicons_mini:plus'"></mat-icon>
+                            <span class="ml-2">Nouvelle</span>
+                        </button>
                     </div>
                 </div>
 
@@ -181,21 +111,93 @@
                             </div>
                             <!-- Actions -->
                             <div class="flex shrink-0 items-center sm:ml-4 sm:mt-0">
-                                <button mat-flat-button [color]="'primary'" *hasPermission="[APP_PERMISSIONS.PERSON_CREATE]" [routerLink]="'./create'">
-                                    <mat-icon class="icon-size-4" [svgIcon]="'heroicons_mini:plus'"></mat-icon>
-                                    <span class="ml-2">Ajouter</span>
+                                <button mat-button [matMenuTriggerFor]="filterMenu" class="bg-gray-100 dark:bg-slate-800 rounded-lg px-4 py-2 mr-4">
+                                    <div class="flex items-center gap-2">
+                                        <mat-icon class="icon-size-5 text-secondary">tune</mat-icon>
+                                        <span class="font-medium text-secondary">Filtres avancé</span>
+                                        @if (activeFiltersCount > 0) {
+                                            <span class="flex items-center justify-center bg-primary text-white text-[10px] rounded-full h-5 w-5">
+                                                {{activeFiltersCount}}
+                                            </span>
+                                        }
+                                    </div>
                                 </button>
+
+                                <mat-menu #filterMenu="matMenu" class="filter-panel-menu !max-w-none">
+                                    <div class="p-4 w-72 flex flex-col gap-4" (click)="$event.stopPropagation()">
+                                        <h3 class="text-sm font-bold uppercase tracking-wider text-hint mb-2">Critères de recherche</h3>
+
+                                        <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                                            <mat-label>Nom du client</mat-label>
+                                            <input matInput [(ngModel)]="filters.name" (keyup.enter)="applyFilters()" placeholder="Ex: Hicham">
+                                            <mat-icon matSuffix class="icon-size-4">search</mat-icon>
+                                        </mat-form-field>
+
+                                        <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                                            <mat-label>Statut</mat-label>
+                                            <mat-select [(ngModel)]="filters.status" multiple>
+                                                @for (s of status; track s.code) {
+                                                    <mat-option [value]="s.code">{{ s.label }}</mat-option>
+                                                }
+                                            </mat-select>
+                                        </mat-form-field>
+
+                                        <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                                            <mat-label>Période du séjour</mat-label>
+                                            <mat-date-range-input [rangePicker]="picker">
+                                                <input matStartDate [(ngModel)]="filters.startDate" placeholder="Début">
+                                                <input matEndDate [(ngModel)]="filters.endDate" placeholder="Fin">
+                                            </mat-date-range-input>
+                                            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                                            <mat-date-range-picker #picker></mat-date-range-picker>
+                                        </mat-form-field>
+
+                                        <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                                            <button mat-button color="warn" (click)="resetFilters()" class="text-xs">
+                                                Réinitialiser
+                                            </button>
+                                            <button mat-flat-button color="primary" (click)="applyFilters()" class="rounded-md">
+                                                Appliquer
+                                            </button>
+                                        </div>
+                                    </div>
+                                </mat-menu>
+
+                                <div class="order-2 ml-4 sm:order-1 sm:ml-0">
+                                    <mat-form-field class="fuse-mat-dense w-56" [subscriptSizing]="'dynamic'">
+                                        <mat-select [(value)]="selectedStatus" [panelClass]="'w-72 min-w-72 max-w-72 h-auto max-h-none'" disableOptionCentering #roleSelect="matSelect" placeholder="Choisir un statut..">
+                                            <mat-select-trigger class="text-md">
+                                                <span>Statut:</span>
+                                                <span class="ml-1 font-medium">
+                                                        {{ selectedStatus?.label }}
+                                                </span>
+                                            </mat-select-trigger>
+                                            @for (s of status; track s) {
+                                                <mat-option class="h-auto py-4 leading-none" [value]="s">
+                                                    <div class="font-medium">
+                                                        {{ s.label }}
+                                                    </div>
+                                                    <div class="text-secondary mt-1.5 whitespace-normal text-sm leading-normal">
+                                                        {{ s.description }}
+                                                    </div>
+                                                </mat-option>
+                                            }
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
                             </div>
                         </div>
-
-                        <table mat-table [dataSource]="dataSource" >
+                        <div class="w-full bg-primary-50 dark:bg-transparent border rounded-xl overflow-hidden shadow-sm">
+                            <div class="overflow-x-auto">
+                                <table mat-table [dataSource]="dataSource" >
 
                             <ng-container matColumnDef="info">
                                 <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 2%">  </th>
                                 <td mat-cell *matCellDef="let row">
                                     <button mat-icon-button (click)="openDrawer(row)" matTooltip="Plus d'informations">
-                                        @if (selectedItem?.id == row.id && this.matDrawer.opened) {
-                                            <mat-icon [color]="'primary'" class="icon-size-5 " [svgIcon]=" 'heroicons_outline:chevron-double-right' " ></mat-icon>
+                                        @if (selectedItem?.code == row.code && this.matDrawer.opened) {
+<!--                                            <mat-icon [color]="'primary'" class="icon-size-5 " [svgIcon]=" 'heroicons_outline:chevron-double-right' " ></mat-icon>-->
+                                            <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_solid:information-circle' " ></mat-icon>
                                         } @else {
                                             <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_outline:information-circle' " ></mat-icon>
                                         }
@@ -205,44 +207,108 @@
                             </ng-container>
 
                             <ng-container matColumnDef="code">
-                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> NUM </th>
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 6%"> NUM </th>
                                 <td mat-cell *matCellDef="let row">
-                                    <p [innerHTML]="row?.details.code"></p>
+                                    <p [innerHTML]="row?.code"></p>
                                 </td>
                             </ng-container>
 
                             <ng-container matColumnDef="checkin">
-                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> CHECK-IN </th>
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 15%"> CHECK-IN </th>
                                 <td mat-cell *matCellDef="let row">
-                                    @if (row?.checkin) {
-                                        {{row.checkin | date:'dd/MM/yyyy':'':'en-US'}}
+                                    @if (row?.guests?.checkin) {
+                                        {{row?.guests?.checkin | date:'dd/MM/yyyy':'':'en-US'}}
                                     } @else {
-                                        <span class="text-md font-medium text-blue-400 italic">
-                                        {{row.details.plannedStart | date:'dd/MM/yyyy':'':'en-US'}}
-                                    </span>
+                                        <span class="text-sm font-medium text-blue-400 italic">
+                                            {{'Prévu le  '+ (row?.plannedStart | date:'dd/MM/yyyy':'':'en-US')}}
+                                        </span>
                                     }
-
                                 </td>
                             </ng-container>
 
                             <ng-container matColumnDef="checkout">
-                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> CHECK-OUT </th>
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 15%"> CHECK-OUT </th>
                                 <td mat-cell *matCellDef="let row">
-                                    <p [innerHTML]="row?.checkout"></p>
+                                    @if (row?.guests?.checkout) {
+                                        {{row?.guests?.checkout | date:'dd/MM/yyyy':'':'en-US'}}
+                                    } @else {
+                                        <span class="text-sm font-medium text-blue-400 italic">
+                                            {{'Prévu le  '+ (row?.plannedEnd | date:'dd/MM/yyyy':'':'en-US')}}
+                                        </span>
+                                    }
                                 </td>
                             </ng-container>
 
                             <ng-container matColumnDef="room">
-                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> CHAMBRE </th>
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 20%"> CHAMBRES </th>
                                 <td mat-cell *matCellDef="let row" >
-                                    <p [innerHTML]="row?.room?.name | highlight:key"></p>
+                                    @if (row | extractGuestData:'room'; as allRooms) {
+                                        <ul class="space-y-1">
+                                            @if (row.showAllRooms ? allRooms : (allRooms | slice:0:3); as displayList) {
+                                                <ul class="space-y-1">
+                                                    @for (room of displayList; track room.id) {
+                                                        <li class="list-disc list-inside text-secondary">
+                                                            {{room?.roomType?.type + ' (' + room?.name + ')'}}
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            }
+
+                                            @if (allRooms?.length > 3) {
+                                                <button
+                                                    mat-button
+                                                    color="primary"
+                                                    class="mt-1 h-8 min-h-8 px-2 text-xs w-fit"
+                                                    (click)="row.showAllRooms = !row.showAllRooms">
+                                                    <div class="flex items-center">
+                                                        <mat-icon class="icon-size-4 mr-1"
+                                                                  [svgIcon]="row.showAllRooms ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'">
+                                                        </mat-icon>
+                                                        <span>
+                                                {{ row.showAllRooms ? 'Voir moins' : 'Voir ' + (allRooms.length - 3) + ' de plus' }}
+                                            </span>
+                                                    </div>
+                                                </button>
+                                            }
+                                        </ul>
+                                    }
                                 </td>
                             </ng-container>
 
                             <ng-container matColumnDef="person">
-                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> INVITE </th>
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 30%"> INVITES </th>
                                 <td mat-cell *matCellDef="let row" >
                                     <p [innerHTML]="row?.person?.firstName | highlight:key"></p>
+                                    @if (row | extractGuestData:'person'; as allPersons) {
+                                        <ul class="space-y-1">
+                                            @if (row.showAllPersons ? allPersons : (allPersons | slice:0:3); as displayPersonsList) {
+                                                <ul class="space-y-1">
+                                                    @for (person of displayPersonsList; track person.id) {
+                                                        <li class="list-disc list-inside text-secondary">
+                                                            {{person?.grade?.code + ' ' + person?.firstName + ' ' + person?.lastName}}
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            }
+
+                                            @if (allPersons?.length > 3) {
+                                                <button
+                                                    mat-button
+                                                    color="primary"
+                                                    class="mt-1 h-8 min-h-8 px-2 text-xs w-fit"
+                                                    (click)="row.showAllPersons = !row.showAllPersons">
+                                                    <div class="flex items-center">
+                                                        <mat-icon class="icon-size-4 mr-1"
+                                                                  [svgIcon]="row.showAllPersons ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'">
+                                                        </mat-icon>
+                                                        <span>
+                                                {{ row.showAllPersons ? 'Voir moins' : 'Voir ' + (allPersons.length - 3) + ' de plus' }}
+                                            </span>
+                                                    </div>
+                                                </button>
+                                            }
+                                        </ul>
+                                    }
                                 </td>
                             </ng-container>
 
@@ -265,7 +331,6 @@
                                                 row?.status === 'PENDING' ? 'En cours':
                                                     row?.status === 'CONFIRMED' ? 'Confirmée':
                                                     row?.status === 'CANCELED' ? 'Annulée':''
-
                                             }}
                                         </span>
                                     </span>
@@ -288,7 +353,7 @@
                             </ng-container>
 
                             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                            <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{ 'bg-gray-100': selectedItem?.id === row.id && matDrawer.opened }"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{ 'bg-gray-100': selectedItem?.code === row.code && matDrawer.opened }"></tr>
 
                             <tr class="mat-row" *matNoDataRow>
                                 <td class="mat-cell" [attr.colspan]="displayedColumns.length">
@@ -303,6 +368,8 @@
                                 </td>
                             </tr>
                         </table>
+                            </div>
+                        </div>
                         <mat-paginator
                             [ngClass]="{ 'pointer-events-none': isLoading }"
                             showFirstLastButtons="true"

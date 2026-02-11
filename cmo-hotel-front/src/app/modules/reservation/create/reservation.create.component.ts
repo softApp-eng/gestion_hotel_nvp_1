@@ -121,6 +121,7 @@ export class ReservationCreateComponent implements OnInit {
     ngOnInit(): void {
         this.form = this._formBuilder.group({
             category: [null, [Validators.required]],
+            observation: [''],
             dateRange: this._formBuilder.group(
                 {
                     start: [null, [Validators.required]],
@@ -201,6 +202,7 @@ export class ReservationCreateComponent implements OnInit {
             startDate: this._utilsService.convertToDate(dateRange.start),
             endDate: this._utilsService.convertToDate(dateRange.end),
             category:  this.form.get('category')?.value,
+            observation:  this.form.get('observation')?.value,
             persons: this.persons.map(p => ({
                 personId: p.id,
                 role: p.role,
@@ -320,8 +322,8 @@ export class ReservationCreateComponent implements OnInit {
         });
 
         // Optional: Clear selection and close toggle after bulk action
-        this.selectedGroupedPersons = [];
-        this.groupedAction = false;
+        //this.selectedGroupedPersons = [];
+        //this.groupedAction = false;
 
         this._toastr.success('Rôles mis à jour pour la sélection');
     }

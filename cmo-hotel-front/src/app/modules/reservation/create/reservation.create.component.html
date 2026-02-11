@@ -249,6 +249,18 @@
                     }
                 </div>
 
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Observation</mat-label>
+                    <textarea
+                        [formControlName]="'observation'"
+                        matInput
+                        cdkTextareaAutosize
+                        cdkAutosizeMinRows="2"
+                        cdkAutosizeMaxRows="5"
+                        #autosize="cdkTextareaAutosize">
+                    </textarea>
+                </mat-form-field>
+
 
                 <div class="flex items-end justify-end mx-3 mt-8">
                     <button mat-flat-button [color]="'primary'" [disabled]="form.disabled || form.invalid" (click)="save()">

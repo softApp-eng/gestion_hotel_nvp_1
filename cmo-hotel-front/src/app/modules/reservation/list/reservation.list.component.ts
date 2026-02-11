@@ -17,20 +17,19 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 import { MatDialog } from '@angular/material/dialog';
 import { HighlightPipe } from '../../../../@fuse/pipes/HighlightPipe';
-import { DatePipe, NgClass, TitleCasePipe } from '@angular/common';
+import { DatePipe, NgClass, SlicePipe, TitleCasePipe } from '@angular/common';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { MatSort, MatSortModule } from '@angular/material/sort';
 import { ApiReservationService } from '../api.reservation.service';
-import { SlicePipe } from '@angular/common';
-import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../@fuse/services/confirmation';
-import { Toastr } from '../../../core/service/toastr.service';
 import { MatDrawer, MatDrawerContainer, MatSidenavModule } from '@angular/material/sidenav';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
 import { HasPermissionDirective } from '../../../core/auth/HasPermissionDirective';
-import { ApiPersonService } from '../../person/api.person.service';
 import { FuseMediaWatcherService } from '../../../../@fuse/services/media-watcher';
 import { FormsModule } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
+import { ExtractGuestDataPipe } from './extract-guest-data-pipe';
+import { MatOption } from '@angular/material/core';
+import { MatSelect, MatSelectTrigger } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 
 @Component({
     selector: 'reservation-list',
@@ -52,10 +51,15 @@ import { MatTabsModule } from '@angular/material/tabs';
         MatIconModule,
         FormsModule,
         MatTabsModule,
-        TitleCasePipe,
+        MatDatepickerModule,
         RouterLink,
         HasPermissionDirective,
         DatePipe,
+        ExtractGuestDataPipe,
+        SlicePipe,
+        MatOption,
+        MatSelect,
+        MatSelectTrigger,
     ],
 })
 export class ReservationListComponent implements OnInit, OnDestroy {
@@ -84,6 +88,58 @@ export class ReservationListComponent implements OnInit, OnDestroy {
     currentPage = 0;
     pageSizeOptions: number[] = [20, 50, 70, 100];
 
+    status = [
+        {
+            code: 'CONFIRMED',
+            label: 'Confirmée',
+            description: 'Les réservations sont validées et confirmée.',
+            color: 'text-green-600 bg-green-50',
+            icon: 'check_circle'
+        },
+        {
+            code: 'PENDING',
+            label: 'En attente',
+            description: 'Les réservations sont enregistrées mais nécessite une action ou un paiement.',
+            color: 'text-amber-600 bg-amber-50',
+            icon: 'history'
+        },
+        {
+            code: 'IN_PROGRESS',
+            label: 'En cours',
+            description: 'Le séjour est actuellement effectif (client sur place).',
+            color: 'text-blue-600 bg-blue-50',
+            icon: 'door_front'
+        },
+         {
+            code: 'CLOSED',
+                label: 'Clôturée',
+                description: 'Le séjour est terminé et le dossier est archivé.',
+                color: 'text-gray-600 bg-gray-50',
+                icon: 'archive'
+        },
+        {
+            code: 'CANCELED',
+                label: 'Annulée',
+                description: 'La réservation a été annulée.',
+                color: 'text-red-600 bg-red-50',
+                icon: 'cancel'
+        }
+    ];
+    selectedStatus = {
+        code: 'PENDING',
+        label: 'En attente',
+        description: 'Les réservations sont enregistrées mais nécessite une action ou un paiement.',
+        color: 'text-amber-600 bg-amber-50',
+        icon: 'history'
+    };
+
+    filters = {
+        name: '',
+        status: [],
+        startDate: null,
+        endDate: null
+    };
+
     /**
      * Constructor
      */
@@ -93,6 +149,29 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseMediaWatcherService: FuseMediaWatcherService
     ) {}
+
+    get activeFiltersCount(): number {
+        let count = 0;
+        if (this.filters.name) count++;
+        if (this.filters.status.length > 0) count++;
+        if (this.filters.startDate || this.filters.endDate) count++;
+        return count;
+    }
+
+    applyFilters() {
+        console.log('Filtres appliqués:', this.filters);
+        // Ici, appelez votre service ou émettez un événement pour filtrer le mat-table
+    }
+
+    resetFilters() {
+        this.filters = {
+            name: '',
+            status: [],
+            startDate: null,
+            endDate: null
+        };
+        this.applyFilters();
+    }
 
     ngOnDestroy(): void {
         // Unsubscribe from all subscriptions

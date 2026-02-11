@@ -19,13 +19,13 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ReservationResponseDto(
         String id,
-        ReservationDetailsResponseDto details,
+        //ReservationDetailsResponseDto details,
         PersonResponseDto person,
         EGuestRole role,
         RoomResponseDto room,
         LocalDateTime checkin,
         LocalDateTime checkout,
-        EReservationStatus status,
+        EReservationStatus exceptionPersonStatus,
         String createdBy,
         String lastModifiedBy,
         LocalDateTime createdAt,
@@ -36,13 +36,13 @@ public record ReservationResponseDto(
             return null;
         return ReservationResponseDto.builder()
                 .id(entity.getId())
-                .details(ReservationDetailsResponseDto.mapToDto(entity.getDetails()))
+                //.details(ReservationDetailsResponseDto.mapToDto(entity.getDetails()))
                 .person(PersonResponseDto.mapToDto(entity.getPerson()))
                 .role(entity.getRole())
                 .room(RoomResponseDto.mapToDto(entity.getRoom()))
                 .checkin(entity.getCheckin())
                 .checkout(entity.getCheckout())
-                .status(entity.getStatus())
+                .exceptionPersonStatus(entity.getExceptionPersonStatus())
                 .createdBy(entity.getCreatedBy())
                 .lastModifiedBy(entity.getLastModifiedBy())
                 .createdAt(entity.getCreatedAt())

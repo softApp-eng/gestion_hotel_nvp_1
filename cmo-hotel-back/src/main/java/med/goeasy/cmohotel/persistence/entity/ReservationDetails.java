@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
+import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -13,6 +14,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -26,12 +29,21 @@ public class ReservationDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long code;
 
+    @OneToMany(mappedBy = "details", cascade = CascadeType.ALL)
+    private List<Reservation> reservations = new ArrayList<>();
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private EReservationCategory category;
 
     private LocalDate plannedStart;
     private LocalDate plannedEnd;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private EReservationStatus status;
+
+    private String observation;
 
     // audit
     @CreatedBy

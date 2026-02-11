@@ -17,6 +17,7 @@ public record ReservationRequestDto(
         @NotBlank(message = "Category de la reservation est obligatoire")
         String category,
         @NotNull(message = "Aucune personne selectionnée")
-        List<ReservationPersonsRequestDto> persons
+        List<ReservationPersonsRequestDto> persons,
+        String observation
 ) {
 }
