@@ -73,10 +73,7 @@ public interface ReservationDetailsRepository extends JpaRepository<ReservationD
                        ))
                AND (:category IS NULL OR rd.category IN :category)
                AND (:status IS NULL OR rd.status IN :status)
-               AND (:start IS NULL OR (
-                           (r.checkin <= :end AND r.checkout >= :start)
-                           OR (rd.plannedStart <= :end AND rd.plannedEnd >= :start)
-                       ))
+               
         ORDER BY rd.plannedStart DESC
         """)
     Page<ReservationDetails> search(
@@ -91,7 +88,10 @@ public interface ReservationDetailsRepository extends JpaRepository<ReservationD
     /*
 
 
-
+AND (:start IS NULL OR (
+                           (r.checkin <= :end AND r.checkout >= :start)
+                           OR (rd.plannedStart <= :end AND rd.plannedEnd >= :start)
+                       ))
 
      */
 }

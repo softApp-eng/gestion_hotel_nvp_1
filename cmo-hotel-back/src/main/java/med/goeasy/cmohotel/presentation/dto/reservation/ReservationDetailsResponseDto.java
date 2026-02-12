@@ -1,5 +1,6 @@
 package med.goeasy.cmohotel.presentation.dto.reservation;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import med.goeasy.cmohotel.persistence.entity.Person;
@@ -20,7 +21,9 @@ public record ReservationDetailsResponseDto(
         Long code,
         EReservationStatus status,
         EReservationCategory category,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         LocalDateTime plannedStart,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         LocalDateTime plannedEnd,
         List<ReservationResponseDto> guests,
         String createdBy,

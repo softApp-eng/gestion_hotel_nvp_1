@@ -75,7 +75,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         'status',
         'action',
     ];
-    key = '';
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
@@ -133,6 +133,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         icon: 'history'
     };
 
+    key = '';
     filters = {
         status: [],
         startDate: null,
@@ -204,7 +205,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         this.dataSource.data = [];
         this._apiReservationService
-            .search(this.currentPage, this.pageSize)
+            .search(this.key, this.currentPage, this.pageSize)
             .pipe(
                 finalize(() => {
                     this.isLoading = false;

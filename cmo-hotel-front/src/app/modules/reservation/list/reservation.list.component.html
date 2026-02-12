@@ -137,14 +137,7 @@
                                     mat-stroked-button
                                     (click)="isAdvancedFilter = !isAdvancedFilter"
                                 >
-                                    <mat-icon
-                                        class="icon-size-5"
-                                        [svgIcon]="
-                                                    isAdvancedFilter
-                                                        ? 'heroicons_solid:chevron-up'
-                                                        : 'heroicons_solid:chevron-down'
-                                                "
-                                    ></mat-icon>
+                                    <mat-icon class="icon-size-5" [svgIcon]="isAdvancedFilter? 'heroicons_solid:chevron-up': 'heroicons_solid:chevron-down'"></mat-icon>
                                 </button>
                             </div>
                         </div>
