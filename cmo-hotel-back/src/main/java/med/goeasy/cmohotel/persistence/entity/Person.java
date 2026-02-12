@@ -13,6 +13,11 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(indexes = {
+        @Index(name = "idx_person_firstname", columnList = "firstName"),
+        @Index(name = "idx_person_lastname", columnList = "lastName"),
+        @Index(name = "identity", columnList = "identity"),
+})
 @Entity
 public class Person {
 

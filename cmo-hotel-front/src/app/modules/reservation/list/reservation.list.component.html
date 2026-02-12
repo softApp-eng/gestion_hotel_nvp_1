@@ -95,7 +95,6 @@
                 <!-- Items list -->
                 <div class="space-y-8 p-6 md:p-8">
                     <div class="bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
-
                         <div class="flex flex-0 flex-col sm:flex-row sm:items-center sm:justify-between">
                             <div class="min-w-0 flex-1">
                                 <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded min-w-64">
@@ -111,9 +110,49 @@
                             </div>
                             <!-- Actions -->
                             <div class="flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                                <div class="order-2 ml-4 sm:order-1 sm:ml-0">
+                                    <mat-form-field class="fuse-mat-dense w-56" [subscriptSizing]="'dynamic'">
+                                        <mat-select [(value)]="selectedStatus" [panelClass]="'w-72 min-w-72 max-w-72 h-auto max-h-none'" disableOptionCentering #roleSelect="matSelect" placeholder="Choisir un statut..">
+                                            <mat-select-trigger class="text-md">
+                                                <span>Statut:</span>
+                                                <span class="ml-1 font-medium">
+                                                        {{ selectedStatus?.label }}
+                                                </span>
+                                            </mat-select-trigger>
+                                            @for (s of status; track s) {
+                                                <mat-option class="h-auto py-4 leading-none" [value]="s">
+                                                    <div class="font-medium">
+                                                        {{ s.label }}
+                                                    </div>
+                                                    <div class="text-secondary mt-1.5 whitespace-normal text-sm leading-normal">
+                                                        {{ s.description }}
+                                                    </div>
+                                                </mat-option>
+                                            }
+                                        </mat-select>
+                                    </mat-form-field>
+                                </div>
+                                <button
+                                    class="h-7 min-h-7 min-w-10 px-2 leading-6"
+                                    mat-stroked-button
+                                    (click)="isAdvancedFilter = !isAdvancedFilter"
+                                >
+                                    <mat-icon
+                                        class="icon-size-5"
+                                        [svgIcon]="
+                                                    isAdvancedFilter
+                                                        ? 'heroicons_solid:chevron-up'
+                                                        : 'heroicons_solid:chevron-down'
+                                                "
+                                    ></mat-icon>
+                                </button>
+                            </div>
+                        </div>
+                        @if (isAdvancedFilter){
+                            <div class="flex flex-0 flex-col sm:flex-row sm:items-start sm:justify-start">
                                 <button mat-button [matMenuTriggerFor]="filterMenu" class="bg-gray-100 dark:bg-slate-800 rounded-lg px-4 py-2 mr-4">
                                     <div class="flex items-center gap-2">
-                                        <mat-icon class="icon-size-5 text-secondary">tune</mat-icon>
+                                        <mat-icon [svgIcon]="'search'" class="icon-size-5 text-secondary"></mat-icon>
                                         <span class="font-medium text-secondary">Filtres avancé</span>
                                         @if (activeFiltersCount > 0) {
                                             <span class="flex items-center justify-center bg-primary text-white text-[10px] rounded-full h-5 w-5">
@@ -128,13 +167,7 @@
                                         <h3 class="text-sm font-bold uppercase tracking-wider text-hint mb-2">Critères de recherche</h3>
 
                                         <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
-                                            <mat-label>Nom du client</mat-label>
-                                            <input matInput [(ngModel)]="filters.name" (keyup.enter)="applyFilters()" placeholder="Ex: Hicham">
-                                            <mat-icon matSuffix class="icon-size-4">search</mat-icon>
-                                        </mat-form-field>
-
-                                        <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
-                                            <mat-label>Statut</mat-label>
+                                            <mat-label>Statuts</mat-label>
                                             <mat-select [(ngModel)]="filters.status" multiple>
                                                 @for (s of status; track s.code) {
                                                     <mat-option [value]="s.code">{{ s.label }}</mat-option>
@@ -162,31 +195,9 @@
                                         </div>
                                     </div>
                                 </mat-menu>
-
-                                <div class="order-2 ml-4 sm:order-1 sm:ml-0">
-                                    <mat-form-field class="fuse-mat-dense w-56" [subscriptSizing]="'dynamic'">
-                                        <mat-select [(value)]="selectedStatus" [panelClass]="'w-72 min-w-72 max-w-72 h-auto max-h-none'" disableOptionCentering #roleSelect="matSelect" placeholder="Choisir un statut..">
-                                            <mat-select-trigger class="text-md">
-                                                <span>Statut:</span>
-                                                <span class="ml-1 font-medium">
-                                                        {{ selectedStatus?.label }}
-                                                </span>
-                                            </mat-select-trigger>
-                                            @for (s of status; track s) {
-                                                <mat-option class="h-auto py-4 leading-none" [value]="s">
-                                                    <div class="font-medium">
-                                                        {{ s.label }}
-                                                    </div>
-                                                    <div class="text-secondary mt-1.5 whitespace-normal text-sm leading-normal">
-                                                        {{ s.description }}
-                                                    </div>
-                                                </mat-option>
-                                            }
-                                        </mat-select>
-                                    </mat-form-field>
-                                </div>
                             </div>
-                        </div>
+                        }
+
                         <div class="w-full bg-primary-50 dark:bg-transparent border rounded-xl overflow-hidden shadow-sm">
                             <div class="overflow-x-auto">
                                 <table mat-table [dataSource]="dataSource" >

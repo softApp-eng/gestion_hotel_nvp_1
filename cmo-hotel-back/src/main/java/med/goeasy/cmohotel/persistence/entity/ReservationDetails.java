@@ -22,6 +22,11 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @EntityListeners(AuditingEntityListener.class)
+@Table(indexes = {
+        @Index(name = "idx_rd_status", columnList = "status"),
+        @Index(name = "idx_rd_category", columnList = "category"),
+        @Index(name = "idx_rd_dates", columnList = "plannedStart, plannedEnd")
+})
 @Entity
 public class ReservationDetails {
 
@@ -36,8 +41,8 @@ public class ReservationDetails {
     @Enumerated(EnumType.STRING)
     private EReservationCategory category;
 
-    private LocalDate plannedStart;
-    private LocalDate plannedEnd;
+    private LocalDateTime plannedStart;
+    private LocalDateTime plannedEnd;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

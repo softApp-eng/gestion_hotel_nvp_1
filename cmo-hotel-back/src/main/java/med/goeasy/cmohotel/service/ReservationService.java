@@ -21,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -46,8 +47,8 @@ public class ReservationService {
 
         EReservationCategory category = EReservationCategory.valueOf(dto.category());
         ReservationDetails details = ReservationDetails.builder()
-                .plannedStart(dto.startDate())
-                .plannedEnd(dto.endDate())
+                .plannedStart(dto.startDate().atStartOfDay())
+                .plannedEnd(dto.endDate().atTime(23, 59, 59))
                 .category(category)
                 .status(EReservationStatus.PENDING)
                 .observation(dto.observation())
@@ -74,8 +75,22 @@ public class ReservationService {
     }
 
 
-    public PageDto<ReservationDetailsResponseDto> search(Authentication authentication, Integer page, Integer size) {
-        Page<ReservationDetails> reservations = reservationDetailsRepository.search(PageRequest.of(page, size));
+    public PageDto<ReservationDetailsResponseDto> search(
+            Authentication authentication,
+            String key,
+            List<EReservationCategory> categories,
+            List<EReservationStatus> status,
+            LocalDateTime start,
+            LocalDateTime end,
+            Integer page, Integer size) {
+        Page<ReservationDetails> reservations = reservationDetailsRepository.search(
+                key,
+                categories.isEmpty()? null:categories,
+                status.isEmpty()? null:status,
+                start,
+                end,
+                PageRequest.of(page, size)
+        );
         List<ReservationDetailsResponseDto> list = reservations.stream().map(ReservationDetailsResponseDto::mapToDto).toList();
         log.info("{} get reservations", authentication.getName());
         return PageDto.of(

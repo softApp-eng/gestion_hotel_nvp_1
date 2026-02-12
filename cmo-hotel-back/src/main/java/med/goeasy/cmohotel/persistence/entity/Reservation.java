@@ -21,6 +21,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @EntityListeners(AuditingEntityListener.class)
+@Table(indexes = {
+        @Index(name = "idx_r_dates", columnList = "checkin, checkout")
+})
 @Entity
 public class Reservation {
     @Id

@@ -134,11 +134,11 @@ export class ReservationListComponent implements OnInit, OnDestroy {
     };
 
     filters = {
-        name: '',
         status: [],
         startDate: null,
         endDate: null
     };
+    isAdvancedFilter = false;
 
     /**
      * Constructor
@@ -152,7 +152,6 @@ export class ReservationListComponent implements OnInit, OnDestroy {
 
     get activeFiltersCount(): number {
         let count = 0;
-        if (this.filters.name) count++;
         if (this.filters.status.length > 0) count++;
         if (this.filters.startDate || this.filters.endDate) count++;
         return count;
@@ -165,7 +164,6 @@ export class ReservationListComponent implements OnInit, OnDestroy {
 
     resetFilters() {
         this.filters = {
-            name: '',
             status: [],
             startDate: null,
             endDate: null
