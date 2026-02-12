@@ -16,6 +16,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { ToastrService } from 'ngx-toastr';
 import { ApiRoomTypeService } from '../api.room-type.service';
 import { ApiRoomPriceService } from '../api.room-price.service';
+import { ApiCommonService } from '../../../../../core/service/api.common.service';
 
 @Component({
     selector: 'room-type-create-model',
@@ -37,11 +38,7 @@ export class RoomPriceCreateModel implements OnInit {
     form: UntypedFormGroup;
     price;
     type;
-    categories = [
-        'OFFICIER_SUPERIEUR',
-        'OFFICIER_SUBALTERNE',
-        'CIVIL'
-    ];
+    categories;
 
     /**
      * Constructor
@@ -50,10 +47,12 @@ export class RoomPriceCreateModel implements OnInit {
         private _formBuilder: UntypedFormBuilder,
         public matDialogRef: MatDialogRef<RoomPriceCreateModel>,
         public _apiRoomPriceService: ApiRoomPriceService,
+        public _apiCommonService: ApiCommonService,
         private _toast: ToastrService,
         @Inject(MAT_DIALOG_DATA)
         public data: { price: any ,type: any }
     ) {
+        this.loadGradeCategories();
         this.form = this._formBuilder.group({
             roomTypeId: ['', [Validators.required]],
             category: ['', [Validators.required]],
@@ -66,7 +65,7 @@ export class RoomPriceCreateModel implements OnInit {
         if (this.price){
             //initialize
             this.form.patchValue({
-                category: this.price.category,
+                category: this.price.category.code,
                 price: this.price.price
             });
         }
@@ -74,6 +73,13 @@ export class RoomPriceCreateModel implements OnInit {
     }
 
     ngOnInit(): void {}
+
+    loadGradeCategories() {
+        this._apiCommonService.getEnumsData('grade-categories').subscribe(res => {
+            console.log(res);
+            this.categories = res;
+        })
+    }
 
     save() {
         // Do nothing if the form is invalid

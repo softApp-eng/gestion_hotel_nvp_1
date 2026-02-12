@@ -17,8 +17,8 @@
             <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
                 <mat-label>Grade</mat-label>
                 <mat-select [formControlName]="'category'">
-                    @for (c of categories; track c) {
-                        <mat-option [value]="c">{{c}}</mat-option>
+                    @for (c of categories; track c?.code) {
+                        <mat-option [value]="c?.code">{{c?.name}}</mat-option>
                     }
                 </mat-select>
                 @if (form.get('category').hasError('required')) {

@@ -27,11 +27,17 @@ export class ApiReservationService {
             @RequestParam(required = false, defaultValue = "20") Integer size
    */
 
-    search(key='',page=0,size=20): Observable<any>{
+    search(key='',reservationCode='',status=[],page=0,size=20): Observable<any>{
         let params = new HttpParams()
             .set('key', key)
+            .set('reservationCode', reservationCode)
             .set('page', page)
             .set('size', size);
+        if (status && status.length > 0) {
+            status.forEach(s => {
+                params = params.append('status', s);
+            });
+        }
         return this._httpClient.get(`${this.API_URL}/search`, { params });
     }
 

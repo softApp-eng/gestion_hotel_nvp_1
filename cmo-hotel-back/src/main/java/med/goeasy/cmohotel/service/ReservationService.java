@@ -78,20 +78,35 @@ public class ReservationService {
     public PageDto<ReservationDetailsResponseDto> search(
             Authentication authentication,
             String key,
+            Long reservationCode,
             List<EReservationCategory> categories,
             List<EReservationStatus> status,
             LocalDateTime start,
             LocalDateTime end,
             Integer page, Integer size) {
+        System.err.println("KEY "+ key);
+        System.err.println("categories "+ categories);
+        System.err.println("status "+ status);
+        System.err.println("start "+ start);
+        System.err.println("end "+ end);
         Page<ReservationDetails> reservations = reservationDetailsRepository.search(
                 key,
-                categories.isEmpty()? null:categories,
+                reservationCode,
+                status.isEmpty()? null:status,
+                PageRequest.of(page, size)
+        );
+
+        /*
+        categories.isEmpty()? null:categories,
                 status.isEmpty()? null:status,
                 start,
                 end,
-                PageRequest.of(page, size)
-        );
+         */
+        System.err.println("COUNT RESULT "+ reservations.getTotalElements());
+
+        //reservations.stream().forEach(System.out::println);
         List<ReservationDetailsResponseDto> list = reservations.stream().map(ReservationDetailsResponseDto::mapToDto).toList();
+        System.err.println("LIST "+ list.size());
         log.info("{} get reservations", authentication.getName());
         return PageDto.of(
                 list,

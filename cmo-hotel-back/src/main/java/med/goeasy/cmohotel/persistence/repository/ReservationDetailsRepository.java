@@ -62,31 +62,41 @@ public interface ReservationDetailsRepository extends JpaRepository<ReservationD
         SELECT rd FROM ReservationDetails rd
         LEFT JOIN rd.reservations r
         LEFT JOIN r.room rm
+        LEFT JOIN rm.roomType t
         LEFT JOIN r.person p
         WHERE
                (:key IS NULL OR :key = '' OR (
-                           upper(p.email) LIKE upper(concat('%', :key, '%'))
+                           upper(p.identity) LIKE upper(concat('%', :key, '%'))
+                           OR upper(p.email) LIKE upper(concat('%', :key, '%'))
                            OR upper(p.firstName) LIKE upper(concat('%', :key, '%'))
                            OR upper(p.lastName) LIKE upper(concat('%', :key, '%'))
                            OR upper(rm.code) LIKE upper(concat('%', :key, '%'))
+                           OR upper(t.type) LIKE upper(concat('%', :key, '%'))
                            OR cast(rd.code as string) LIKE upper(concat('%', :key, '%'))
                        ))
-               AND (:category IS NULL OR rd.category IN :category)
+               AND (:code IS NULL OR rd.code = :code)
                AND (:status IS NULL OR rd.status IN :status)
-               
         ORDER BY rd.plannedStart DESC
         """)
     Page<ReservationDetails> search(
             @Param("key") String key,
-            @Param("category") List<EReservationCategory> category,
+            @Param("code") Long reservationCode,
             @Param("status") List<EReservationStatus> status,
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end,
             Pageable pageable
     );
 
+
     /*
 
+    @Param("category") List<EReservationCategory> category,
+
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+
+
+
+AND (:category IS NULL OR rd.category IN :category)
+               AND (:status IS NULL OR rd.status IN :status)
 
 AND (:start IS NULL OR (
                            (r.checkin <= :end AND r.checkout >= :start)

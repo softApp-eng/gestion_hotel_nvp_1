@@ -1,5 +1,6 @@
 package med.goeasy.cmohotel.presentation.dto.room;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import med.goeasy.cmohotel.persistence.entity.RoomPrice;

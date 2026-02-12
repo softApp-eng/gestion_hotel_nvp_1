@@ -44,12 +44,7 @@ export class PersonCreateModel implements OnInit {
     form: UntypedFormGroup;
     person;
     grades;
-    relationTypes = [
-        'WIFE',
-        'SON',
-        'FATHER',
-        'MATHER',
-    ]
+    relationTypes = []
 
     /**
      * Constructor
@@ -64,6 +59,7 @@ export class PersonCreateModel implements OnInit {
         @Inject(MAT_DIALOG_DATA)
         public data: { person: any, isFamille:boolean }
     ) {
+        this.loadRelationshipsTypes();
         this.form = this._formBuilder.group({
             gradeId: ['', [Validators.required]],
             primaryPersonId: [''],
@@ -93,7 +89,7 @@ export class PersonCreateModel implements OnInit {
             this.form.patchValue({
                 gradeId: this.person?.grade?.id,
                 primaryPersonId: this.person?.primaryPersonId || '',
-                relationshipType: this.person?.relationshipType || '',
+                relationshipType: this.person?.relationshipType?.code || '',
                 identity: this.person?.identity,
                 firstName: this.person?.firstName,
                 lastName: this.person?.lastName,
@@ -112,6 +108,14 @@ export class PersonCreateModel implements OnInit {
 
     ngOnInit(): void {
         this.loadGrades();
+    }
+
+    loadRelationshipsTypes() {
+        this._apiCommonService.getEnumsData('relationships').subscribe({
+            next: (data) => {
+                this.relationTypes = data;
+            },
+        });
     }
 
     loadGrades() {

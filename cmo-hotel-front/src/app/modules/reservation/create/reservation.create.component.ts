@@ -27,6 +27,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltip } from '@angular/material/tooltip';
 import { AssignRoomsModel } from '../room-assign/assign-rooms.model';
 import {finalize} from "rxjs";
+import { ApiCommonService } from '../../../core/service/api.common.service';
 
 @Component({
     selector: 'reservation-add',
@@ -99,11 +100,7 @@ export class ReservationCreateComponent implements OnInit {
         },
     ];
 
-    categories = [
-        { code: 'SINGLE', name: 'SINGLE' },
-        { code: 'DELEGATION', name: 'DELEGATION' },
-        { code: 'FAMILY', name: 'FAMILY' },
-    ];
+    categories = [];
 
     /**
      * Constructor
@@ -111,6 +108,7 @@ export class ReservationCreateComponent implements OnInit {
     constructor(
         private _formBuilder: UntypedFormBuilder,
         private _apiReservationService: ApiReservationService,
+        private _apiCommonService: ApiCommonService,
         private _router: Router,
         private _toastr: Toastr,
         private _activeRoute: ActivatedRoute,
@@ -119,6 +117,7 @@ export class ReservationCreateComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
+        this.loadCategories();
         this.form = this._formBuilder.group({
             category: [null, [Validators.required]],
             observation: [''],
@@ -147,6 +146,14 @@ export class ReservationCreateComponent implements OnInit {
         if (this._router.url.includes('edit')) {
             this.initializeForm();
         }
+    }
+
+    loadCategories() {
+        this._apiCommonService.getEnumsData('reservation-categories').subscribe({
+            next: (result) => {
+                this.categories = result;
+            }
+        })
     }
 
     save(){

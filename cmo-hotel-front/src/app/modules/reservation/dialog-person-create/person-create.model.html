@@ -18,8 +18,8 @@
                 <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
                     <mat-label>Type de relation</mat-label>
                     <mat-select [formControlName]="'relationshipType'">
-                        @for (r of relationTypes; track r) {
-                            <mat-option [value]="r">{{r}}</mat-option>
+                        @for (r of relationTypes; track r?.code) {
+                            <mat-option [value]="r?.code">{{r?.name}}</mat-option>
                         }
                     </mat-select>
                 </mat-form-field>

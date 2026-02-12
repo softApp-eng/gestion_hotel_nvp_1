@@ -30,6 +30,7 @@ import { ExtractGuestDataPipe } from './extract-guest-data-pipe';
 import { MatOption } from '@angular/material/core';
 import { MatSelect, MatSelectTrigger } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { ApiCommonService } from '../../../core/service/api.common.service';
 
 @Component({
     selector: 'reservation-list',
@@ -88,53 +89,12 @@ export class ReservationListComponent implements OnInit, OnDestroy {
     currentPage = 0;
     pageSizeOptions: number[] = [20, 50, 70, 100];
 
-    status = [
-        {
-            code: 'CONFIRMED',
-            label: 'Confirmée',
-            description: 'Les réservations sont validées et confirmée.',
-            color: 'text-green-600 bg-green-50',
-            icon: 'check_circle'
-        },
-        {
-            code: 'PENDING',
-            label: 'En attente',
-            description: 'Les réservations sont enregistrées mais nécessite une action ou un paiement.',
-            color: 'text-amber-600 bg-amber-50',
-            icon: 'history'
-        },
-        {
-            code: 'IN_PROGRESS',
-            label: 'En cours',
-            description: 'Le séjour est actuellement effectif (client sur place).',
-            color: 'text-blue-600 bg-blue-50',
-            icon: 'door_front'
-        },
-         {
-            code: 'CLOSED',
-                label: 'Clôturée',
-                description: 'Le séjour est terminé et le dossier est archivé.',
-                color: 'text-gray-600 bg-gray-50',
-                icon: 'archive'
-        },
-        {
-            code: 'CANCELED',
-                label: 'Annulée',
-                description: 'La réservation a été annulée.',
-                color: 'text-red-600 bg-red-50',
-                icon: 'cancel'
-        }
-    ];
-    selectedStatus = {
-        code: 'PENDING',
-        label: 'En attente',
-        description: 'Les réservations sont enregistrées mais nécessite une action ou un paiement.',
-        color: 'text-amber-600 bg-amber-50',
-        icon: 'history'
-    };
+    status = [];
+    selectedStatus = null;
 
     key = '';
     filters = {
+        reservationCode: '',
         status: [],
         startDate: null,
         endDate: null
@@ -146,6 +106,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
      */
     constructor(
         private _apiReservationService: ApiReservationService,
+        private _apiCommonService: ApiCommonService,
         private _matDialog: MatDialog,
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseMediaWatcherService: FuseMediaWatcherService
@@ -159,17 +120,41 @@ export class ReservationListComponent implements OnInit, OnDestroy {
     }
 
     applyFilters() {
-        console.log('Filtres appliqués:', this.filters);
-        // Ici, appelez votre service ou émettez un événement pour filtrer le mat-table
+        if (!this.isAdvancedFilter) {
+            this.filters.status = this.selectedStatus ? [this.selectedStatus.code] : [];
+        }
+
+        // 2. Toujours revenir à la page 0 lors d'un changement de filtre !
+        this.currentPage = 0;
+        this.search()
+    }
+
+    onAdvancedStatusChange() {
+        // Si l'utilisateur choisit plusieurs statuts, le filtre "simple" n'est plus pertinent
+        if (this.filters.status.length !== 1) {
+            this.selectedStatus = null;
+        } else {
+            // Si un seul, on peut synchroniser le label du filtre simple
+            this.selectedStatus = this.status.find(s => s.code === this.filters.status[0]);
+        }
     }
 
     resetFilters() {
         this.filters = {
+            reservationCode: '',
             status: [],
             startDate: null,
             endDate: null
         };
         this.applyFilters();
+    }
+
+    loadStatus(){
+        this._apiCommonService.getEnumsData('reservation-status').subscribe({
+            next: data => {
+                this.status = data;
+            }
+        })
     }
 
     ngOnDestroy(): void {
@@ -179,6 +164,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        this.loadStatus();
         //this.searchPersons();
         this.dataSource.paginator = this._paginator;
         // Subscribe to media query change
@@ -205,7 +191,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         this.dataSource.data = [];
         this._apiReservationService
-            .search(this.key, this.currentPage, this.pageSize)
+            .search(this.key, this.filters.reservationCode,this.filters.status, this.currentPage, this.pageSize)
             .pipe(
                 finalize(() => {
                     this.isLoading = false;
@@ -233,5 +219,33 @@ export class ReservationListComponent implements OnInit, OnDestroy {
 
     closeDrawer() {
         this.matDrawer.close();
+    }
+
+    getStatusStyle(status: string) {
+        const statusMap: Record<string, any> = {
+            'PENDING':     { label: 'En attente',   class: 'bg-amber-200 text-amber-800 dark:bg-amber-600 dark:text-amber-50' },
+            'CONFIRMED':   { label: 'Confirmée',    class: 'bg-green-200 text-green-800 dark:bg-green-600 dark:text-green-50' },
+            'IN_PROGRESS': { label: 'En cours',     class: 'bg-blue-200 text-blue-800 dark:bg-blue-600 dark:text-blue-50' },
+            'COMPLETED':   { label: 'Terminée',     class: 'bg-teal-200 text-teal-800 dark:bg-teal-600 dark:text-teal-50' },
+            'CANCELED':    { label: 'Annulée',      class: 'bg-red-200 text-red-800 dark:bg-red-600 dark:text-red-50' },
+            'NO_SHOW':     { label: 'Non présenté', class: 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-50' },
+            'EXPIRED':     { label: 'Expirée',      class: 'bg-orange-200 text-orange-800 dark:bg-orange-600 dark:text-orange-50' },
+            'CLOSED':      { label: 'Clôturée',     class: 'bg-slate-300 text-slate-900 dark:bg-slate-700 dark:text-slate-100' }
+        };
+
+        return statusMap[status] || { label: status, class: 'bg-gray-100 text-gray-600' };
+    }
+
+    removeSpecificFilter(filter: string) {
+        if (filter == 'status')
+            this.filters.status = [];
+        this.search();
+    }
+
+    getStatusLabels(): string {
+        return this.filters.status
+            .map(code => this.status.find(item => item.code === code)?.name)
+            .filter(name => !!name)
+            .join(', ');
     }
 }

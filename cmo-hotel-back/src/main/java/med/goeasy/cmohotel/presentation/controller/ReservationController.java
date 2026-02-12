@@ -39,6 +39,7 @@ public class ReservationController {
     ResponseEntity<PageDto<ReservationDetailsResponseDto>> search(
             Authentication authentication,
             @RequestParam(required = false, defaultValue = "") String key,
+            @RequestParam(required = false, defaultValue = "") Long reservationCode,
             @RequestParam(required = false) List<String> categories,
             @RequestParam(required = false) List<String> status,
             @RequestParam(required = false) LocalDateTime start,
@@ -55,8 +56,6 @@ public class ReservationController {
             });
         }
 
-        System.err.println(ecategories);
-
         List<EReservationStatus> estatus = new ArrayList<>();
         if (status != null && !status.isEmpty()) {
             status.forEach((s) -> {
@@ -70,6 +69,7 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.search(
                 authentication,
                 key,
+                reservationCode,
                 ecategories,
                 estatus,
                 start, end,

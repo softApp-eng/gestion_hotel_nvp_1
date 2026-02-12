@@ -49,7 +49,7 @@
                                 <ul class="space-y-1">
                                     @for (p of displayList; track p.id) {
                                         <li class="list-disc list-inside text-secondary">
-                                            {{p?.category + ' : ' + p?.price}}
+                                            {{p?.category?.name + ' : ' + p?.price}}
                                         </li>
                                     }
                                 </ul>

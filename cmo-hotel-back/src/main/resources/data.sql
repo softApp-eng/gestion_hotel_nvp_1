@@ -11,11 +11,11 @@ insert into grade (id ,code,name,rating,category) values (9,'CNE','CAPITAINE',9,
 insert into grade (id ,code,name,rating,category) values (10,'LT','LIEUTENANT',10,'OFFICIER_SUBALTERNE');
 insert into grade (id ,code,name,rating,category) values (11,'S/LT','S/LIEUTENANT',11,'OFFICIER_SUBALTERNE');
 insert into grade (id ,code,name,rating,category) values (12,'ASP','ASPIRANT',12,'OFFICIER_SUBALTERNE');
-insert into grade (id ,code,name,rating,category) values (13,'A/C','ADJUDANT-CHEF',13,'SOUS_OFFICIER');
-insert into grade (id ,code,name,rating,category) values (14,'ADJ','ADJUDANT',14,'SOUS_OFFICIER');
-insert into grade (id ,code,name,rating,category) values (15,'S/M','SERGENT-MAJOR',15,'SOUS_OFFICIER');
-insert into grade (id ,code,name,rating,category) values (16,'S/C','SERGENT-CHEF',16,'SOUS_OFFICIER');
-insert into grade (id ,code,name,rating,category) values (17,'SGT','SERGENT',17,'SOUS_OFFICIER');
+insert into grade (id ,code,name,rating,category) values (13,'A/C','ADJUDANT-CHEF',13,'ODR');
+insert into grade (id ,code,name,rating,category) values (14,'ADJ','ADJUDANT',14,'ODR');
+insert into grade (id ,code,name,rating,category) values (15,'S/M','SERGENT-MAJOR',15,'ODR');
+insert into grade (id ,code,name,rating,category) values (16,'S/C','SERGENT-CHEF',16,'ODR');
+insert into grade (id ,code,name,rating,category) values (17,'SGT','SERGENT',17,'ODR');
 insert into grade (id ,code,name,rating,category) values (18,'civil','CIVIL',18,'CIVIL');
 SELECT setval('public."seq-grade"', (SELECT MAX(id) FROM grade));
 
@@ -126,21 +126,21 @@ INSERT INTO person (
 -- ===========================
 
 -- Principal 1
-('21111111-1111-4111-8111-111111111111', 18, '11111111-1111-4111-8111-111111111111', 'WIFE',  'BW123001', 'Fatima',  'El Amrani', 'FEMALE', 'fatima.elamrani01@example.ma',  DATE '1981-02-10', '0699901001', 'Marocaine', 'Arabe/Français', NULL, NULL, 'Membre famille (épouse)', false),
+('21111111-1111-4111-8111-111111111111', 18, '11111111-1111-4111-8111-111111111111', 'SPOUSE',  'BW123001', 'Fatima',  'El Amrani', 'FEMALE', 'fatima.elamrani01@example.ma',  DATE '1981-02-10', '0699901001', 'Marocaine', 'Arabe/Français', NULL, NULL, 'Membre famille (épouse)', false),
 ('31111111-1111-4111-8111-111111111111', 18, '11111111-1111-4111-8111-111111111111', 'SON',   'BS123001', 'Yassine', 'El Amrani', 'MALE',   'yassine.elamrani01@example.ma', DATE '2010-09-21', '0699902001', 'Marocaine', 'Arabe',          NULL, NULL, 'Membre famille (fils)',  false),
 
 -- Principal 2
-('22222222-1111-4222-8222-222222222222', 18, '22222222-2222-4222-8222-222222222222', 'WIFE',  'BW123002', 'Khadija', 'Benali',   'FEMALE', 'khadija.benali02@example.ma',   DATE '1986-06-15', '0699901002', 'Marocaine', 'Arabe',          NULL, NULL, 'Membre famille (épouse)', false),
+('22222222-1111-4222-8222-222222222222', 18, '22222222-2222-4222-8222-222222222222', 'SPOUSE',  'BW123002', 'Khadija', 'Benali',   'FEMALE', 'khadija.benali02@example.ma',   DATE '1986-06-15', '0699901002', 'Marocaine', 'Arabe',          NULL, NULL, 'Membre famille (épouse)', false),
 ('32222222-1111-4222-8222-222222222222', 18, '22222222-2222-4222-8222-222222222222', 'SON',   'BS123002', 'Ayoub',   'Benali',   'MALE',   'ayoub.benali02@example.ma',     DATE '2012-11-03', '0699902002', 'Marocaine', 'Arabe/Français', NULL, NULL, 'Membre famille (fils)',  false),
 
 -- Principal 3
-('23333333-1111-4333-8333-333333333333', 18, '33333333-3333-4333-8333-333333333333', 'WIFE',  'BW123003', 'Imane',   'Bennani',  'FEMALE', 'imane.bennani03@example.ma',    DATE '1983-01-09', '0699901003', 'Marocaine', 'Français',       NULL, NULL, 'Membre famille (épouse)', false),
+('23333333-1111-4333-8333-333333333333', 18, '33333333-3333-4333-8333-333333333333', 'SPOUSE',  'BW123003', 'Imane',   'Bennani',  'FEMALE', 'imane.bennani03@example.ma',    DATE '1983-01-09', '0699901003', 'Marocaine', 'Français',       NULL, NULL, 'Membre famille (épouse)', false),
 ('33333333-1111-4333-8333-333333333333', 18, '33333333-3333-4333-8333-333333333333', 'SON',   'BS123003', 'Othmane', 'Bennani',  'MALE',   'othmane.bennani03@example.ma',  DATE '2009-04-18', '0699902003', 'Marocaine', 'Arabe',          NULL, NULL, 'Membre famille (fils)',  false),
 
 -- Principal 4
-('24444444-1111-4444-8444-444444444444', 18, '44444444-4444-4444-8444-444444444444', 'WIFE',  'BW123004', 'Salma',   'El Ghazi', 'FEMALE', 'salma.elghazi04@example.ma',    DATE '1987-10-12', '0699901004', 'Marocaine', 'Arabe/Français', NULL, NULL, 'Membre famille (épouse)', false),
-('34444444-1111-4444-8444-444444444444', 18, '44444444-4444-4444-8444-444444444444', 'SON',   'BS123004', 'Hamza',   'El Ghazi', 'MALE',   'hamza.elghazi04@example.ma',    DATE '2013-02-20', '0699902004', 'Marocaine', 'Français',       NULL, NULL, 'Membre famille (fils)',  false),
+('24444444-1111-4444-8444-444444444444', 18, '44444444-4444-4444-8444-444444444444', 'SPOUSE',  'BW123004', 'Salma',   'El Ghazi', 'FEMALE', 'salma.elghazi04@example.ma',    DATE '1987-10-12', '0699901004', 'Marocaine', 'Arabe/Français', NULL, NULL, 'Membre famille (épouse)', false),
+('34444444-1111-4444-8444-444444444444', 18, '44444444-4444-4444-8444-444444444444', 'DAUGHTER',   'BS123004', 'Hamza',   'El Ghazi', 'MALE',   'hamza.elghazi04@example.ma',    DATE '2013-02-20', '0699902004', 'Marocaine', 'Français',       NULL, NULL, 'Membre famille (fils)',  false),
 
 -- Principal 5
-('25555555-1111-4555-8555-555555555555', 18, '55555555-5555-4555-8555-555555555555', 'WIFE',  'BW123005', 'Aicha',   'Lamrani',  'FEMALE', 'aicha.lamrani05@example.ma',    DATE '1980-07-07', '0699901005', 'Marocaine', 'Arabe',          NULL, NULL, 'Membre famille (épouse)', false),
-('35555555-1111-4555-8555-555555555555', 18, '55555555-5555-4555-8555-555555555555', 'SON',   'BS123005', 'Nabil',   'Lamrani',  'MALE',   'nabil.lamrani05@example.ma',    DATE '2008-12-01', '0699902005', 'Marocaine', 'Arabe/Français', NULL, NULL, 'Membre famille (fils)',  false);
+('25555555-1111-4555-8555-555555555555', 18, '55555555-5555-4555-8555-555555555555', 'SPOUSE',  'BW123005', 'Aicha',   'Lamrani',  'FEMALE', 'aicha.lamrani05@example.ma',    DATE '1980-07-07', '0699901005', 'Marocaine', 'Arabe',          NULL, NULL, 'Membre famille (épouse)', false),
+('35555555-1111-4555-8555-555555555555', 18, '55555555-5555-4555-8555-555555555555', 'DAUGHTER',   'BS123005', 'Nabil',   'Lamrani',  'MALE',   'nabil.lamrani05@example.ma',    DATE '2008-12-01', '0699902005', 'Marocaine', 'Arabe/Français', NULL, NULL, 'Membre famille (fils)',  false);
