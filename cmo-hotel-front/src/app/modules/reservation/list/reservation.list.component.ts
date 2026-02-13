@@ -8,12 +8,12 @@ import {
     ViewEncapsulation,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { finalize, Subject, takeUntil } from 'rxjs';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatMenuModule } from '@angular/material/menu';
+import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 import { MatDialog } from '@angular/material/dialog';
 import { HighlightPipe } from '../../../../@fuse/pipes/HighlightPipe';
@@ -31,6 +31,8 @@ import { MatOption } from '@angular/material/core';
 import { MatSelect, MatSelectTrigger } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { ApiCommonService } from '../../../core/service/api.common.service';
+import { DomSanitizer } from '@angular/platform-browser';
+import { UtilsService } from '../../../core/service/utils.service';
 
 @Component({
     selector: 'reservation-list',
@@ -67,7 +69,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
     protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
     isLoading: boolean = false;
     displayedColumns: string[] = [
-        'info',
+        //'info',
         'code',
         'checkin',
         'checkout',
@@ -91,11 +93,13 @@ export class ReservationListComponent implements OnInit, OnDestroy {
 
     status = [];
     selectedStatus = null;
-
     key = '';
+
+    categories = [];
     filters = {
         reservationCode: '',
         status: [],
+        categories: [],
         startDate: null,
         endDate: null
     };
@@ -108,9 +112,11 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         private _apiReservationService: ApiReservationService,
         private _apiCommonService: ApiCommonService,
         private _matDialog: MatDialog,
+        private _utilsService: UtilsService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseMediaWatcherService: FuseMediaWatcherService
-    ) {}
+    ) {
+    }
 
     get activeFiltersCount(): number {
         let count = 0;
@@ -119,33 +125,27 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         return count;
     }
 
-    applyFilters() {
+    applyFilters(trigger?: MatMenuTrigger) {
+        console.log('applyFilters', this.filters);
+        if (trigger) {
+            trigger.closeMenu();
+        }
         if (!this.isAdvancedFilter) {
             this.filters.status = this.selectedStatus ? [this.selectedStatus.code] : [];
         }
-
-        // 2. Toujours revenir à la page 0 lors d'un changement de filtre !
         this.currentPage = 0;
         this.search()
-    }
-
-    onAdvancedStatusChange() {
-        // Si l'utilisateur choisit plusieurs statuts, le filtre "simple" n'est plus pertinent
-        if (this.filters.status.length !== 1) {
-            this.selectedStatus = null;
-        } else {
-            // Si un seul, on peut synchroniser le label du filtre simple
-            this.selectedStatus = this.status.find(s => s.code === this.filters.status[0]);
-        }
     }
 
     resetFilters() {
         this.filters = {
             reservationCode: '',
             status: [],
+            categories: [],
             startDate: null,
             endDate: null
         };
+        this.selectedStatus = null;
         this.applyFilters();
     }
 
@@ -153,6 +153,14 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         this._apiCommonService.getEnumsData('reservation-status').subscribe({
             next: data => {
                 this.status = data;
+            }
+        })
+    }
+
+    loadCategories(){
+        this._apiCommonService.getEnumsData('reservation-categories').subscribe({
+            next: data => {
+                this.categories = data;
             }
         })
     }
@@ -165,6 +173,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.loadStatus();
+        this.loadCategories();
         //this.searchPersons();
         this.dataSource.paginator = this._paginator;
         // Subscribe to media query change
@@ -191,7 +200,14 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         this.dataSource.data = [];
         this._apiReservationService
-            .search(this.key, this.filters.reservationCode,this.filters.status, this.currentPage, this.pageSize)
+            .search(
+                this.key,
+                this.filters.reservationCode,
+                this.filters.status,
+                this.filters.categories,
+                this.filters.startDate ? this._utilsService.convertToDate(this.filters.startDate): '',
+                this.filters.endDate ? this._utilsService.convertToDate(this.filters.endDate): '',
+                this.currentPage, this.pageSize)
             .pipe(
                 finalize(() => {
                     this.isLoading = false;
@@ -239,13 +255,32 @@ export class ReservationListComponent implements OnInit, OnDestroy {
     removeSpecificFilter(filter: string) {
         if (filter == 'status')
             this.filters.status = [];
+
+        if (filter == 'category')
+            this.filters.categories = [];
+
+        if (filter == 'range') {
+            this.filters.startDate = null;
+            this.filters.endDate = null;
+        }
+
         this.search();
     }
 
-    getStatusLabels(): string {
-        return this.filters.status
-            .map(code => this.status.find(item => item.code === code)?.name)
-            .filter(name => !!name)
-            .join(', ');
+    getLabels(target : 'status'|'category'): string {
+        let labels;
+        if (target == 'status')
+            labels =  this.filters.status
+                .map(code => this.status.find(item => item.code === code)?.name)
+                .filter(name => !!name)
+                .join(', ');
+
+        if (target == 'category')
+            labels =  this.filters.categories
+                .map(code => this.categories.find(item => item.code === code)?.name)
+                .filter(name => !!name)
+                .join(', ');
+
+        return labels;
     }
 }

@@ -28,6 +28,12 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { AssignRoomsModel } from '../room-assign/assign-rooms.model';
 import {finalize} from "rxjs";
 import { ApiCommonService } from '../../../core/service/api.common.service';
+import { DecimalPipe, KeyValuePipe } from '@angular/common';
+
+interface RoomGroup {
+    room: any;
+    persons: any[];
+}
 
 @Component({
     selector: 'reservation-add',
@@ -51,6 +57,7 @@ import { ApiCommonService } from '../../../core/service/api.common.service';
         MatSelectModule,
         MatSlideToggleModule,
         FormsModule,
+        KeyValuePipe
     ],
 })
 export class ReservationCreateComponent implements OnInit {
@@ -73,34 +80,11 @@ export class ReservationCreateComponent implements OnInit {
     groupedAction: boolean = false;
     selectedGroupedPersons = [];
 
-    roles = [
-        {
-            code: 'PRINCIPAL',
-            name: 'Titulaire Principal',
-            description:
-                "L'invité militaire titulaire de la réservation et responsable principal.",
-        },
-        {
-            code: 'VICE',
-            name: 'Mandataire / Secondant',
-            description:
-                "Responsable désigné agissant au nom du titulaire en cas d'absence de ce dernier.",
-        },
-        {
-            code: 'FAMILY',
-            name: 'Membre Famille',
-            description:
-                'Membre de la famille (conjoint, ascendant) accompagnant le titulaire.',
-        },
-        {
-            code: 'CHILD',
-            name: 'Enfant',
-            description:
-                'Enfant à charge du titulaire militaire bénéficiant du séjour.',
-        },
-    ];
+    roles = [];
 
     categories = [];
+
+    estimatedTotal: number = 0; // Stocke la valeur calculée
 
     /**
      * Constructor
@@ -118,6 +102,7 @@ export class ReservationCreateComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadCategories();
+        this.loadRoles();
         this.form = this._formBuilder.group({
             category: [null, [Validators.required]],
             observation: [''],
@@ -140,6 +125,7 @@ export class ReservationCreateComponent implements OnInit {
                     this.startAt,
                     this.endAt
                 );
+                this.updateEstimation();
             }
         });
 
@@ -149,26 +135,38 @@ export class ReservationCreateComponent implements OnInit {
     }
 
     loadCategories() {
-        this._apiCommonService.getEnumsData('reservation-categories').subscribe({
-            next: (result) => {
-                this.categories = result;
-            }
-        })
+        this._apiCommonService
+            .getEnumsData('reservation-categories')
+            .subscribe({
+                next: (result) => {
+                    this.categories = result;
+                },
+            });
     }
 
-    save(){
+    loadRoles() {
+        this._apiCommonService.getEnumsData('guest-roles').subscribe({
+            next: (result) => {
+                this.roles = result;
+            },
+        });
+    }
+
+    save() {
         this.showAlert = false; // Reset l'alerte
         const errors: string[] = [];
 
         // 1. Validation des dates
         const dateRange = this.form.get('dateRange')?.value;
         if (!dateRange?.start || !dateRange?.end) {
-            errors.push("Veuillez sélectionner une période valide (Date début et fin).");
+            errors.push(
+                'Veuillez sélectionner une période valide (Date début et fin).'
+            );
         }
 
         // 2. Validation de la liste des personnes
         if (this.persons.length === 0) {
-            errors.push("Veuillez ajouter au moins un invité.");
+            errors.push('Veuillez ajouter au moins un invité.');
         }
 
         // 3. Validation des détails de chaque personne (ID, Room, Role)
@@ -176,7 +174,9 @@ export class ReservationCreateComponent implements OnInit {
             const name = `${p.firstName} ${p.lastName}`;
 
             if (!p.id) {
-                errors.push(`Données d'identité manquantes pour l'invité n°${index + 1}.`);
+                errors.push(
+                    `Données d'identité manquantes pour l'invité n°${index + 1}.`
+                );
             }
             if (!p.role) {
                 errors.push(`Le rôle n'a pas été défini pour ${name}.`);
@@ -190,7 +190,7 @@ export class ReservationCreateComponent implements OnInit {
         if (errors.length > 0) {
             this.alert = {
                 type: 'error',
-                message: errors.join('|') // Ou une liste HTML si votre composant d'alerte le supporte
+                message: errors.join('|'), // Ou une liste HTML si votre composant d'alerte le supporte
             };
             this.showAlert = true;
 
@@ -198,23 +198,29 @@ export class ReservationCreateComponent implements OnInit {
             setTimeout(() => {
                 const alertElement = document.querySelector('fuse-alert');
                 if (alertElement) {
-                    alertElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    alertElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                    });
                 }
             }, 0);
             return;
         }
-
+        console.log('startDate', dateRange.start);
+        console.log('endDate', dateRange.end);
+        console.log('category', this.form.get('category')?.value);
+        console.log('persons', this.persons);
         // 5. Si tout est valide, construction du Payload
         const reservationData = {
             startDate: this._utilsService.convertToDate(dateRange.start),
             endDate: this._utilsService.convertToDate(dateRange.end),
-            category:  this.form.get('category')?.value,
-            observation:  this.form.get('observation')?.value,
-            persons: this.persons.map(p => ({
+            category: this.form.get('category')?.value,
+            observation: this.form.get('observation')?.value,
+            persons: this.persons.map((p) => ({
                 personId: p.id,
                 role: p.role,
-                roomId: p.room.id
-            }))
+                roomId: p.room.id,
+            })),
         };
 
         console.log('PAYLOAD VALIDE:', reservationData);
@@ -224,21 +230,111 @@ export class ReservationCreateComponent implements OnInit {
         this.form.disable();
 
         // Appel au service
-        this._apiReservationService.create(reservationData)
-            .pipe(finalize(() => {
-                this.isSaving = false;
-                this.form.enable();
-            }))
+        this._apiReservationService
+            .create(reservationData)
+            .pipe(
+                finalize(() => {
+                    this.isSaving = false;
+                    this.form.enable();
+                })
+            )
             .subscribe({
                 next: (response) => {
                     this._toastr.success('Réservation enregistrée avec succès');
-                    this._router.navigate(['../'], { relativeTo: this._activeRoute });
+                    this._router.navigate(['../'], {
+                        relativeTo: this._activeRoute,
+                    });
                 },
                 error: (err) => {
-                    this.alert = { type: 'error', message: 'Erreur lors de la sauvegarde.' };
+                    this.alert = {
+                        type: 'error',
+                        message: 'Erreur lors de la sauvegarde.',
+                    };
                     this.showAlert = true;
-                }
+                },
             });
+    }
+
+    getGroupedRooms(): RoomGroup[] {
+        const map = new Map<number, RoomGroup>();
+
+        this.persons.forEach(person => {
+            const roomId = person.room?.id;
+            if (!roomId) return;
+
+            if (!map.has(roomId)) {
+                map.set(roomId, {
+                    room: person.room,
+                    persons: []
+                });
+            }
+
+            map.get(roomId).persons.push(person);
+        });
+
+        // On retourne uniquement le tableau d'objets [{room, persons}, ...]
+        return Array.from(map.values());
+    }
+
+    updateEstimation(): void {
+        const groups = this.getGroupedRooms();
+
+        if (!this.durationInDays || this.durationInDays <= 0 || groups.length === 0) {
+            this.estimatedTotal = 0;
+            return;
+        }
+
+        this.estimatedTotal = groups.reduce((total, group) => {
+            const maxPrice = group.persons.reduce((max, p) => {
+                const gradeCat = p.grade?.category?.code;
+                const price = group.room.roomType.prices.find(pr => pr.category.code === gradeCat)?.price || 0;
+                return Math.max(max, price);
+            }, 0);
+            return total + (maxPrice * this.durationInDays);
+        }, 0);
+    }
+
+    estimateTotal2(): number {
+        if (!this.durationInDays || this.durationInDays <= 0 || this.persons.length === 0) {
+            return 0;
+        }
+
+        // Map pour stocker : ID_CHAMBRE => PRIX_UNITAIRE
+        const roomPrices = new Map<number, number>();
+
+        this.persons.forEach(p => {
+            if (p.room?.id && p.room.roomType?.prices) {
+                const roomId = p.room.id;
+                const gradeCategoryCode = p.grade?.category?.code;
+
+                // Trouver le prix correspondant à cet occupant précis
+                const priceObj = p.room.roomType.prices.find(
+                    pr => pr.category.code === gradeCategoryCode
+                );
+
+                const unitPrice = priceObj ? priceObj.price : 0;
+
+                if (!roomPrices.has(roomId)) {
+                    // Première fois qu'on voit cette chambre
+                    roomPrices.set(roomId, unitPrice);
+                } else {
+                    // La chambre est déjà occupée, on garde le prix le plus élevé
+                    // (ou changez la logique selon votre règlement)
+                    const existingPrice = roomPrices.get(roomId) || 0;
+                    if (unitPrice > existingPrice) {
+                        roomPrices.set(roomId, unitPrice);
+                    }
+                }
+            }
+        });
+
+        // Calcul final : Somme des prix de chaque chambre unique * durée
+        let total = 0;
+        roomPrices.forEach((price) => {
+            total += (price * this.durationInDays);
+        });
+
+        return total;
     }
 
     raisePersonAddDialog() {
@@ -252,6 +348,7 @@ export class ReservationCreateComponent implements OnInit {
                 if (result) {
                     this.persons = result;
                     console.log('returned data', result);
+                    this.updateEstimation();
                 }
             });
     }
@@ -296,6 +393,7 @@ export class ReservationCreateComponent implements OnInit {
     unSelectPerson(person: any) {
         if (!person || !person.id) return;
         this.persons = this.persons.filter((p) => p.id !== person.id);
+        this.updateEstimation();
     }
 
     getRoleName(code: string): string {

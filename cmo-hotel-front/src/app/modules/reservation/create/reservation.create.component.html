@@ -72,8 +72,8 @@
                     <mat-datepicker-toggle  matIconSuffix [for]="rangePicker"></mat-datepicker-toggle>
                     <mat-date-range-picker #rangePicker>
                         <mat-date-range-picker-actions>
-                            <button mat-button matDateRangePickerCancel>Cancel</button>
-                            <button mat-button="elevated" mat-flat-button [color]="'primary'" matDateRangePickerApply>Apply</button>
+                            <button mat-button matDateRangePickerCancel>Annuler</button>
+                            <button mat-button="elevated" mat-flat-button [color]="'primary'" matDateRangePickerApply>Appliquer</button>
                         </mat-date-range-picker-actions>
                     </mat-date-range-picker>
                     @if (durationInDays) {
@@ -261,6 +261,15 @@
                     </textarea>
                 </mat-form-field>
 
+                <div class="flex flex-col items-end mt-4 p-4 bg-gray-50 dark:bg-transparent rounded-lg border border-dashed">
+                    <div class="text-secondary text-sm font-medium">
+                        Estimation ({{ durationInDays || 0 }} jours, {{ getGroupedRooms().length }} chambre(s))
+                    </div>
+                    <div class="text-2xl font-bold text-primary">
+                        {{ estimatedTotal }} MAD
+<!--                        {{ estimateTotal() | number:'1.2-2' }} MAD-->
+                    </div>
+                </div>
 
                 <div class="flex items-end justify-end mx-3 mt-8">
                     <button mat-flat-button [color]="'primary'" [disabled]="form.disabled || form.invalid" (click)="save()">

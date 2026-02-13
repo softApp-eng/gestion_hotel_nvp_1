@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +43,8 @@ public class ReservationController {
             @RequestParam(required = false, defaultValue = "") Long reservationCode,
             @RequestParam(required = false) List<String> categories,
             @RequestParam(required = false) List<String> status,
-            @RequestParam(required = false) LocalDateTime start,
-            @RequestParam(required = false) LocalDateTime end,
+            @RequestParam(required = false) LocalDate start,
+            @RequestParam(required = false) LocalDate end,
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "20") Integer size
     ){

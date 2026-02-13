@@ -21,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -81,18 +82,26 @@ public class ReservationService {
             Long reservationCode,
             List<EReservationCategory> categories,
             List<EReservationStatus> status,
-            LocalDateTime start,
-            LocalDateTime end,
+            LocalDate start,
+            LocalDate end,
             Integer page, Integer size) {
         System.err.println("KEY "+ key);
         System.err.println("categories "+ categories);
         System.err.println("status "+ status);
         System.err.println("start "+ start);
         System.err.println("end "+ end);
+        boolean isRange = false;
+        if (start != null)
+            isRange = true;
+        System.err.println("isRange "+ isRange);
         Page<ReservationDetails> reservations = reservationDetailsRepository.search(
                 key,
                 reservationCode,
                 status.isEmpty()? null:status,
+                categories.isEmpty()? null:categories,
+                start != null ? start.atStartOfDay() : null,
+                start != null ? end.atTime(23, 59, 59) : null,
+                isRange,
                 PageRequest.of(page, size)
         );
 

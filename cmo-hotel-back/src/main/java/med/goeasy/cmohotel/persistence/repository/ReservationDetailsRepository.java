@@ -76,12 +76,19 @@ public interface ReservationDetailsRepository extends JpaRepository<ReservationD
                        ))
                AND (:code IS NULL OR rd.code = :code)
                AND (:status IS NULL OR rd.status IN :status)
-        ORDER BY rd.plannedStart DESC
+               AND (:category IS NULL OR rd.category IN :category)
+               AND ( :range IS FALSE OR (rd.plannedStart <= :end AND rd.plannedEnd >= :start))
+               
+        ORDER BY rd.plannedStart ASC
         """)
     Page<ReservationDetails> search(
             @Param("key") String key,
             @Param("code") Long reservationCode,
             @Param("status") List<EReservationStatus> status,
+            @Param("category") List<EReservationCategory> category,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            @Param("range") boolean isRange,
             Pageable pageable
     );
 

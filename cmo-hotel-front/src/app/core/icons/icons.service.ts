@@ -51,5 +51,10 @@ export class IconsService {
                 'icons/heroicons-mini.svg'
             )
         );
+
+        matIconRegistry.addSvgIconSetInNamespace(
+            'app',
+            domSanitizer.bypassSecurityTrustResourceUrl('icons/custom-icons.svg')
+        );
     }
 }
