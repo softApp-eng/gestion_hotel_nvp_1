@@ -16,6 +16,7 @@ import { UserUpdateMdpModel } from '../update-mdp-model/user.update-mdp.model';
 import { AssignRolesModel } from '../assign-roles-model/assign-roles-model';
 import { HasPermissionDirective } from '../../../core/auth/HasPermissionDirective';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
+import { DisableIfNoPermissionDirective } from '../../../core/auth/DisableIfNoPermissionDirective';
 
 @Component({
     selector: 'users-list',
@@ -33,6 +34,7 @@ import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
         NgClass,
         RouterLink,
         HasPermissionDirective,
+        DisableIfNoPermissionDirective,
     ],
 })
 export class UserListComponent implements OnInit {

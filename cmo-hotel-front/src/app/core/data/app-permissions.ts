@@ -2,11 +2,12 @@ export const APP_PERMISSIONS = {
     // default
     DEFAULT:'general:default',
     // users
+    ADMIN_USERS_LIST:'users:user:list',
     ADMIN_USERS_CREATE:'users:user:create',
     ADMIN_USERS_UPDATE:'users:user:update',
     ADMIN_USERS_PASSWORD_MODIFY:'users:user:password:modify',
     ADMIN_USERS_ASSIGN_ROLES:'users:user:assign:roles',
-    ADMIN_USERS_ASSIGN_SITES:'users:user:assign:sites',
+
     // roles
     ADMIN_ROLES_LIST:'roles:role:list',
     ADMIN_ROLES_PERMISSIONS_LIST:'roles:permission:list',
@@ -40,11 +41,18 @@ export const APP_PERMISSIONS = {
     ROOM_TYPE_UPDATE:'rooms:type:update',
     ROOM_TYPE_LIST:'rooms:type:list',
     ROOM_TYPE_SELECT_ONE:'rooms:type:one',
+    ROOM_TYPE_DELETE:'rooms:type:delete',
 
     // ROOM PRICES
     ROOM_PRICE_CREATE:'rooms:price:create',
     ROOM_PRICE_UPDATE:'rooms:price:update',
     ROOM_PRICE_LIST:'rooms:price:list',
     ROOM_PRICE_SELECT_ONE:'rooms:price:one',
+    ROOM_PRICE_DELETE:'rooms:price:delete',
+
+    // RESERVATION
+    RESERVATION_CREATE:'reservations:reservation:create',
+    RESERVATION_LIST:'reservations:reservation:list',
+
 
 }

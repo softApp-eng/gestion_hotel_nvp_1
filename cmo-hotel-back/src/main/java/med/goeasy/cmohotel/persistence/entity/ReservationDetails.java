@@ -12,7 +12,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,8 @@ import java.util.List;
 @Table(indexes = {
         @Index(name = "idx_rd_status", columnList = "status"),
         @Index(name = "idx_rd_category", columnList = "category"),
-        @Index(name = "idx_rd_dates", columnList = "plannedStart, plannedEnd")
+        @Index(name = "idx_rd_dates", columnList = "plannedStart, plannedEnd"),
+        @Index(name = "idx_checkin_checkout", columnList = "checkin, checkout")
 })
 @Entity
 public class ReservationDetails {
@@ -43,6 +43,9 @@ public class ReservationDetails {
 
     private LocalDateTime plannedStart;
     private LocalDateTime plannedEnd;
+
+    private LocalDateTime checkin;
+    private LocalDateTime checkout;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

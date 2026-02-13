@@ -16,6 +16,7 @@ import { HasPermissionDirective } from '../../../../core/auth/HasPermissionDirec
 import { ApiRoomService } from '../../api.room.service';
 import { ApiPavillonService } from '../../api.pavillon.service';
 import { APP_PERMISSIONS } from '../../../../core/data/app-permissions';
+import { DisableIfNoPermissionDirective } from '../../../../core/auth/DisableIfNoPermissionDirective';
 
 @Component({
     selector: 'room-list',
@@ -35,12 +36,21 @@ import { APP_PERMISSIONS } from '../../../../core/data/app-permissions';
         MatPaginator,
         MatSortModule,
         HasPermissionDirective,
+        DisableIfNoPermissionDirective,
     ],
 })
 export class RoomListComponent implements OnInit, AfterViewInit {
     rooms;
     isLoading: boolean = false;
-    displayedColumns: string[] = ['name', 'code', 'type',  'capacity','floor','description','action'];
+    displayedColumns: string[] = [
+        'name',
+        'code',
+        'type',
+        'capacity',
+        'floor',
+        'description',
+        'action',
+    ];
     dataSource = new MatTableDataSource<any>([]);
     key = '';
 
@@ -56,7 +66,7 @@ export class RoomListComponent implements OnInit, AfterViewInit {
     constructor(
         private _apiRoomService: ApiRoomService,
         private _apiPavillonService: ApiPavillonService,
-        private _activeRoute: ActivatedRoute,
+        private _activeRoute: ActivatedRoute
     ) {}
 
     ngAfterViewInit(): void {
@@ -66,17 +76,17 @@ export class RoomListComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit(): void {
-        this.loadCurrentPavillonRooms()
+        this.loadCurrentPavillonRooms();
     }
 
-    loadCurrentPavillonRooms(){
+    loadCurrentPavillonRooms() {
         const pavillonId = this._activeRoute.snapshot.params['pavillonId'];
         this._apiPavillonService.one(pavillonId).subscribe({
-            next: data => {
+            next: (data) => {
                 this.pavillon = data;
                 this.loadRooms(this.pavillon.id);
-            }
-        })
+            },
+        });
     }
 
     loadRooms(pavillonId) {

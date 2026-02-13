@@ -29,7 +29,7 @@ public class CmoHotelBackApplication {
     @Bean
     CommandLineRunner runner(Feeder feeder){
         return args -> {
-            //feeder.feed();
+            //feeder.seedMassiveReservations(500);
             //feeder.grantPermissionToRole(EPermissions.ASSISTANCE_CONSOLIDATION_REPORT_EXCEL_DOWNLOAD,ERoleSystem.ADMIN);
             //feeder.grantPermissionToRole(EPermissions.ROOM_TYPE_DELETE,ERoleSystem.ADMIN);
             //feeder.resetRolePermissions(ERoleSystem.ADMIN);

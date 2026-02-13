@@ -23,6 +23,8 @@ import { ApiRoomTypeService } from '../api.room-type.service';
 import { SlicePipe } from '@angular/common';
 import { RoomTypeCreateModel } from '../dialog-create-type/room-type-create.model';
 import { RoomPriceManageModel } from '../dialog-prices-manage/room-price-manage.model';
+import { APP_PERMISSIONS } from '../../../../../core/data/app-permissions';
+import { DisableIfNoPermissionDirective } from '../../../../../core/auth/DisableIfNoPermissionDirective';
 
 @Component({
     selector: 'prices-room-types-list',
@@ -42,6 +44,7 @@ import { RoomPriceManageModel } from '../dialog-prices-manage/room-price-manage.
         MatTabsModule,
         MatSortModule,
         SlicePipe,
+        DisableIfNoPermissionDirective,
     ],
 })
 export class RoomTypesListComponent implements OnInit, AfterViewInit {
@@ -109,9 +112,12 @@ export class RoomTypesListComponent implements OnInit, AfterViewInit {
 
     raiseSaveType(type?) {
         this._matDialog
-            .open(RoomTypeCreateModel, { data: { type: type },disableClose: true })
+            .open(RoomTypeCreateModel, {
+                data: { type: type },
+                disableClose: true,
+            })
             .afterClosed()
-            .subscribe(data=>{
+            .subscribe((data) => {
                 if (data?.reload) {
                     this.loadTypes();
                 }
@@ -120,35 +126,41 @@ export class RoomTypesListComponent implements OnInit, AfterViewInit {
 
     raisePricesManagement(type?) {
         this._matDialog
-            .open(RoomPriceManageModel, { data: { type: type },disableClose: true })
+            .open(RoomPriceManageModel, {
+                data: { type: type },
+                disableClose: true,
+            })
             .afterClosed()
-            .subscribe(data=>{
+            .subscribe((data) => {
                 //if (data?.reload) {
-                    this.loadTypes();
+                this.loadTypes();
                 //}
             });
     }
 
     deleteType(type) {
-        this.actionConfigDialogue.title = `Confirmer la suppression du type "${type.type}".`
-        this.actionConfigDialogue.message = `Êtes-vous sûr de vouloir supprimer le type "${type.type}" ?<br> Cette action est irréversible. Toutes les chambres ayant ce type seront dissociée`
+        this.actionConfigDialogue.title = `Confirmer la suppression du type "${type.type}".`;
+        this.actionConfigDialogue.message = `Êtes-vous sûr de vouloir supprimer le type "${type.type}" ?<br> Cette action est irréversible. Toutes les chambres ayant ce type seront dissociée`;
         const dialogRef = this._fuseConfirmationService.open(
             this.actionConfigDialogue
         );
         dialogRef.afterClosed().subscribe((result) => {
             if (result === 'confirmed')
-                this._apiRoomTypeService
-                    .delete(type.id)
-                    .subscribe({
-                        next: (value) => {
-                            this._toast.success('Type supprimé');
-                            this.dataSource.data = this.dataSource.data.filter(s => s.id !== type.id);
-                        },
-                        error: (err) =>
-                            this._toast.error(
-                                err?.error?.description || "Une erreur s'est produit"
-                            ),
-                    });
+                this._apiRoomTypeService.delete(type.id).subscribe({
+                    next: (value) => {
+                        this._toast.success('Type supprimé');
+                        this.dataSource.data = this.dataSource.data.filter(
+                            (s) => s.id !== type.id
+                        );
+                    },
+                    error: (err) =>
+                        this._toast.error(
+                            err?.error?.description ||
+                                "Une erreur s'est produit"
+                        ),
+                });
         });
     }
+
+    protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
 }

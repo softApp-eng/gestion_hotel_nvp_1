@@ -30,6 +30,7 @@ import { MatRippleModule } from '@angular/material/core';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { DisableIfNoPermissionDirective } from '../../../core/auth/DisableIfNoPermissionDirective';
 
 @Component({
     selector: 'person-list',
@@ -54,6 +55,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
         TitleCasePipe,
         RouterLink,
         HasPermissionDirective,
+        DisableIfNoPermissionDirective,
     ],
 })
 export class PersonListComponent implements OnInit, OnDestroy {

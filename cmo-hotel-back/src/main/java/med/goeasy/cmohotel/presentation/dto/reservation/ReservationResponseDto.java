@@ -1,30 +1,23 @@
 package med.goeasy.cmohotel.presentation.dto.reservation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import med.goeasy.cmohotel.persistence.entity.Reservation;
-import med.goeasy.cmohotel.persistence.entity.ReservationDetails;
 import med.goeasy.cmohotel.persistence.entity.enums.EGuestRole;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 import med.goeasy.cmohotel.presentation.dto.person.PersonResponseDto;
 import med.goeasy.cmohotel.presentation.dto.room.RoomResponseDto;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ReservationResponseDto(
         String id,
-        //ReservationDetailsResponseDto details,
         PersonResponseDto person,
         EGuestRole role,
         RoomResponseDto room,
-        LocalDateTime checkin,
-        LocalDateTime checkout,
+        LocalDateTime exceptionalCheckin,
+        LocalDateTime exceptionalCheckout,
         EReservationStatus exceptionPersonStatus,
         String createdBy,
         String lastModifiedBy,
@@ -40,8 +33,8 @@ public record ReservationResponseDto(
                 .person(PersonResponseDto.mapToDto(entity.getPerson()))
                 .role(entity.getRole())
                 .room(RoomResponseDto.mapToDto(entity.getRoom()))
-                .checkin(entity.getCheckin())
-                .checkout(entity.getCheckout())
+                .exceptionalCheckin(entity.getExceptionalCheckin())
+                .exceptionalCheckout(entity.getExceptionalCheckout())
                 .exceptionPersonStatus(entity.getExceptionPersonStatus())
                 .createdBy(entity.getCreatedBy())
                 .lastModifiedBy(entity.getLastModifiedBy())

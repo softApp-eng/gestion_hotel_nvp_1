@@ -8,14 +8,14 @@ export default [
         path     : '',
         component: ReservationListComponent,
         data: {
-            //permissions:[APP_PERMISSIONS.ADMIN_ROLES_LIST]
+            permissions:[APP_PERMISSIONS.RESERVATION_LIST]
         },
     },
     {
         path     : 'create',
         component: ReservationCreateComponent,
         data: {
-            //permissions:[APP_PERMISSIONS.PERSON_CREATE]
+            permissions:[APP_PERMISSIONS.RESERVATION_CREATE]
         },
     },
 ] as Routes;

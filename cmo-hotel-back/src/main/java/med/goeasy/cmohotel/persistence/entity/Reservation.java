@@ -43,8 +43,8 @@ public class Reservation {
     @ManyToOne
     private Room room;
 
-    private LocalDateTime checkin;
-    private LocalDateTime checkout;
+    private LocalDateTime exceptionalCheckin;
+    private LocalDateTime exceptionalCheckout;
 
     @Enumerated(EnumType.STRING)
     private EReservationStatus exceptionPersonStatus;

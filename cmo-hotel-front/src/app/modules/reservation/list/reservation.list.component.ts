@@ -33,6 +33,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { ApiCommonService } from '../../../core/service/api.common.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { UtilsService } from '../../../core/service/utils.service';
+import {DisableIfNoPermissionDirective} from "../../../core/auth/DisableIfNoPermissionDirective";
 
 @Component({
     selector: 'reservation-list',
@@ -63,6 +64,7 @@ import { UtilsService } from '../../../core/service/utils.service';
         MatOption,
         MatSelect,
         MatSelectTrigger,
+        DisableIfNoPermissionDirective,
     ],
 })
 export class ReservationListComponent implements OnInit, OnDestroy {
@@ -101,7 +103,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         status: [],
         categories: [],
         startDate: null,
-        endDate: null
+        endDate: null,
     };
     isAdvancedFilter = false;
 
@@ -115,8 +117,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         private _utilsService: UtilsService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseMediaWatcherService: FuseMediaWatcherService
-    ) {
-    }
+    ) {}
 
     get activeFiltersCount(): number {
         let count = 0;
@@ -131,10 +132,12 @@ export class ReservationListComponent implements OnInit, OnDestroy {
             trigger.closeMenu();
         }
         if (!this.isAdvancedFilter) {
-            this.filters.status = this.selectedStatus ? [this.selectedStatus.code] : [];
+            this.filters.status = this.selectedStatus
+                ? [this.selectedStatus.code]
+                : [];
         }
         this.currentPage = 0;
-        this.search()
+        this.search();
     }
 
     resetFilters() {
@@ -143,26 +146,28 @@ export class ReservationListComponent implements OnInit, OnDestroy {
             status: [],
             categories: [],
             startDate: null,
-            endDate: null
+            endDate: null,
         };
         this.selectedStatus = null;
         this.applyFilters();
     }
 
-    loadStatus(){
+    loadStatus() {
         this._apiCommonService.getEnumsData('reservation-status').subscribe({
-            next: data => {
+            next: (data) => {
                 this.status = data;
-            }
-        })
+            },
+        });
     }
 
-    loadCategories(){
-        this._apiCommonService.getEnumsData('reservation-categories').subscribe({
-            next: data => {
-                this.categories = data;
-            }
-        })
+    loadCategories() {
+        this._apiCommonService
+            .getEnumsData('reservation-categories')
+            .subscribe({
+                next: (data) => {
+                    this.categories = data;
+                },
+            });
     }
 
     ngOnDestroy(): void {
@@ -205,9 +210,15 @@ export class ReservationListComponent implements OnInit, OnDestroy {
                 this.filters.reservationCode,
                 this.filters.status,
                 this.filters.categories,
-                this.filters.startDate ? this._utilsService.convertToDate(this.filters.startDate): '',
-                this.filters.endDate ? this._utilsService.convertToDate(this.filters.endDate): '',
-                this.currentPage, this.pageSize)
+                this.filters.startDate
+                    ? this._utilsService.convertToDate(this.filters.startDate)
+                    : '',
+                this.filters.endDate
+                    ? this._utilsService.convertToDate(this.filters.endDate)
+                    : '',
+                this.currentPage,
+                this.pageSize
+            )
             .pipe(
                 finalize(() => {
                     this.isLoading = false;
@@ -239,25 +250,52 @@ export class ReservationListComponent implements OnInit, OnDestroy {
 
     getStatusStyle(status: string) {
         const statusMap: Record<string, any> = {
-            'PENDING':     { label: 'En attente',   class: 'bg-amber-200 text-amber-800 dark:bg-amber-600 dark:text-amber-50' },
-            'CONFIRMED':   { label: 'Confirmée',    class: 'bg-green-200 text-green-800 dark:bg-green-600 dark:text-green-50' },
-            'IN_PROGRESS': { label: 'En cours',     class: 'bg-blue-200 text-blue-800 dark:bg-blue-600 dark:text-blue-50' },
-            'COMPLETED':   { label: 'Terminée',     class: 'bg-teal-200 text-teal-800 dark:bg-teal-600 dark:text-teal-50' },
-            'CANCELED':    { label: 'Annulée',      class: 'bg-red-200 text-red-800 dark:bg-red-600 dark:text-red-50' },
-            'NO_SHOW':     { label: 'Non présenté', class: 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-50' },
-            'EXPIRED':     { label: 'Expirée',      class: 'bg-orange-200 text-orange-800 dark:bg-orange-600 dark:text-orange-50' },
-            'CLOSED':      { label: 'Clôturée',     class: 'bg-slate-300 text-slate-900 dark:bg-slate-700 dark:text-slate-100' }
+            PENDING: {
+                label: 'En attente',
+                class: 'bg-amber-200 text-amber-800 dark:bg-amber-600 dark:text-amber-50',
+            },
+            CONFIRMED: {
+                label: 'Confirmée',
+                class: 'bg-green-200 text-green-800 dark:bg-green-600 dark:text-green-50',
+            },
+            IN_PROGRESS: {
+                label: 'En cours',
+                class: 'bg-blue-200 text-blue-800 dark:bg-blue-600 dark:text-blue-50',
+            },
+            COMPLETED: {
+                label: 'Terminée',
+                class: 'bg-teal-200 text-teal-800 dark:bg-teal-600 dark:text-teal-50',
+            },
+            CANCELED: {
+                label: 'Annulée',
+                class: 'bg-red-200 text-red-800 dark:bg-red-600 dark:text-red-50',
+            },
+            NO_SHOW: {
+                label: 'Non présenté',
+                class: 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-50',
+            },
+            EXPIRED: {
+                label: 'Expirée',
+                class: 'bg-orange-200 text-orange-800 dark:bg-orange-600 dark:text-orange-50',
+            },
+            CLOSED: {
+                label: 'Clôturée',
+                class: 'bg-slate-300 text-slate-900 dark:bg-slate-700 dark:text-slate-100',
+            },
         };
 
-        return statusMap[status] || { label: status, class: 'bg-gray-100 text-gray-600' };
+        return (
+            statusMap[status] || {
+                label: status,
+                class: 'bg-gray-100 text-gray-600',
+            }
+        );
     }
 
     removeSpecificFilter(filter: string) {
-        if (filter == 'status')
-            this.filters.status = [];
+        if (filter == 'status') this.filters.status = [];
 
-        if (filter == 'category')
-            this.filters.categories = [];
+        if (filter == 'category') this.filters.categories = [];
 
         if (filter == 'range') {
             this.filters.startDate = null;
@@ -267,18 +305,24 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         this.search();
     }
 
-    getLabels(target : 'status'|'category'): string {
+    getLabels(target: 'status' | 'category'): string {
         let labels;
         if (target == 'status')
-            labels =  this.filters.status
-                .map(code => this.status.find(item => item.code === code)?.name)
-                .filter(name => !!name)
+            labels = this.filters.status
+                .map(
+                    (code) =>
+                        this.status.find((item) => item.code === code)?.name
+                )
+                .filter((name) => !!name)
                 .join(', ');
 
         if (target == 'category')
-            labels =  this.filters.categories
-                .map(code => this.categories.find(item => item.code === code)?.name)
-                .filter(name => !!name)
+            labels = this.filters.categories
+                .map(
+                    (code) =>
+                        this.categories.find((item) => item.code === code)?.name
+                )
+                .filter((name) => !!name)
                 .join(', ');
 
         return labels;

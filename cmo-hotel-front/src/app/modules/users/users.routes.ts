@@ -7,6 +7,9 @@ export default [
     {
         path     : '',
         component: UserListComponent,
+        data: {
+            permissions:[APP_PERMISSIONS.ADMIN_USERS_LIST]
+        },
     },{
         path     : 'create',
         component: UserAddComponent,

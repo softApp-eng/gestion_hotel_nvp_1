@@ -35,7 +35,7 @@
                         (input)="search(input.value)"
                         [placeholder]="'Chercher'">
                 </mat-form-field>
-                <button class="ml-4" mat-flat-button [color]="'primary'" [routerLink]="'./create'" >
+                <button class="ml-4" mat-flat-button [color]="'primary'" [routerLink]="'./create'" [disableIfNoPermission]="[APP_PERMISSIONS.ADMIN_ROLES_CREATE]">
                     <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                     <span class="ml-2 mr-1">Ajouter</span>
                 </button>
@@ -112,19 +112,19 @@
                             </button>
                             <mat-menu #menuAction="matMenu" >
                                 @if (!row.isSystem){
-                                    <button mat-menu-item [routerLink]="'./edit/' + row?.id" >
+                                    <button mat-menu-item [routerLink]="'./edit/' + row?.id" [disableIfNoPermission]="[APP_PERMISSIONS.ADMIN_ROLES_UPDATE]">
                                         <mat-icon svgIcon="edit" ></mat-icon>
                                         <span>Modifier</span>
                                     </button>
                                 }
 
-                                <button mat-menu-item (click)="cloneRole(row)" >
+                                <button mat-menu-item (click)="cloneRole(row)" [disableIfNoPermission]="[APP_PERMISSIONS.ADMIN_ROLES_UPDATE]">
                                     <mat-icon svgIcon="edit" ></mat-icon>
                                     <span>Dupliquer</span>
                                 </button>
 
                                 @if (!row.isSystem){
-                                    <button mat-menu-item class="text-red-800 dark:text-red-50 " (click)="deleteRole(row)">
+                                    <button mat-menu-item class="text-red-800 dark:text-red-50 " (click)="deleteRole(row)" [disableIfNoPermission]="[APP_PERMISSIONS.ADMIN_ROLES_DELETE]">
                                         <mat-icon class="text-red-800 dark:text-red-50" svgIcon="mat_solid:delete_forever" ></mat-icon>
                                         <span class="font-semibold">Supprimer</span>
                                     </button>

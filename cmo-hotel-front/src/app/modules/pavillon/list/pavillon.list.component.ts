@@ -32,6 +32,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserUpdateMdpModel } from '../../users/update-mdp-model/user.update-mdp.model';
 import { PavillonCreateModel } from '../create/pavillon-create.model';
+import { DisableIfNoPermissionDirective } from '../../../core/auth/DisableIfNoPermissionDirective';
 
 @Component({
     selector: 'pavillon-list',
@@ -52,7 +53,8 @@ import { PavillonCreateModel } from '../create/pavillon-create.model';
         RouterLink,
         HasPermissionDirective,
         KeyValuePipe,
-        TitleCasePipe
+        TitleCasePipe,
+        DisableIfNoPermissionDirective,
     ],
 })
 export class PavillonListComponent implements OnInit {

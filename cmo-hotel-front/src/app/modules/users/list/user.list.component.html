@@ -35,7 +35,7 @@
                         (input)="search(input.value)"
                         [placeholder]="'Search'">
                 </mat-form-field>
-                <button *hasPermission="[APP_PERMISSIONS.ADMIN_USERS_CREATE]" class="ml-4" mat-flat-button [color]="'primary'" [routerLink]="'./create'" >
+                <button [disableIfNoPermission]="[APP_PERMISSIONS.ADMIN_USERS_CREATE]" class="ml-4" mat-flat-button [color]="'primary'" [routerLink]="'./create'" >
                     <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                     <span class="ml-2 mr-1">Ajouter</span>
                 </button>
@@ -93,15 +93,15 @@
                                 <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
                             </button>
                             <mat-menu #menuAction="matMenu" >
-                                <button *hasPermission="[APP_PERMISSIONS.ADMIN_USERS_UPDATE]" mat-menu-item (click)="raiseUpdateUserModel(row)" >
+                                <button [disableIfNoPermission]="[APP_PERMISSIONS.ADMIN_USERS_UPDATE]" mat-menu-item (click)="raiseUpdateUserModel(row)" >
                                     <mat-icon svgIcon="mat_outline:edit_note" ></mat-icon>
                                     <span>Modifier</span>
                                 </button>
-                                <button *hasPermission="[APP_PERMISSIONS.ADMIN_USERS_PASSWORD_MODIFY]" mat-menu-item (click)="raisePasswordChangeModel(row)" >
+                                <button [disableIfNoPermission]="[APP_PERMISSIONS.ADMIN_USERS_PASSWORD_MODIFY]" mat-menu-item (click)="raisePasswordChangeModel(row)" >
                                     <mat-icon svgIcon="mat_outline:password" ></mat-icon>
                                     <span>Changer Mpd</span>
                                 </button>
-                                <button *hasPermission="[APP_PERMISSIONS.ADMIN_USERS_ASSIGN_ROLES]" mat-menu-item (click)="raiseRolesAssignModel(row)" >
+                                <button [disableIfNoPermission]="[APP_PERMISSIONS.ADMIN_USERS_ASSIGN_ROLES]" mat-menu-item (click)="raiseRolesAssignModel(row)" >
                                     <mat-icon svgIcon="mat_outline:verified_user" ></mat-icon>
                                     <span>Gérer rôles</span>
                                 </button>

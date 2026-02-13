@@ -28,7 +28,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { AssignRoomsModel } from '../room-assign/assign-rooms.model';
 import {finalize} from "rxjs";
 import { ApiCommonService } from '../../../core/service/api.common.service';
-import { DecimalPipe, KeyValuePipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 
 interface RoomGroup {
     room: any;
@@ -57,7 +57,7 @@ interface RoomGroup {
         MatSelectModule,
         MatSlideToggleModule,
         FormsModule,
-        KeyValuePipe
+        DecimalPipe,
     ],
 })
 export class ReservationCreateComponent implements OnInit {
@@ -84,7 +84,9 @@ export class ReservationCreateComponent implements OnInit {
 
     categories = [];
 
-    estimatedTotal: number = 0; // Stocke la valeur calculée
+    RoomGroup: RoomGroup[];
+    estimatedTotal: number = 0;
+    estimatedPayment;
 
     /**
      * Constructor
@@ -125,7 +127,7 @@ export class ReservationCreateComponent implements OnInit {
                     this.startAt,
                     this.endAt
                 );
-                this.updateEstimation();
+                this.calculateRoomPrices();
             }
         });
 
@@ -258,83 +260,59 @@ export class ReservationCreateComponent implements OnInit {
     getGroupedRooms(): RoomGroup[] {
         const map = new Map<number, RoomGroup>();
 
-        this.persons.forEach(person => {
+        this.persons.forEach((person) => {
             const roomId = person.room?.id;
             if (!roomId) return;
 
             if (!map.has(roomId)) {
                 map.set(roomId, {
                     room: person.room,
-                    persons: []
+                    persons: [],
                 });
             }
 
             map.get(roomId).persons.push(person);
         });
-
+        console.log('RoomGroup', Array.from(map.values()));
         // On retourne uniquement le tableau d'objets [{room, persons}, ...]
         return Array.from(map.values());
     }
 
-    updateEstimation(): void {
-        const groups = this.getGroupedRooms();
+    calculateRoomPrices() {
+        const groupedData = this.getGroupedRooms();
+        const duration = this.durationInDays || 0;
 
-        if (!this.durationInDays || this.durationInDays <= 0 || groups.length === 0) {
-            this.estimatedTotal = 0;
-            return;
-        }
+        this.estimatedPayment = groupedData.map((group) => {
+            const payer = group.persons.reduce((highest, current) => {
+                return current.grade?.rating < highest.grade?.rating
+                    ? current
+                    : highest;
+            });
 
-        this.estimatedTotal = groups.reduce((total, group) => {
-            const maxPrice = group.persons.reduce((max, p) => {
-                const gradeCat = p.grade?.category?.code;
-                const price = group.room.roomType.prices.find(pr => pr.category.code === gradeCat)?.price || 0;
-                return Math.max(max, price);
-            }, 0);
-            return total + (maxPrice * this.durationInDays);
-        }, 0);
+            const payerCategoryCode = payer.grade?.category?.code;
+            const priceEntry = group.room.roomType.prices.find(
+                (p) => p.category.code === payerCategoryCode
+            );
+
+            const unitPrice = priceEntry ? priceEntry.price : 0;
+
+            return {
+                roomName: `${group.room.roomType.type} / ${group.room.name}`, //group.room.name,
+                unitPrice: unitPrice,
+                totalPrice: unitPrice * duration,
+            };
+        });
+        console.log('estimatedPayment', this.estimatedPayment);
+        this.estimatedTotal = this.estimatedPayment.reduce(
+            (sum, detail) => sum + detail.totalPrice,
+            0
+        );
     }
 
-    estimateTotal2(): number {
-        if (!this.durationInDays || this.durationInDays <= 0 || this.persons.length === 0) {
-            return 0;
-        }
-
-        // Map pour stocker : ID_CHAMBRE => PRIX_UNITAIRE
-        const roomPrices = new Map<number, number>();
-
-        this.persons.forEach(p => {
-            if (p.room?.id && p.room.roomType?.prices) {
-                const roomId = p.room.id;
-                const gradeCategoryCode = p.grade?.category?.code;
-
-                // Trouver le prix correspondant à cet occupant précis
-                const priceObj = p.room.roomType.prices.find(
-                    pr => pr.category.code === gradeCategoryCode
-                );
-
-                const unitPrice = priceObj ? priceObj.price : 0;
-
-                if (!roomPrices.has(roomId)) {
-                    // Première fois qu'on voit cette chambre
-                    roomPrices.set(roomId, unitPrice);
-                } else {
-                    // La chambre est déjà occupée, on garde le prix le plus élevé
-                    // (ou changez la logique selon votre règlement)
-                    const existingPrice = roomPrices.get(roomId) || 0;
-                    if (unitPrice > existingPrice) {
-                        roomPrices.set(roomId, unitPrice);
-                    }
-                }
-            }
-        });
-
-        // Calcul final : Somme des prix de chaque chambre unique * durée
-        let total = 0;
-        roomPrices.forEach((price) => {
-            total += (price * this.durationInDays);
-        });
-
-        return total;
+    private calculateAge(birthDate: string): number {
+        if (!birthDate) return 0;
+        const timeDiff = Math.abs(Date.now() - new Date(birthDate).getTime());
+        return Math.floor(timeDiff / (1000 * 3600 * 24) / 365.25);
     }
 
     raisePersonAddDialog() {
@@ -348,7 +326,7 @@ export class ReservationCreateComponent implements OnInit {
                 if (result) {
                     this.persons = result;
                     console.log('returned data', result);
-                    this.updateEstimation();
+                    this.calculateRoomPrices();
                 }
             });
     }
@@ -382,6 +360,7 @@ export class ReservationCreateComponent implements OnInit {
                     this._toastr.success(
                         `${this.selectedGroupedPersons.length} personne(s) affectée(s) à la chambre.`
                     );
+                    this.calculateRoomPrices();
                     //this.selectedGroupedPersons = [];
                     //this.groupedAction = false;
                 }
@@ -393,7 +372,7 @@ export class ReservationCreateComponent implements OnInit {
     unSelectPerson(person: any) {
         if (!person || !person.id) return;
         this.persons = this.persons.filter((p) => p.id !== person.id);
-        this.updateEstimation();
+        this.calculateRoomPrices();
     }
 
     getRoleName(code: string): string {

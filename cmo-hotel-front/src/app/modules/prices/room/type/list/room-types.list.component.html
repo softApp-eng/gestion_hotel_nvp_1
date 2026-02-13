@@ -25,7 +25,7 @@
         <div class="w-full bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
 
             <div class="flex items-end justify-end">
-                <button class="ml-4" mat-flat-button [color]="'primary'" (click)="raiseSaveType()" >
+                <button class="ml-4" mat-flat-button [color]="'primary'" (click)="raiseSaveType()" [disableIfNoPermission]="[APP_PERMISSIONS.ROOM_TYPE_CREATE]">
                     <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                     <span class="ml-2 mr-1">Ajouter</span>
                 </button>
@@ -89,15 +89,15 @@
                             <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
                         </button>
                         <mat-menu #menuAction="matMenu" >
-                            <button mat-menu-item (click)="raiseSaveType(row)" >
+                            <button mat-menu-item (click)="raiseSaveType(row)" [disableIfNoPermission]="[APP_PERMISSIONS.ROOM_TYPE_UPDATE]">
                                 <mat-icon svgIcon="edit" ></mat-icon>
                                 <span>Modifier</span>
                             </button>
-                            <button mat-menu-item (click)="raisePricesManagement(row)" >
+                            <button mat-menu-item (click)="raisePricesManagement(row)" [disableIfNoPermission]="[APP_PERMISSIONS.ROOM_PRICE_LIST]">
                                 <mat-icon svgIcon="edit" ></mat-icon>
                                 <span>Gérer prix</span>
                             </button>
-                            <button mat-menu-item class="text-red-800 dark:text-red-50" (click)="deleteType(row)">
+                            <button mat-menu-item class="text-red-800 dark:text-red-50" (click)="deleteType(row)" [disableIfNoPermission]="[APP_PERMISSIONS.ROOM_TYPE_DELETE]">
                                 <mat-icon class="text-red-800 dark:text-red-50" svgIcon="mat_solid:delete_forever" ></mat-icon>
                                 <span class="font-semibold">Supprimer</span>
                             </button>

@@ -25,6 +25,10 @@ public record ReservationDetailsResponseDto(
         LocalDateTime plannedStart,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         LocalDateTime plannedEnd,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+        LocalDateTime checkin,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+        LocalDateTime checkout,
         List<ReservationResponseDto> guests,
         String createdBy,
         String lastModifiedBy,
@@ -41,6 +45,8 @@ public record ReservationDetailsResponseDto(
                 .category(entity.getCategory())
                 .plannedStart(entity.getPlannedStart())
                 .plannedEnd(entity.getPlannedEnd())
+                .checkin(entity.getCheckin())
+                .checkout(entity.getCheckout())
                 .createdBy(entity.getCreatedBy())
                 .lastModifiedBy(entity.getLastModifiedBy())
                 .createdAt(entity.getCreatedAt())

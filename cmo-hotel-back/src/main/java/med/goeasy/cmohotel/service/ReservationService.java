@@ -85,15 +85,7 @@ public class ReservationService {
             LocalDate start,
             LocalDate end,
             Integer page, Integer size) {
-        System.err.println("KEY "+ key);
-        System.err.println("categories "+ categories);
-        System.err.println("status "+ status);
-        System.err.println("start "+ start);
-        System.err.println("end "+ end);
-        boolean isRange = false;
-        if (start != null)
-            isRange = true;
-        System.err.println("isRange "+ isRange);
+        boolean isRange = start != null;
         Page<ReservationDetails> reservations = reservationDetailsRepository.search(
                 key,
                 reservationCode,
@@ -105,17 +97,7 @@ public class ReservationService {
                 PageRequest.of(page, size)
         );
 
-        /*
-        categories.isEmpty()? null:categories,
-                status.isEmpty()? null:status,
-                start,
-                end,
-         */
-        System.err.println("COUNT RESULT "+ reservations.getTotalElements());
-
-        //reservations.stream().forEach(System.out::println);
         List<ReservationDetailsResponseDto> list = reservations.stream().map(ReservationDetailsResponseDto::mapToDto).toList();
-        System.err.println("LIST "+ list.size());
         log.info("{} get reservations", authentication.getName());
         return PageDto.of(
                 list,

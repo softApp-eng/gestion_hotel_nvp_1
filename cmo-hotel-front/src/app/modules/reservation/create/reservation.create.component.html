@@ -101,7 +101,7 @@
 
 
                 <div class="flex items-center space-x-4 my-4 w-full">
-                    <h2 class="font-semibold">Gérer les invités ({{persons.length}})</h2>
+                    <h2 class="font-semibold">Gérer les clients ({{persons.length}})</h2>
 
                     <a mat-stroked-button class="h-8 min-h-8" (click)="raisePersonAddDialog()">
                         <span class="inline-flex items-center text-sm">
@@ -261,15 +261,48 @@
                     </textarea>
                 </mat-form-field>
 
-                <div class="flex flex-col items-end mt-4 p-4 bg-gray-50 dark:bg-transparent rounded-lg border border-dashed">
-                    <div class="text-secondary text-sm font-medium">
-                        Estimation ({{ durationInDays || 0 }} jours, {{ getGroupedRooms().length }} chambre(s))
+                @if (estimatedPayment && estimatedPayment.length > 0) {
+                    <div class="mt-6 overflow-hidden bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
+                        <div class="bg-gray-100 dark:bg-gray-800 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                            <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider">
+                                Détail de la Tarification
+                            </h3>
+                            <span class="px-2.5 py-0.5 bg-primary/10 text-primary text-md font-semibold rounded-full border border-primary/20">
+                                Séjour de {{ durationInDays }} {{ durationInDays > 1 ? 'jours' : 'jour' }}
+                            </span>
+                        </div>
+
+                        <div class="divide-y divide-gray-200 dark:divide-gray-700 divide-dashed">
+                            @for (detail of estimatedPayment; track detail.roomName) {
+                                <div class="flex justify-between items-center p-4 hover:bg-gray-100/50 dark:hover:bg-gray-700/30 transition-colors">
+                                    <div class="flex flex-col">
+                                        <span class="font-semibold text-gray-700 dark:text-gray-200">{{ detail.roomName }}</span>
+                                        <span class="text-[10px] text-gray-500 uppercase">Tarif par nuitée</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-gray-900 dark:text-white">{{ detail.totalPrice | number:'1.2-2' }} MAD</div>
+                                        <div class="text-xs text-gray-500 italic">{{ detail.unitPrice | number:'1.2-2' }} MAD / jour</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-900/50 p-4 border-t border-gray-200 dark:border-gray-700">
+                            <div class="flex justify-between items-end">
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-medium text-gray-500 uppercase tracking-widest">Montant Total Estimé</span>
+                                    <span class="text-[10px] text-gray-400">Toutes taxes comprises (TTC)</span>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-3xl font-extrabold text-primary tracking-tight">
+                                        {{ estimatedTotal | number:'1.2-2' }} <span class="text-sm font-medium">MAD</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="text-2xl font-bold text-primary">
-                        {{ estimatedTotal }} MAD
-<!--                        {{ estimateTotal() | number:'1.2-2' }} MAD-->
-                    </div>
-                </div>
+                }
+
 
                 <div class="flex items-end justify-end mx-3 mt-8">
                     <button mat-flat-button [color]="'primary'" [disabled]="form.disabled || form.invalid" (click)="save()">

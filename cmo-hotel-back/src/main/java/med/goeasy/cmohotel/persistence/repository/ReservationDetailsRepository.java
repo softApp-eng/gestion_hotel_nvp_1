@@ -15,51 +15,8 @@ import java.util.List;
 
 public interface ReservationDetailsRepository extends JpaRepository<ReservationDetails, Long> {
 
-//    @Query(value = """
-//        SELECT rd FROM ReservationDetails rd
-//        LEFT JOIN FETCH rd.reservations r
-//        LEFT JOIN FETCH r.person p
-//        LEFT JOIN FETCH r.room rm
-//        WHERE (:category IS NULL OR rd.category in :category)
-//            AND (:status IS NULL OR rd.status in :status)
-//            AND (
-//                :start IS NULL OR (
-//                    (r.checkin <= :end AND r.checkout >= :start)
-//                    OR (rd.plannedStart <= :end AND rd.plannedEnd >= :start)
-//                    )
-//                )
-//            AND (
-//                upper(p.email) like %:key%
-//                OR upper(p.firstName) like %:key%
-//                OR upper(p.lastName) like %:key%
-//                OR upper(rm.code) like %:key%
-//                OR upper(rd.code) like %:key%
-//        )
-//        ORDER BY rd.plannedStart DESC
-//    """)
-//    @Query(value = """
-//        SELECT DISTINCT rd FROM ReservationDetails rd
-//                                             LEFT JOIN rd.reservations r
-//                                             LEFT JOIN r.room rm
-//                                             LEFT JOIN r.person p
-//                                             WHERE (:key IS NULL OR :key = '' OR (
-//                                                 upper(p.email) LIKE upper(concat('%', :key, '%'))
-//                                                 OR upper(p.firstName) LIKE upper(concat('%', :key, '%'))
-//                                                 OR upper(p.lastName) LIKE upper(concat('%', :key, '%'))
-//                                                 OR upper(rm.code) LIKE upper(concat('%', :key, '%'))
-//                                                 OR cast(rd.code as string) LIKE upper(concat('%', :key, '%'))
-//                                             ))
-//                                             AND (:category IS NULL OR rd.category IN :category)
-//                                             AND (:status IS NULL OR rd.status IN :status)
-//                                             AND (:start IS NULL OR (
-//                                                 (r.checkin <= :end AND r.checkout >= :start)
-//                                                 OR (rd.plannedStart <= :end AND rd.plannedEnd >= :start)
-//                                             ))
-//                                             ORDER BY rd.plannedStart DESC
-//    """)
-    //@EntityGraph(attributePaths = {"reservations", "reservations.person", "reservations.room", "reservations.room.roomType"})
     @Query(value = """
-        SELECT rd FROM ReservationDetails rd
+        SELECT DISTINCT rd FROM ReservationDetails rd
         LEFT JOIN rd.reservations r
         LEFT JOIN r.room rm
         LEFT JOIN rm.roomType t
@@ -91,24 +48,4 @@ public interface ReservationDetailsRepository extends JpaRepository<ReservationD
             @Param("range") boolean isRange,
             Pageable pageable
     );
-
-
-    /*
-
-    @Param("category") List<EReservationCategory> category,
-
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end,
-
-
-
-AND (:category IS NULL OR rd.category IN :category)
-               AND (:status IS NULL OR rd.status IN :status)
-
-AND (:start IS NULL OR (
-                           (r.checkin <= :end AND r.checkout >= :start)
-                           OR (rd.plannedStart <= :end AND rd.plannedEnd >= :start)
-                       ))
-
-     */
 }

@@ -18,23 +18,21 @@
                 </div>
             </div>
         </div>
+        <div class="flex items-end justify-end">
+            <button [disableIfNoPermission]="[APP_PERMISSIONS.PAVILLON_CREATE]" class="ml-4" mat-flat-button [color]="'primary'" (click)="raiseSavePavillon(null)" >
+                <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                <span class="ml-2 mr-1">Ajouter</span>
+            </button>
+        </div>
     </div>
 
     <!-- Main -->
-    <div class="flex flex-auto p-6 sm:p-10">
-
+    <div class="flex flex-auto p-4 sm:p-10">
 
         <div class="mx-auto flex w-full max-w-xs flex-auto flex-col sm:max-w-5xl">
-            <!-- Filters -->
-            <div class="flex items-end justify-end">
-                <button *hasPermission="[APP_PERMISSIONS.PAVILLON_CREATE]" class="ml-4" mat-flat-button [color]="'primary'" (click)="raiseSavePavillon(null)" >
-                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
-                    <span class="ml-2 mr-1">Ajouter</span>
-                </button>
-            </div>
             <!-- Courses -->
             @if (this.pavillons.length) {
-                <div class="mt-8 grid grid-cols-1 gap-8 sm:mt-10 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="mt-4 grid grid-cols-1 gap-8 sm:mt-4 sm:grid-cols-2 lg:grid-cols-3">
                     @for ( p of pavillons;track p.id) {
                         <!-- Course -->
                         <div class="bg-card flex h-96 flex-col overflow-hidden rounded-2xl shadow">
@@ -81,13 +79,6 @@
                                 } @empty {
                                     <div class="text-hint text-sm italic">Aucune chambre configurée</div>
                                 }
-
-                                <div class="text-secondary flex items-center text-md leading-5">
-                                    <mat-icon class="text-hint icon-size-5" [svgIcon]="'mat_outline:bookmark_added'"></mat-icon>
-                                    <div class="ml-1.5">
-                                        500 reservation
-                                    </div>
-                                </div>
                                 <!-- Course completion -->
 
                             </div>
@@ -97,7 +88,7 @@
 
                                 <!-- Course launch button -->
                                 <div class="bg-gray-50 px-6 py-4 text-right dark:bg-transparent">
-                                    <a mat-stroked-button [routerLink]="'./'+p.id+'/rooms'">
+                                    <a mat-stroked-button [routerLink]="'./'+p.id+'/rooms'" *hasPermission="[APP_PERMISSIONS.ROOM_LIST]">
                                         <span class="inline-flex items-center">
                                             <span>Chambres</span>
                                             <mat-icon class="ml-1.5 icon-size-5" [svgIcon]="'heroicons_solid:arrow-small-right'"></mat-icon>

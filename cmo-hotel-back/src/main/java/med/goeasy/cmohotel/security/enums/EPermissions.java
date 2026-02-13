@@ -19,8 +19,6 @@ public enum EPermissions {
     ADMIN_USERS_UPDATE(EPermissionsModule.USERS, "user:update", "update user",  EPermissionsGroup.UPDATE,false,""),
     ADMIN_USERS_PASSWORD_MODIFY(EPermissionsModule.USERS, "user:password:modify", "modify user password",  EPermissionsGroup.UPDATE,false,""),
     ADMIN_USERS_ASSIGN_ROLES(EPermissionsModule.USERS, "user:assign:roles", "assign roles to user", EPermissionsGroup.MANAGE,false,""),
-    ADMIN_USERS_ASSIGN_SITES(EPermissionsModule.USERS, "user:assign:sites", "assign sites to user", EPermissionsGroup.MANAGE,false,""),
-    ADMIN_USERS_SITES_ALL(EPermissionsModule.USERS, "user:sites:all", "get all sites", EPermissionsGroup.READ,false,""),
 
     //ROLES
     ADMIN_ROLES_LIST(EPermissionsModule.ROLES, "role:list", "list roles", EPermissionsGroup.READ,false,""),

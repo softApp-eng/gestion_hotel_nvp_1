@@ -78,8 +78,6 @@ public class WebSecurityConfig {
 						.requestMatchers(PUT,"/v1/users/update").hasAuthority(EPermissions.ADMIN_USERS_UPDATE.getAuthority())
 						.requestMatchers(PUT,"/v1/users/password").hasAuthority(EPermissions.ADMIN_USERS_PASSWORD_MODIFY.getAuthority())
 						.requestMatchers(PUT,"/v1/users/roles/assign").hasAuthority(EPermissions.ADMIN_USERS_ASSIGN_ROLES.getAuthority())
-						.requestMatchers(PUT,"/v1/users/sites/assign").hasAuthority(EPermissions.ADMIN_USERS_ASSIGN_SITES.getAuthority())
-						.requestMatchers(GET,"/v1/users/sites/all").hasAuthority(EPermissions.ADMIN_USERS_SITES_ALL.getAuthority())
 						// roles
 						.requestMatchers(GET,"/v1/roles/list").hasAuthority(EPermissions.ADMIN_ROLES_LIST.getAuthority())
 						.requestMatchers(GET,"/v1/roles/permissions").hasAuthority(EPermissions.ADMIN_ROLES_PERMISSIONS_LIST.getAuthority())

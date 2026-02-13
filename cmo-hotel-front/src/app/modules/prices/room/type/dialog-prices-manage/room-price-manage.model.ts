@@ -22,6 +22,8 @@ import { MatMenu } from '@angular/material/menu';
 import { RoomPriceCreateModel } from '../dialog-create-price/room-price-create.model';
 import { MatTooltip } from '@angular/material/tooltip';
 import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../../../@fuse/services/confirmation';
+import { APP_PERMISSIONS } from '../../../../../core/data/app-permissions';
+import { DisableIfNoPermissionDirective } from '../../../../../core/auth/DisableIfNoPermissionDirective';
 
 @Component({
     selector: 'room-type-create-model',
@@ -39,6 +41,7 @@ import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../../
         MatSortModule,
         MatTableModule,
         MatTooltip,
+        DisableIfNoPermissionDirective,
     ],
 })
 export class RoomPriceManageModel implements OnInit, AfterViewInit {
@@ -121,25 +124,28 @@ export class RoomPriceManageModel implements OnInit, AfterViewInit {
     }
 
     deletePrice(price) {
-        this.actionConfigDialogue.title = `Confirmer la suppression du prix "${price.category} (${price.price})".`
-        this.actionConfigDialogue.message = `Êtes-vous sûr de vouloir supprimer le prix "${price.category} (${price.price})" ?<br> Cette action est irréversible.`
+        this.actionConfigDialogue.title = `Confirmer la suppression du prix "${price.category} (${price.price})".`;
+        this.actionConfigDialogue.message = `Êtes-vous sûr de vouloir supprimer le prix "${price.category} (${price.price})" ?<br> Cette action est irréversible.`;
         const dialogRef = this._fuseConfirmationService.open(
             this.actionConfigDialogue
         );
         dialogRef.afterClosed().subscribe((result) => {
             if (result === 'confirmed')
-                this._apiRoomPriceService
-                    .delete(price.id)
-                    .subscribe({
-                        next: (value) => {
-                            this._toast.success('Prix supprimé');
-                            this.dataSource.data = this.dataSource.data.filter(s => s.id !== price.id);
-                        },
-                        error: (err) =>
-                            this._toast.error(
-                                err?.error?.description || "Une erreur s'est produit"
-                            ),
-                    });
+                this._apiRoomPriceService.delete(price.id).subscribe({
+                    next: (value) => {
+                        this._toast.success('Prix supprimé');
+                        this.dataSource.data = this.dataSource.data.filter(
+                            (s) => s.id !== price.id
+                        );
+                    },
+                    error: (err) =>
+                        this._toast.error(
+                            err?.error?.description ||
+                                "Une erreur s'est produit"
+                        ),
+                });
         });
     }
+
+    protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
 }

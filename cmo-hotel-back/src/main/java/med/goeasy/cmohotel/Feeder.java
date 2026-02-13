@@ -3,12 +3,17 @@ package med.goeasy.cmohotel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import med.goeasy.cmohotel.exception.BadRequestException;
+import med.goeasy.cmohotel.persistence.entity.Person;
+import med.goeasy.cmohotel.persistence.entity.Reservation;
+import med.goeasy.cmohotel.persistence.entity.ReservationDetails;
+import med.goeasy.cmohotel.persistence.entity.Room;
 import med.goeasy.cmohotel.persistence.entity.auth.AppPermission;
 import med.goeasy.cmohotel.persistence.entity.auth.AppRole;
 import med.goeasy.cmohotel.persistence.entity.auth.AppUser;
-import med.goeasy.cmohotel.persistence.repository.AppPermissionRepository;
-import med.goeasy.cmohotel.persistence.repository.AppRoleRepository;
-import med.goeasy.cmohotel.persistence.repository.AppUserRepository;
+import med.goeasy.cmohotel.persistence.entity.enums.EGuestRole;
+import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
+import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
+import med.goeasy.cmohotel.persistence.repository.*;
 import med.goeasy.cmohotel.security.enums.EPermissions;
 import med.goeasy.cmohotel.security.enums.ERoleSystem;
 import org.springframework.core.io.ClassPathResource;
@@ -18,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,6 +37,10 @@ public class Feeder {
     private final DataSource dataSource;
     private final PasswordEncoder encoder;
     private final AppUserRepository appUserRepository;
+
+    private final ReservationDetailsRepository detailsRepository;
+    private final PersonRepository personRepository;
+    private final RoomRepository roomRepository;
 
     @Transactional
     public void grantPermissionToRole(EPermissions permission,ERoleSystem role){
@@ -124,6 +134,59 @@ public class Feeder {
         admin.setRoles( Set.of(adminRole));
         appUserRepository.save(admin);
         log.info("admin account created");
+    }
+
+    @Transactional
+    public void seedMassiveReservations(int count) {
+        List<Person> allPersons = personRepository.findAll();
+        List<Room> allRooms = roomRepository.findAll();
+
+        if (allPersons.isEmpty() || allRooms.isEmpty()) {
+            throw new RuntimeException("Données de base manquantes (Personnes/Chambres)");
+        }
+
+        Random random = new Random();
+        EReservationStatus[] statuses = EReservationStatus.values();
+        EReservationCategory[] categories = EReservationCategory.values();
+        EGuestRole[] roles = EGuestRole.values();
+
+        for (int i = 0; i < count; i++) {
+            // Choix d'un statut aléatoire
+            EReservationStatus randomStatus = statuses[random.nextInt(statuses.length)];
+
+            // Dates cohérentes mais aléatoires (entre aujourd'hui et +60 jours)
+            int startDaysOffset = random.nextInt(60);
+            LocalDateTime start = LocalDateTime.now().plusDays(startDaysOffset);
+            LocalDateTime end = start.plusDays(1 + random.nextInt(10));
+
+            ReservationDetails details = ReservationDetails.builder()
+                    .category(categories[random.nextInt(categories.length)])
+                    .status(randomStatus)
+                    .plannedStart(start)
+                    .plannedEnd(end)
+                    .checkin(start)
+                    .checkout(end)
+                    .observation("Test automatique #" + i)
+                    .reservations(new ArrayList<>())
+                    .build();
+
+            // Génération de 1 à 3 personnes par dossier de réservation
+            int partySize = 1 + random.nextInt(3);
+            for (int j = 0; j < partySize; j++) {
+                Reservation res = Reservation.builder()
+                        .details(details)
+                        .person(allPersons.get(random.nextInt(allPersons.size())))
+                        .room(allRooms.get(random.nextInt(allRooms.size())))
+                        .role(j == 0 ? EGuestRole.PRINCIPAL : EGuestRole.VICE)
+                        //.checkin(start)
+                        //.checkout(end)
+                        .build();
+
+                details.getReservations().add(res);
+            }
+
+            detailsRepository.save(details);
+        }
     }
 
     @Transactional

@@ -16,6 +16,8 @@ import { ApiRolesService } from '../api.roles.service';
 import { SlicePipe } from '@angular/common';
 import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../@fuse/services/confirmation';
 import { Toastr } from '../../../core/service/toastr.service';
+import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
+import { DisableIfNoPermissionDirective } from '../../../core/auth/DisableIfNoPermissionDirective';
 
 @Component({
     selector: 'site-list',
@@ -34,13 +36,20 @@ import { Toastr } from '../../../core/service/toastr.service';
         RouterLink,
         MatPaginator,
         MatSortModule,
-        SlicePipe
+        SlicePipe,
+        DisableIfNoPermissionDirective,
     ],
 })
 export class RoleListComponent implements OnInit, AfterViewInit {
     roles;
     isLoading: boolean = false;
-    displayedColumns: string[] = ['title', 'isSystem', 'description', 'permissions', 'action'];
+    displayedColumns: string[] = [
+        'title',
+        'isSystem',
+        'description',
+        'permissions',
+        'action',
+    ];
     dataSource = new MatTableDataSource<any>([]);
     key = '';
 
@@ -121,53 +130,54 @@ export class RoleListComponent implements OnInit, AfterViewInit {
     }
 
     cloneRole(role) {
-        this.actionConfigDialogue.title = `Confirmer la duplication du rôle "${role.title}".`
-        this.actionConfigDialogue.message = `Vous êtes sur le point de créer une copie conforme du rôle "${role.title}".<br>Toutes les permissions associées seront dupliquées.<br>Vous pourrez ensuite modifier ce nouveau rôle indépendamment de l'original.`
+        this.actionConfigDialogue.title = `Confirmer la duplication du rôle "${role.title}".`;
+        this.actionConfigDialogue.message = `Vous êtes sur le point de créer une copie conforme du rôle "${role.title}".<br>Toutes les permissions associées seront dupliquées.<br>Vous pourrez ensuite modifier ce nouveau rôle indépendamment de l'original.`;
         const dialogRef = this._fuseConfirmationService.open(
             this.actionConfigDialogue
         );
         dialogRef.afterClosed().subscribe((result) => {
             if (result === 'confirmed')
-                this._apiRolesService
-                    .clone(role.id)
-                    .subscribe({
-                        next: (value) => {
-                            this._toast.success('Role dupliqué');
-                            this.loadRoles();
-                        },
-                        error: (err) =>
-                            this._toast.error(
-                                err?.error?.description || "Une erreur s'est produit"
-                            ),
-                    });
+                this._apiRolesService.clone(role.id).subscribe({
+                    next: (value) => {
+                        this._toast.success('Role dupliqué');
+                        this.loadRoles();
+                    },
+                    error: (err) =>
+                        this._toast.error(
+                            err?.error?.description ||
+                                "Une erreur s'est produit"
+                        ),
+                });
         });
     }
 
     deleteRole(role) {
-        this.actionConfigDialogue.title = `Confirmer la suppression du rôle "${role.title}".`
-        this.actionConfigDialogue.message = `Êtes-vous sûr de vouloir supprimer le rôle "${role.title}" ?<br> Cette action est irréversible. Tous les utilisateurs associés à ce rôle perdront immédiatement les permissions correspondantes.`
+        this.actionConfigDialogue.title = `Confirmer la suppression du rôle "${role.title}".`;
+        this.actionConfigDialogue.message = `Êtes-vous sûr de vouloir supprimer le rôle "${role.title}" ?<br> Cette action est irréversible. Tous les utilisateurs associés à ce rôle perdront immédiatement les permissions correspondantes.`;
         const dialogRef = this._fuseConfirmationService.open(
             this.actionConfigDialogue
         );
         dialogRef.afterClosed().subscribe((result) => {
             if (result === 'confirmed')
-                this._apiRolesService
-                    .delete(role.id)
-                    .subscribe({
-                        next: (value) => {
-                            this._toast.success('Role supprimé');
-                            this.roles = this.roles.filter(s => s.id !== role.id);
-                            this.dataSource.data = this.roles;
+                this._apiRolesService.delete(role.id).subscribe({
+                    next: (value) => {
+                        this._toast.success('Role supprimé');
+                        this.roles = this.roles.filter((s) => s.id !== role.id);
+                        this.dataSource.data = this.roles;
 
-                            if (this.dataSource.paginator) {
-                                this.dataSource.paginator.length = this.roles.length;
-                            }
-                        },
-                        error: (err) =>
-                            this._toast.error(
-                                err?.error?.description || "Une erreur s'est produit"
-                            ),
-                    });
+                        if (this.dataSource.paginator) {
+                            this.dataSource.paginator.length =
+                                this.roles.length;
+                        }
+                    },
+                    error: (err) =>
+                        this._toast.error(
+                            err?.error?.description ||
+                                "Une erreur s'est produit"
+                        ),
+                });
         });
     }
+
+    protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
 }
