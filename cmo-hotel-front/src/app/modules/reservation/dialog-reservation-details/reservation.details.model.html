@@ -1,0 +1,123 @@
+<div class="flex flex-col max-h-[90vh] md:w-240 md:min-w-240 overflow-hidden -m-6">
+    <mat-toolbar class="mat-accent h-14 min-h-14 px-2 m-0 flex-none z-10">
+        <div class="flex items-center w-full justify-between">
+            <div class="flex items-center" >
+                <mat-icon class="icon-size-5 mr-3 text-white" [svgIcon]="'heroicons_outline:information-circle'"></mat-icon>
+                <span class="text-xl font-semibold">Réservation #{{reservation?.code}}</span>
+            </div>
+            <button mat-icon-button (click)="matDialogRef.close()" aria-label="fermer" class="text-white">
+                <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
+            </button>
+        </div>
+    </mat-toolbar>
+
+    <div class="flex-auto overflow-y-auto p-6 bg-gray-50 dark:bg-transparent">
+
+        <div class="flex flex-wrap items-center justify-between mb-8 gap-4">
+            <div class="flex items-center gap-3">
+                <div class="px-3 py-1 rounded-full text-sm font-semibold"
+                     [ngStyle]="{'background-color': reservation?.status?.code === 'CONFIRMED' ? '#e0e7ff' : '#fef3c7', 'color': reservation?.status?.code === 'CONFIRMED' ? '#4338ca' : '#92400e'}">
+                    {{reservation?.status?.name}}
+                </div>
+                <div class="px-3 py-1 rounded-full text-sm font-semibold bg-gray-200 text-gray-700">
+                    {{reservation?.category?.name}}
+                </div>
+            </div>
+            <div class="text-secondary text-md flex items-center">
+                <mat-icon class="icon-size-4 mr-1" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
+                Créé le {{reservation?.createdAt[2]}}/{{reservation?.createdAt[1]}}/{{reservation?.createdAt[0]}}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <div class="bg-card shadow rounded-2xl p-6 border">
+                <div class="text-lg font-bold mb-4 border-b pb-2 flex items-center text-primary">
+                    <mat-icon class="mr-2 icon-size-5" [svgIcon]="'heroicons_outline:home-modern'"></mat-icon>
+                    Hébergement
+                </div>
+                <div class="space-y-4">
+                    <div class="flex justify-between">
+                        <span class="text-secondary">Pavillon</span>
+                        <span class="font-medium">{{reservation?.guests[0]?.room?.pavillon?.name}}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-secondary">Chambre</span>
+                        <span class="font-medium text-primary">{{reservation?.guests[0]?.room?.name}} ({{reservation?.guests[0]?.room?.roomType?.type}})</span>
+                    </div>
+                    <div class="flex justify-between border-t pt-2">
+                        <div class="flex flex-col">
+                            <span class="text-xs text-secondary uppercase">Arrivée</span>
+                            <span class="font-bold">{{reservation?.plannedStart}}</span>
+                        </div>
+                        <mat-icon class="rotate-90 md:rotate-0" [svgIcon]="'heroicons_outline:arrow-long-right'"></mat-icon>
+                        <div class="flex flex-col text-right">
+                            <span class="text-xs text-secondary uppercase">Départ</span>
+                            <span class="font-bold">{{reservation?.plannedEnd}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-card shadow rounded-2xl p-6 border">
+                <div class="text-lg font-bold mb-4 border-b pb-2 flex items-center text-primary">
+                    <mat-icon class="mr-2 icon-size-5" [svgIcon]="'heroicons_outline:chat-bubble-left-right'"></mat-icon>
+                    Observations
+                </div>
+                <p class="italic text-secondary">
+                    "{{reservation?.observation || 'Aucune observation particulière.'}}"
+                </p>
+                <div class="mt-4 p-3 bg-blue-50 dark:bg-gray-800 rounded-lg border border-blue-100">
+                    <div class="text-xs text-blue-600 font-bold uppercase mb-1">Unité de référence</div>
+                    <div class="text-md">{{reservation?.guests[0]?.person?.unite}}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 bg-card shadow rounded-2xl overflow-hidden border">
+            <div class="bg-gray-100 dark:bg-gray-800 px-6 py-4 font-bold flex items-center">
+                <mat-icon class="mr-2 icon-size-5 text-primary" [svgIcon]="'heroicons_outline:users'"></mat-icon>
+                Occupants ({{reservation?.guests?.length}})
+            </div>
+            <table class="w-full text-left border-collapse">
+                <thead>
+                <tr class="text-xs uppercase text-secondary bg-gray-50 dark:bg-transparent border-b">
+                    <th class="px-6 py-3">Grade & Nom</th>
+                    <th class="px-6 py-3">Identité / Matricule</th>
+                    <th class="px-6 py-3">Rôle</th>
+                </tr>
+                </thead>
+                <tbody>
+                    @for (guest of reservation?.guests; track guest.id) {
+                        <tr class="border-b last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <td class="px-6 py-4">
+                                <div class="font-bold">{{guest?.person?.grade?.name}}</div>
+                                <div class="text-sm">{{guest?.person?.firstName}} {{guest?.person?.lastName}}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium">{{guest?.person?.identity}}</div>
+                                <div class="text-xs text-secondary">{{guest?.person?.matricule}}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-xs font-semibold px-2 py-1 rounded"
+                                      [ngClass]="guest?.role?.code === 'PRINCIPAL' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'">
+                                    {{guest?.role?.name}}
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="p-4 bg-gray-50 border-t flex justify-end gap-3 flex-none">
+        <button mat-stroked-button (click)="matDialogRef.close()">
+            Fermer
+        </button>
+        <button mat-flat-button color="primary">
+            <mat-icon class="icon-size-4 mr-2" [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+            Imprimer Fiche
+        </button>
+    </div>
+</div>

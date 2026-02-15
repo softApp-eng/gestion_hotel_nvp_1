@@ -63,6 +63,7 @@ public enum EPermissions {
     // RESERVATIONS
     RESERVATION_CREATE(EPermissionsModule.RESERVATION, "reservation:create", "Créer une réservation", EPermissionsGroup.CREATE,true,""),
     RESERVATION_LIST(EPermissionsModule.RESERVATION, "reservation:list", "lister les réservations", EPermissionsGroup.READ,true,""),
+    RESERVATION_ONE(EPermissionsModule.RESERVATION, "reservation:one", "charger une réservation", EPermissionsGroup.READ,true,""),
 
 
 

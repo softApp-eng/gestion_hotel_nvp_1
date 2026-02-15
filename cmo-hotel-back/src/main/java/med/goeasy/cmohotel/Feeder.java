@@ -165,7 +165,7 @@ public class Feeder {
                     .plannedStart(start)
                     .plannedEnd(end)
                     .checkin(start)
-                    .checkout(end)
+                    .checkout(randomStatus == EReservationStatus.CONFIRMED ? null : end)
                     .observation("Test automatique #" + i)
                     .reservations(new ArrayList<>())
                     .build();

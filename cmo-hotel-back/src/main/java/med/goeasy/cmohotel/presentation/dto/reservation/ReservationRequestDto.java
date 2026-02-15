@@ -18,6 +18,8 @@ public record ReservationRequestDto(
         String category,
         @NotNull(message = "Aucune personne selectionnée")
         List<ReservationPersonsRequestDto> persons,
+        Boolean priseEnCharge,
+        String priseEnChargeReference,
         String observation
 ) {
 }

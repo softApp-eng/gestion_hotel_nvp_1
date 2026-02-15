@@ -28,7 +28,16 @@
                     <mat-label>Chambre</mat-label>
                     <mat-select [(ngModel)]="selectedRoom" name="selectedRoom">
                         @for (r of rooms; track r.id) {
-                            <mat-option [value]="r">{{r.roomType?.type + ' (' + r.code + ')'}}</mat-option>
+                            <mat-option [value]="r" [disabled]="r?.isReserved">
+                                <div class="flex items-center justify-between w-full">
+                                    <span>{{r.roomType?.type + ' (' + r.code + ')'}}</span>
+                                    @if (r?.isReserved) {
+                                        <span class="text-warn text-xs font-bold border border-warn px-2 rounded">
+                                            OCCUPÉE
+                                        </span>
+                                    }
+                                </div>
+                            </mat-option>
                         }
                     </mat-select>
                 </mat-form-field>

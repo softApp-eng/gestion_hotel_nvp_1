@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 @Builder
 @EntityListeners(AuditingEntityListener.class)
 @Table(indexes = {
-        @Index(name = "idx_r_dates", columnList = "checkin, checkout")
+        @Index(name = "idx_r_dates", columnList = "exceptional_checkin, exceptional_checkout")
 })
 @Entity
 public class Reservation {

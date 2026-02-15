@@ -48,8 +48,13 @@ export class AssignRoomsModel implements OnInit {
         public _apiRoomService: ApiRoomService,
         private _toast: ToastrService,
         @Inject(MAT_DIALOG_DATA)
-        public data: {}
-    ) {}
+        public data: {upcomingReservations: any,start:any,end:any}
+    ) {
+        //this.
+        console.log('upcomingReservations',data.upcomingReservations);
+        console.log('start',data.start);
+        console.log('end',data.end);
+    }
 
     ngOnInit(): void {
         this.loadPavillons();
@@ -59,13 +64,12 @@ export class AssignRoomsModel implements OnInit {
         this._apiPavillonService.all().subscribe({
             next: (data) => {
                 this.pavillons = data;
-                console.log(this.pavillons);
             },
         });
     }
 
     loadRooms(pavillonId: string) {
-        this.selectedRoom = null; // 1. Reset selection when building changes
+        this.selectedRoom = null;
         this.isRoomLoading = true;
         this._changeDetectorRef.detectChanges();
 
@@ -79,14 +83,41 @@ export class AssignRoomsModel implements OnInit {
             )
             .subscribe({
                 next: (data) => {
-                    this.rooms = data;
+                    //this.rooms = data;
+                    this.rooms = data.map(room => ({
+                        ...room,
+                        isReserved: this.checkIfRoomIsReserved(room.id)
+                    }));
+                    console.log('rooms', this.rooms);
                 },
                 error: (err) => {
                     this._toast.error("Erreur lors du chargement des chambres");
                 }
             });
     }
+    private checkIfRoomIsReserved(roomId: number): boolean {
+        if (!this.data.upcomingReservations || this.data.upcomingReservations.length === 0) {
+            return false;
+        }
 
+        // Dates sélectionnées dans le dialogue (période de la nouvelle assignation)
+        const newStart = new Date(this.data.start).getTime();
+        const newEnd = new Date(this.data.end).getTime();
+        console.log('>',newStart, newEnd);
+
+        return this.data.upcomingReservations.some(res => {
+            // On ne vérifie que pour la même chambre
+            if (res.roomId !== roomId) return false;
+
+            const resStart = new Date(res.start).getTime();
+            const resEnd = new Date(res.end).getTime();
+
+            // Logique d'intersection :
+            // La réservation existante commence avant la fin de la nouvelle
+            // ET finit après le début de la nouvelle.
+            return (resStart < newEnd && resEnd > newStart);
+        });
+    }
     saveAndClose() {
         console.log(this.selectedRoom);
         this.matDialogRef.close({room : this.selectedRoom});

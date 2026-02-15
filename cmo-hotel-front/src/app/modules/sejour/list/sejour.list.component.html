@@ -1,0 +1,301 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-hidden">
+    <mat-drawer-container class="bg-card h-full flex-auto dark:bg-transparent">
+        <!-- Drawer -->
+        <mat-drawer
+            class="w-full dark:bg-gray-900 sm:w-100"
+            [mode]="drawerMode"
+            [opened]="false"
+            [position]="'end'"
+            [disableClose]="true"
+            #matDrawer
+        >
+            <div class="flex flex-auto flex-col p-6 md:p-8">
+                <!-- Close button -->
+                <div class="flex items-center justify-end">
+                    <a mat-icon-button (click)="closeDrawer()">
+                        <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+                    </a>
+                </div>
+
+                <div class="flex items-center mt-4">
+                    <mat-icon class="icon-size-6 mr-3" [svgIcon]="'heroicons_outline:briefcase'"></mat-icon>
+                    <div class="text-lg font-medium leading-6">
+                        détails de reservation
+                    </div>
+                </div>
+                <div class="mt-4 flex flex-col font-medium">
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Code</div>
+                        <div>{{selectedItem?.code}}</div>
+                    </div>
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Date debut prévue</div>
+                        <div>{{ selectedItem?.plannedStart | date:'dd/MM/yyyy':'':'en-US'}}</div>
+                    </div>
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-secondary">Date fin prévue</div>
+                        <div>{{ selectedItem?.plannedStart | date:'dd/MM/yyyy':'':'en-US'}}</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center mt-4">
+                    <mat-icon class="icon-size-6 mr-3" [svgIcon]="'heroicons_outline:briefcase'"></mat-icon>
+                    <div class="text-lg font-medium leading-6">
+                        Invités
+                    </div>
+                </div>
+
+
+                <div class="flex items-center mt-4">
+                    <mat-icon class="icon-size-6 mr-3" [svgIcon]="'mat_outline:lightbulb'"></mat-icon>
+                    <div class="text-lg font-medium leading-6">
+                        Observation
+                    </div>
+                </div>
+                <div class="mt-4 flex flex-col font-medium">
+                    <div class="flex items-center justify-between py-3">
+                        <div>{{ selectedItem?.observation }}</div>
+                    </div>
+                </div>
+            </div>
+
+        </mat-drawer>
+
+        <mat-drawer-content class="flex flex-col bg-gray-100 dark:bg-transparent">
+            <!-- Main -->
+            <div class="flex flex-auto flex-col">
+                <!-- Header -->
+                <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+                    <div class="min-w-0 flex-1">
+                        <!-- Breadcrumbs -->
+                        <div class="flex flex-wrap items-center font-medium">
+                            <div>
+                                <a class="whitespace-nowrap text-primary-500">Séjours</a>
+                            </div>
+                        </div>
+                        <!-- Title -->
+                        <div class="mt-2">
+                            <div class="flex items-center">
+                                <mat-icon class="icon-size-25 mr-4" [svgIcon]="'heroicons_outline:clipboard-document'"></mat-icon>
+                                <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+                                    Séjour
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Items list -->
+                <div class="space-y-8 p-6 md:p-8">
+                    <div class="bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                                <div class="flex-1 min-w-0">
+                                    <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded w-full sm:max-w-xs">
+                                        <mat-icon class="icon-size-5" matPrefix [svgIcon]="'search'"></mat-icon>
+                                        <input
+                                            matInput
+                                            #inputKey
+                                            matTooltip="Recherche : Personne, Chambre ou Code Réservation"
+                                            [autocomplete]="'off'"
+                                            (keyup.enter)="key = inputKey.value; search()"
+                                            [placeholder]="'Chercher...'">
+                                    </mat-form-field>
+                                </div>
+
+                                <div class="my-3 hidden items-center sm:flex">
+                                    <div class="border border-r-0 p-4 leading-none">
+                                        <div class="text-secondary text-sm font-medium">
+                                            Chambres
+                                        </div>
+                                        <div class="mt-2 font-mono text-xl">
+                                            {{'000'}}
+                                        </div>
+                                    </div>
+                                    <div class="border border-r-0 p-4 leading-none">
+                                        <div class="text-secondary text-sm font-medium">
+                                            Clients
+                                        </div>
+                                        <div class="mt-2 font-mono text-xl">
+                                            {{'000'}}
+                                        </div>
+                                    </div>
+                                    <div class="rounded-r-xl border p-4 leading-none">
+                                        <div class="text-secondary text-sm font-medium">
+                                            Total
+                                        </div>
+                                        <div class="mt-2 font-mono text-xl">
+                                            {{'000'}}
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                        <div class="w-full bg-primary-50 dark:bg-transparent border rounded-xl overflow-hidden shadow-sm ">
+                            <div class="overflow-x-auto">
+                                <table mat-table [dataSource]="dataSource" >
+
+                            <!--<ng-container matColumnDef="info">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 2%">  </th>
+                                <td mat-cell *matCellDef="let row">
+                                    <button mat-icon-button (click)="raiseReservationDetailsDialog(row)" matTooltip="Plus d'informations">
+                                        @if (selectedItem?.code == row.code && this.matDrawer.opened) {
+                                            <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_solid:information-circle' " ></mat-icon>
+                                        } @else {
+                                            <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_outline:information-circle' " ></mat-icon>
+                                        }
+
+                                    </button>
+                                </td>
+                            </ng-container>-->
+
+                            <ng-container matColumnDef="code">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 6%"> NUM </th>
+                                <td mat-cell class="text-center" *matCellDef="let row">
+                                    <p class="text-md font-bold cursor-pointer" (click)="raiseReservationDetailsDialog(row)" [innerHTML]="row?.code + '' | highlight:key"></p>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="checkin">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 15%"> CHECK-IN </th>
+                                <td mat-cell *matCellDef="let row" class="text-center">
+                                    @if (row?.checkin) {
+                                        {{row?.checkin | date:'dd/MM/yyyy':'':'en-US'}}
+                                    } @else {
+                                        <span class="text-sm font-medium text-blue-400 italic">
+                                            {{'Prévu le  '+ (row?.plannedStart | date:'dd/MM/yyyy':'':'en-US')}}
+                                        </span>
+                                    }
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="checkout">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 15%"> CHECK-OUT </th>
+                                <td mat-cell *matCellDef="let row" class="text-center">
+                                    @if (row?.checkout) {
+                                        {{row?.checkout | date:'dd/MM/yyyy':'':'en-US'}}
+                                    } @else {
+                                        <span class="text-sm font-medium text-blue-400 italic">
+                                            {{'Prévu le  '+ (row?.plannedEnd | date:'dd/MM/yyyy':'':'en-US')}}
+                                        </span>
+                                    }
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="room">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 20%"> CHAMBRES </th>
+                                <td mat-cell *matCellDef="let row" >
+                                    @if (row | extractGuestData:'room'; as allRooms) {
+                                        <ul class="space-y-1">
+                                            @if (row.showAllRooms ? allRooms : (allRooms | slice:0:3); as displayList) {
+                                                <ul class="space-y-1">
+                                                    @for (room of displayList; track room.id) {
+                                                        <li class="list-disc list-inside" [innerHTML]="(room?.roomType?.type + ' (' + room?.name + ')')  | highlight:key"></li>
+                                                    }
+                                                </ul>
+                                            }
+
+                                            @if (allRooms?.length > 3) {
+                                                <button
+                                                    mat-button
+                                                    color="primary"
+                                                    class="mt-1 h-8 min-h-8 px-2 text-xs w-fit"
+                                                    (click)="row.showAllRooms = !row.showAllRooms">
+                                                    <div class="flex items-center">
+                                                        <mat-icon class="icon-size-4 mr-1" [svgIcon]="row.showAllRooms ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'"></mat-icon>
+                                                        <span>
+                                                            {{ row.showAllRooms ? 'Voir moins' : 'Voir ' + (allRooms.length - 3) + ' de plus' }}
+                                                        </span>
+                                                    </div>
+                                                </button>
+                                            }
+                                        </ul>
+                                    }
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="person">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 30%"> CLIENTS </th>
+                                <td mat-cell *matCellDef="let row" >
+                                    <p [innerHTML]="row?.person?.firstName | highlight:key"></p>
+                                    @if (row | extractGuestData:'person'; as allPersons) {
+                                        <ul class="space-y-1">
+                                            @if (row.showAllPersons ? allPersons : (allPersons | slice:0:3); as displayPersonsList) {
+                                                <ul class="space-y-1">
+                                                    @for (person of displayPersonsList; track person.id) {
+                                                        <li class="list-disc list-inside" [innerHTML]="(person?.grade?.code + ' ' + person?.firstName + ' ' + person?.lastName) | highlight:key"></li>
+                                                    }
+                                                </ul>
+                                            }
+
+                                            @if (allPersons?.length > 3) {
+                                                <button
+                                                    mat-button
+                                                    color="primary"
+                                                    class="mt-1 h-8 min-h-8 px-2 text-xs w-fit"
+                                                    (click)="row.showAllPersons = !row.showAllPersons">
+                                                    <div class="flex items-center">
+                                                        <mat-icon class="icon-size-4 mr-1" [svgIcon]="row.showAllPersons ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'"></mat-icon>
+                                                        <span>
+                                                            {{ row.showAllPersons ? 'Voir moins' : 'Voir ' + (allPersons.length - 3) + ' de plus' }}
+                                                        </span>
+                                                    </div>
+                                                </button>
+                                            }
+                                        </ul>
+                                    }
+                                </td>
+                            </ng-container>
+
+
+
+                            <ng-container matColumnDef="action">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 2%">  </th>
+                                <td mat-cell *matCellDef="let row" class="text-center">
+                                    <button mat-icon-button [matMenuTriggerFor]="menuAction">
+                                        <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
+                                    </button>
+                                    <mat-menu #menuAction="matMenu" >
+                                        <button mat-menu-item [routerLink]="'./edit/' + row?.id" >
+                                            <mat-icon svgIcon="edit" ></mat-icon>
+                                            <span>Modifier</span>
+                                        </button>
+                                    </mat-menu>
+                                </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{ 'bg-gray-100': selectedItem?.code === row.code && matDrawer.opened }"></tr>
+
+                            <tr class="mat-row" *matNoDataRow>
+                                <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+
+                                    <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                                        @if (!isLoading){
+                                            Aucune ligne trouvée
+                                        } @else {
+                                            Chargement...
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                            </div>
+                        </div>
+                        <mat-paginator
+                            [ngClass]="{ 'pointer-events-none': isLoading }"
+                            showFirstLastButtons="true"
+                            [length]="totalRows"
+                            [pageIndex]="currentPage"
+                            [pageSize]="pageSize"
+                            [pageSizeOptions]="pageSizeOptions"
+                            (page)="pageChanged($event)"
+                        ></mat-paginator>
+                    </div>
+                </div>
+            </div>
+        </mat-drawer-content>
+    </mat-drawer-container>
+</div>

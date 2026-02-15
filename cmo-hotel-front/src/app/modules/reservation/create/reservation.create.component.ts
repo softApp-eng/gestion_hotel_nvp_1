@@ -88,6 +88,8 @@ export class ReservationCreateComponent implements OnInit {
     estimatedTotal: number = 0;
     estimatedPayment;
 
+    upcomingReservations=[];
+
     /**
      * Constructor
      */
@@ -108,6 +110,8 @@ export class ReservationCreateComponent implements OnInit {
         this.form = this._formBuilder.group({
             category: [null, [Validators.required]],
             observation: [''],
+            priseEnCharge: [''],
+            priseEnChargeReference: [''],
             dateRange: this._formBuilder.group(
                 {
                     start: [null, [Validators.required]],
@@ -134,6 +138,11 @@ export class ReservationCreateComponent implements OnInit {
         if (this._router.url.includes('edit')) {
             this.initializeForm();
         }
+
+        // load upcoming Reservations
+        this._apiReservationService.getUpcomingReservations().subscribe({
+            next: value => {this.upcomingReservations = value},
+        })
     }
 
     loadCategories() {
@@ -218,6 +227,8 @@ export class ReservationCreateComponent implements OnInit {
             endDate: this._utilsService.convertToDate(dateRange.end),
             category: this.form.get('category')?.value,
             observation: this.form.get('observation')?.value,
+            priseEnCharge: this.form.get('priseEnCharge')?.value,
+            priseEnChargeReference: this.form.get('priseEnChargeReference')?.value,
             persons: this.persons.map((p) => ({
                 personId: p.id,
                 role: p.role,
@@ -318,7 +329,7 @@ export class ReservationCreateComponent implements OnInit {
     raisePersonAddDialog() {
         this._matDialog
             .open(PersonManageModel, {
-                data: { selectedPersons: [...this.persons] },
+                data: { selectedPersons: [...this.persons] ,category: this.form.get('category').value},
                 disableClose: true,
             })
             .afterClosed()
@@ -332,9 +343,14 @@ export class ReservationCreateComponent implements OnInit {
     }
 
     raiseRoomAssignDialog() {
+        const dateRange = this.form.get('dateRange')?.value;
         this._matDialog
             .open(AssignRoomsModel, {
-                data: {},
+                data: {
+                    upcomingReservations: this.upcomingReservations,
+                    start: dateRange.start,
+                    end: dateRange.end,
+                },
                 disableClose: true,
             })
             .afterClosed()
@@ -404,11 +420,6 @@ export class ReservationCreateComponent implements OnInit {
                 p.role = roleCode;
             }
         });
-
-        // Optional: Clear selection and close toggle after bulk action
-        //this.selectedGroupedPersons = [];
-        //this.groupedAction = false;
-
         this._toastr.success('Rôles mis à jour pour la sélection');
     }
 

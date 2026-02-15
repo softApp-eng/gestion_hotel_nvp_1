@@ -29,7 +29,6 @@ public record ReservationResponseDto(
             return null;
         return ReservationResponseDto.builder()
                 .id(entity.getId())
-                //.details(ReservationDetailsResponseDto.mapToDto(entity.getDetails()))
                 .person(PersonResponseDto.mapToDto(entity.getPerson()))
                 .role(entity.getRole())
                 .room(RoomResponseDto.mapToDto(entity.getRoom()))
@@ -40,6 +39,20 @@ public record ReservationResponseDto(
                 .lastModifiedBy(entity.getLastModifiedBy())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
+                .build();
+    }
+
+    public static ReservationResponseDto mapToShortDto(Reservation entity){
+        if (entity == null)
+            return null;
+        return ReservationResponseDto.builder()
+                .id(entity.getId())
+                .person(PersonResponseDto.mapToDto(entity.getPerson()))
+                .role(entity.getRole())
+                .room(RoomResponseDto.mapToDto(entity.getRoom()))
+                .exceptionalCheckin(entity.getExceptionalCheckin())
+                .exceptionalCheckout(entity.getExceptionalCheckout())
+                .exceptionPersonStatus(entity.getExceptionPersonStatus())
                 .build();
     }
 }

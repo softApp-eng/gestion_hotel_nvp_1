@@ -12,8 +12,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     boolean existsByCode(String code);
     boolean existsByCodeAndIdNot(String code,Long id);
 
-    @Query("FROM Room r join r.pavillon p where (?1 is null or p.id = ?1) order by r.code")
-    List<Room> getRooms(Long pavillonId);
+    @Query("FROM Room r join r.pavillon p where (?1 is null or p.id = ?1) and (?2 is null or r.clean = ?2) and r.archived is false order by r.code")
+    List<Room> getRooms(Long pavillonId,Boolean clean);
 
     @Query("FROM Room r where r.roomType = ?1 order by r.code")
     List<Room> findByRoomType(RoomType type);

@@ -1,0 +1,143 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+        <div class="min-w-0 flex-1">
+            <!-- Breadcrumbs -->
+            <div class="flex flex-wrap items-center font-medium">
+                <div>
+                    <a class="whitespace-nowrap text-primary-500">Réservation</a>
+                </div>
+            </div>
+            <!-- Title -->
+            <div class="mt-2">
+                <div class="flex items-center">
+                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'heroicons_solid:calendar-days'"></mat-icon>
+                    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+                        Occupation
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto ">
+        <div class="flex-auto ">
+            <div class="relative flex h-full min-w-0 flex-col overflow-hidden">
+                <!--        <div class="absolute inset-0 flex min-w-0 flex-col overflow-hidden">-->
+                <mat-drawer-container class="bg-card h-full flex-auto dark:bg-transparent">
+                    <!-- Drawer -->
+                    <mat-drawer
+                        class="bg-default w-2/3 border-r-0 sm:w-80 lg:w-72 bg-white"
+                        [mode]="drawerMode"
+                        [opened]="drawerOpened"
+                        #drawer
+                    >
+                        <div class="p-4 lg:py-8 lg:pl-4 lg:pr-0 ">
+                            <mat-form-field class="justify-center px-2 fuse-mat-no-subscript fuse-mat-rounded w-full" [appearance]="'outline'">
+                                <mat-label>Pavillon</mat-label>
+                                <mat-select [(ngModel)]="selectedPavillon" (selectionChange)="loadRooms($event.value)">
+                                    @for (p of pavillons; track p.id) {
+                                        <mat-option [value]="p?.id">{{p.name}}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+                            <!-- Filters -->
+                            <div class="space-y-2">
+                                <div class="relative flex justify-between cursor-pointer items-center rounded-full px-4 py-2 font-medium"
+                                     [ngClass]="{
+                                        'bg-gray-200 text-primary dark:bg-gray-700 dark:text-primary-400': selectedRoom === null,
+                                        'text-hint hover:bg-hover': selectedRoom !== null
+                                     }"
+                                     (click)="selectRoom(null)"
+                                     matRipple
+                                     [matRippleDisabled]="selectedRoom === null"
+                                >
+                                    <div class="flex items-center ml-3 select-none leading-5">
+                                        <mat-icon class="icon-size-4 mr-2 text-current"
+                                                  [svgIcon]="'heroicons_outline:squares-2x2'"></mat-icon>
+                                        <div class="text-default font-bold">
+                                            Toutes les chambres
+                                        </div>
+                                    </div>
+                                    <mat-icon class="text-current icon-size-4"
+                                              [svgIcon]="'heroicons_outline:chevron-right'"></mat-icon>
+                                </div>
+
+                                <div class="mx-4 my-2 border-b border-gray-200 dark:border-gray-700"></div>
+                                <!-- Labels -->
+                                @for (group of groupedRooms; track group.type) {
+                                    <div class="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-secondary">
+                                        {{ group.type }}
+                                    </div>
+                                    @for (room of group.items; track room.id) {
+                                        <div class="relative flex justify-between cursor-pointer items-center rounded-full px-4 py-2 font-medium"
+                                             [ngClass]="{
+                                                    'bg-gray-200 text-primary dark:bg-gray-700 dark:text-primary-400': selectedRoom?.id === room.id,
+                                                    'text-hint hover:bg-hover': selectedRoom?.id !== room.id
+                                                 }"
+                                             (click)="selectRoom(room)"
+                                             matRipple
+                                             [matRippleDisabled]="selectedRoom?.id === room.id"
+                                        >
+                                            <div class="flex items-center ml-3 select-none leading-5">
+                                                <mat-icon class="icon-size-4 mr-2 text-current"
+                                                          [svgIcon]="'heroicons_outline:tag'"></mat-icon>
+                                                <div class="text-default">
+                                                    {{ room.name }}
+                                                </div>
+                                            </div>
+
+                                            <mat-icon class="text-current icon-size-4"
+                                                      [svgIcon]="'heroicons_outline:chevron-right'"></mat-icon>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </mat-drawer>
+
+                    <mat-drawer-content class="flex flex-col bg-gray-100 dark:bg-transparent">
+                        <!-- Main -->
+                        <div class="flex flex-auto flex-col p-8 md:p-8 ">
+                            <!-- Header -->
+                            <div class="flex items-center">
+                                <div class="flex flex-auto flex-col sm:flex-row items-center justify-between w-full gap-4">
+
+                                    <div class="flex items-center w-full sm:w-auto">
+                                        <button class="-ml-2 flex md:hidden lg:hidden mr-2" mat-icon-button (click)="drawer.toggle()">
+                                            <mat-icon [svgIcon]="'heroicons_outline:bars-3'"></mat-icon>
+                                        </button>
+
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="w-full bg-card border flex flex-col  rounded-2xl p-8 pb-4 shadow">
+                                <full-calendar #fullCalendar [options]="calendarOptions()"></full-calendar>
+                                <div class="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t pt-6">
+                                    <div class="flex items-center" matTooltip="La réservation est validée, la chambre est bloquée.">
+                                        <div class="w-3 h-3 rounded-full mr-2" style="background-color: #4f46e5;"></div>
+                                        <span class="text-sm font-medium text-secondary">Confirmée</span>
+                                    </div>
+                                    <div class="flex items-center" matTooltip="La demande est enregistrée mais pas encore validée.">
+                                        <div class="w-3 h-3 rounded-full mr-2" style="background-color: #f59e0b;"></div>
+                                        <span class="text-sm font-medium text-secondary">En attente</span>
+                                    </div>
+                                    <div class="flex items-center" matTooltip="Dossier archivé après facturation et règlement.">
+                                        <div class="w-3 h-3 rounded-full mr-2" style="background-color: #10b981;"></div>
+                                        <span class="text-sm font-medium text-secondary">Clôturée</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </mat-drawer-content>
+                </mat-drawer-container>
+            </div>
+
+        </div>
+    </div>
+</div>

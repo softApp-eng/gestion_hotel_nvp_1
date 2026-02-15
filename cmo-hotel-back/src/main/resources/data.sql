@@ -70,12 +70,26 @@ SELECT setval('public."seq-room-price"', (SELECT MAX(id) FROM room_price));
 ------------------------------------------------------ room --------------------------------------------------------
 
 insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(1,1,4,'SS1','desc1','SS1','1',true,2,false);
-insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(2,1,5,'SJ1','desc1','SJ1','1',true,2,false);
-insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(3,1,6,'CL1','desc1','CL1','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(2,1,4,'SS2','desc1','SS2','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(3,1,4,'SS3','desc1','SS3','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(4,1,5,'SJ1','desc1','SJ1','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(5,1,5,'SJ2','desc1','SJ2','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(6,1,5,'SJ3','desc1','SJ3','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(7,1,6,'CL1','desc1','CL1','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(8,1,6,'CL2','desc1','CL2','1',true,2,false);
 
-insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(4,2,1,'S1','desc2','S1','1',true,2,false);
-insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(5,2,2,'MS1','desc2','MS1','1',true,2,false);
-insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(6,2,3,'CS1','desc2','CS1','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(9,2,1,'S1','desc2','S1','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(10,2,1,'S2','desc2','S2','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(11,2,1,'S3','desc2','S3','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(12,2,1,'S4','desc2','S4','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(13,2,2,'MS1','desc2','MS1','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(14,2,2,'MS2','desc2','MS2','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(15,2,3,'CS1','desc2','CS1','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(16,2,3,'CS2','desc2','CS2','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(17,2,3,'CS3','desc2','CS3','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(18,2,3,'CS4','desc2','CS4','2',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(19,2,3,'CS5','desc2','CS5','1',true,2,false);
+insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean,capacity,archived) values(20,2,3,'CS6','desc2','CS6','1',true,2,false);
 
 SELECT setval('public."seq-room"', (SELECT MAX(id) FROM room));
 

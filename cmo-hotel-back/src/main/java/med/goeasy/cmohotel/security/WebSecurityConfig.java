@@ -116,7 +116,8 @@ public class WebSecurityConfig {
 						.requestMatchers(DELETE,"/v1/rooms/prices/delete").hasAuthority(EPermissions.ROOM_PRICE_DELETE.getAuthority())
 						// Réservations
 						.requestMatchers(POST,"/v1/reservations/create").hasAuthority(EPermissions.RESERVATION_CREATE.getAuthority())
-						.requestMatchers(GET,"/v1/reservations/search").hasAuthority(EPermissions.RESERVATION_LIST.getAuthority())
+						.requestMatchers(GET,"/v1/reservations/search","/v1/reservations/upcoming","/v1/reservations/planning/**").hasAuthority(EPermissions.RESERVATION_LIST.getAuthority())
+						.requestMatchers(GET,"/v1/reservations/one").hasAuthority(EPermissions.RESERVATION_ONE.getAuthority())
 
 						//.anyRequest().authenticated()
 						.anyRequest().hasAuthority(EPermissions.DEFAULT.getAuthority())

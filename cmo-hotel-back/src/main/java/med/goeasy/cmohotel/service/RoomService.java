@@ -60,9 +60,9 @@ public class RoomService {
         log.info("{} update room with id {}", authentication.getName(), room.getId());
     }
 
-    public List<RoomResponseDto> getRooms(Authentication authentication, Long pavillonId) {
+    public List<RoomResponseDto> getRooms(Authentication authentication, Long pavillonId, Boolean clean) {
         log.info("{} get rooms in pavillon id {}", authentication.getName(),pavillonId);
-        return  roomRepository.getRooms(pavillonId).stream().map(RoomResponseDto::mapToDto).toList();
+        return  roomRepository.getRooms(pavillonId,clean).stream().map(RoomResponseDto::mapToDto).toList();
     }
 
     public RoomResponseDto findById(Authentication authentication,Long id) {

@@ -42,9 +42,11 @@ public class RoomController {
     @GetMapping("/all")
     ResponseEntity<List<RoomResponseDto>> getRooms(
             Authentication authentication,
-            @RequestParam(name = "pavillonId",required = false) Long pavillonId
+            @RequestParam(name = "pavillonId",required = false) Long pavillonId,
+            @RequestParam(name = "clean",required = false) Boolean clean
     ){
-        return ResponseEntity.ok(roomService.getRooms(authentication,pavillonId));
+        System.err.println("is Clean " + clean);
+        return ResponseEntity.ok(roomService.getRooms(authentication,pavillonId,clean));
     }
 
     @GetMapping("/one")

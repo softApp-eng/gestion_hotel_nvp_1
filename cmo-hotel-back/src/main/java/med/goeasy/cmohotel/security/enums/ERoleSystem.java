@@ -20,7 +20,29 @@ public enum ERoleSystem {
             EnumSet.allOf(EPermissions.class)
     ),
 
+    RESERVATIONS_MANAGER("reservations_manager",
+            "Profil d'accès pour la gestion des résevations.",
+            EnumSet.of(
+                    EPermissions.DEFAULT
+            )),
 
+    HOUSE_KEEPER("house_keeper",
+            "Profil d'accès pour la gestion des ménages des chambres.",
+            EnumSet.of(
+                    EPermissions.DEFAULT
+            )),
+
+    RESTAURATION_MANAGER("restauration_manager",
+            "Profil d'accès pour la gestion des restauration.",
+            EnumSet.of(
+                    EPermissions.DEFAULT
+            )),
+
+    CHEF_CMO("chef_cmo",
+            "Profil d'accès pour la visualisation et la génération des rapports et états de toutes partie de la plateforme.",
+            EnumSet.of(
+                    EPermissions.DEFAULT
+            )),
     ;
 
     private final String title;

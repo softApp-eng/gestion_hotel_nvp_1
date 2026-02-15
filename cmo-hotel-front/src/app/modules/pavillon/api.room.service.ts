@@ -26,8 +26,10 @@ export class ApiRoomService {
         return this._httpClient.put(`${this.API_URL}/update`, payload, { params });
     }
 
-    all(pavillonId?): Observable<any>{
-        let params = new HttpParams().set('pavillonId', pavillonId);
+    all(pavillonId?,clean:boolean=null): Observable<any>{
+        let params = new HttpParams()
+            .set('pavillonId', pavillonId)
+            .set('clean', clean == null?'':clean);
         return this._httpClient.get(`${this.API_URL}/all`, { params });
     }
 

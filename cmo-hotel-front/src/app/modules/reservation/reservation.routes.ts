@@ -17,5 +17,5 @@ export default [
         data: {
             permissions:[APP_PERMISSIONS.RESERVATION_CREATE]
         },
-    },
+    }
 ] as Routes;

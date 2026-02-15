@@ -31,6 +31,7 @@ import { MatCheckbox } from '@angular/material/checkbox';
 import { NgClass } from '@angular/common';
 import { PersonCreateModel } from '../dialog-person-create/person-create.model';
 import { MatMenu, MatMenuModule } from '@angular/material/menu';
+import { data } from 'autoprefixer';
 
 @Component({
     selector: 'person-manage-model',
@@ -88,7 +89,7 @@ export class PersonManageModel implements OnInit, OnDestroy {
         private _changeDetectorRef: ChangeDetectorRef,
         private _matDialog: MatDialog,
         @Inject(MAT_DIALOG_DATA)
-        public data: { selectedPersons: any }
+        public data: { selectedPersons: any, category: any }
     ) {
     }
 
@@ -200,6 +201,9 @@ export class PersonManageModel implements OnInit, OnDestroy {
     }
 
     saveAndClose() {
-        this.matDialogRef.close(this.selectedPersons);
+        if (this.data.category === 'SINGLE' && this.selectedPersons.length > 1) {
+            this._toast.error('La catégorie Individuel ne doit pas étre dépasser une personne');
+        } else
+            this.matDialogRef.close(this.selectedPersons);
     }
 }

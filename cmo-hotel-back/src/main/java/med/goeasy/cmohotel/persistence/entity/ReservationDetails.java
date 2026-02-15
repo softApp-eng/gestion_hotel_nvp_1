@@ -53,6 +53,9 @@ public class ReservationDetails {
 
     private String observation;
 
+    private Boolean priseEnCharge;
+    private String priseEnChargeReference;
+
     // audit
     @CreatedBy
     private String createdBy;

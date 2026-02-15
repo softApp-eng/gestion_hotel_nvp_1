@@ -102,6 +102,8 @@ export const appRoutes: Route[] = [
         },
         children: [
             {path: 'reservations', loadChildren: () => import('app/modules/reservation/reservation.routes'),},
+            {path: 'sejours', loadChildren: () => import('app/modules/sejour/sejour.routes'),},
+            {path: 'calender', loadChildren: () => import('app/modules/planning-calender/planning-calender.routes'),},
         ]
     },
 

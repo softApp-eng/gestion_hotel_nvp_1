@@ -63,8 +63,8 @@
                     }
                 </div>
 
-                <mat-form-field class="flex flex-col" >
-                    <mat-label>Période prevue</mat-label>
+                <mat-form-field class="flex flex-col" [appearance]="'outline'">
+                    <mat-label>Période prévue</mat-label>
                     <mat-date-range-input formGroupName="dateRange" [min]="today" [rangePicker]="rangePicker" >
                         <input matStartDate formControlName="start"  [placeholder]="'Date debut'" readonly (click)="rangePicker.open()" style="cursor: pointer !important;"/>
                         <input matEndDate formControlName="end" [placeholder]="'Date fin'" readonly (click)="rangePicker.open()" style="cursor: pointer !important;"/>
@@ -99,11 +99,26 @@
                     }
                 </mat-form-field>
 
+                <div class="flex items-center gap-4 w-full">
+                    <div class="flex items-center h-full pb-6"> <mat-checkbox
+                        [color]="'primary'"
+                        [formControlName]="'priseEnCharge'">
+                        Prise en charge
+                    </mat-checkbox>
+                    </div>
+                    @if (form.get('priseEnCharge').value) {
+                        <mat-form-field class="flex-auto text-2xl" [appearance]="'outline'">
+                            <mat-label>Réference</mat-label>
+                            <input matInput [formControlName]="'priseEnChargeReference'" placeholder="Reference de la prise en charge">
+                        </mat-form-field>
+                    }
+                </div>
+
 
                 <div class="flex items-center space-x-4 my-4 w-full">
                     <h2 class="font-semibold">Gérer les clients ({{persons.length}})</h2>
 
-                    <a mat-stroked-button class="h-8 min-h-8" (click)="raisePersonAddDialog()">
+                    <a mat-stroked-button class="h-8 min-h-8" [disabled]="!form.get('category').value" (click)="raisePersonAddDialog()">
                         <span class="inline-flex items-center text-sm">
                             <span>Ajouter</span>
                             <mat-icon class="ml-1 icon-size-4" [svgIcon]="'mat_solid:person_add_alt_1'"></mat-icon>

@@ -10,10 +10,7 @@ import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 import med.goeasy.cmohotel.persistence.repository.ReservationDetailsRepository;
 import med.goeasy.cmohotel.persistence.repository.ReservationRepository;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
-import med.goeasy.cmohotel.presentation.dto.reservation.ReservationDetailsResponseDto;
-import med.goeasy.cmohotel.presentation.dto.reservation.ReservationPersonsRequestDto;
-import med.goeasy.cmohotel.presentation.dto.reservation.ReservationRequestDto;
-import med.goeasy.cmohotel.presentation.dto.reservation.ReservationResponseDto;
+import med.goeasy.cmohotel.presentation.dto.reservation.*;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 
@@ -53,6 +51,8 @@ public class ReservationService {
                 .category(category)
                 .status(EReservationStatus.PENDING)
                 .observation(dto.observation())
+                .priseEnCharge(dto.priseEnCharge())
+                .priseEnChargeReference(dto.priseEnChargeReference())
                 .build();
         details = reservationDetailsRepository.save(details);
         for(ReservationPersonsRequestDto person : dto.persons()){
@@ -104,6 +104,37 @@ public class ReservationService {
                 reservations.getTotalElements(),
                 reservations.getTotalPages()
         );
+    }
+
+    public List<ReservationCalenderResponseDto> getReservationForCalender(Authentication authentication,LocalDate start,LocalDate end){
+        List<ReservationDetails> rangeReservations = reservationDetailsRepository.getRangeReservations(
+                List.of(EReservationStatus.PENDING, EReservationStatus.CLOSED, EReservationStatus.CONFIRMED),
+                start != null ? start.atStartOfDay() : null,
+                start != null ? end.atTime(23, 59, 59) : null
+                );
+        return rangeReservations.stream().map(ReservationCalenderResponseDto::mapToDto).toList();
+    }
+
+
+
+    public ReservationDetailsResponseDto getReservationByCode(Authentication authentication, Long code) {
+        return ReservationDetailsResponseDto.mapToDto(
+                getReservationDetailsByCode(code)
+        );
+    }
+
+    public List<ReservedRoomResponseDto> getUpcomingReservations(Authentication authentication) {
+        LocalDateTime today = LocalDateTime.now().with(LocalTime.MIN);
+        return reservationRepository.findFutureReservedRooms(today);
+    }
+
+    /// /////////////////////////////////////////////////////////////////////////////
+    ///                              EXTRAS FUNCTIONS                             ///
+    /// /////////////////////////////////////////////////////////////////////////////
+
+    protected ReservationDetails getReservationDetailsByCode(Long code){
+        return reservationDetailsRepository.findById(code)
+                .orElseThrow(()-> new BadRequestException("code de reservation n'existe pas"));
     }
 
 }

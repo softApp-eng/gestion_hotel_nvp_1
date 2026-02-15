@@ -1,24 +1,26 @@
 package med.goeasy.cmohotel.presentation.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import med.goeasy.cmohotel.exception.BadRequestException;
-import med.goeasy.cmohotel.persistence.entity.enums.ERelationshipType;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 import med.goeasy.cmohotel.presentation.dto.ApiResponse;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
+import med.goeasy.cmohotel.presentation.dto.reservation.ReservationCalenderResponseDto;
 import med.goeasy.cmohotel.presentation.dto.reservation.ReservationDetailsResponseDto;
 import med.goeasy.cmohotel.presentation.dto.reservation.ReservationRequestDto;
+import med.goeasy.cmohotel.presentation.dto.reservation.ReservedRoomResponseDto;
 import med.goeasy.cmohotel.service.ReservationService;
 import org.apache.commons.lang3.EnumUtils;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +38,21 @@ public class ReservationController {
         return ResponseEntity.ok(ApiResponse.builder().message("reservation crée").build());
     }
 
+    @GetMapping("/one")
+    ResponseEntity<ReservationDetailsResponseDto> one(
+            Authentication authentication,
+            @Valid @NotNull(message = "code de reservation requis") @RequestParam() Long code
+    ){
+        return ResponseEntity.ok(reservationService.getReservationByCode(authentication, code));
+    }
+
+    @GetMapping("/upcoming")
+    ResponseEntity<List<ReservedRoomResponseDto>> getUpcomingReservations(
+            Authentication authentication
+    ){
+        return ResponseEntity.ok(reservationService.getUpcomingReservations(authentication));
+    }
+
     @GetMapping("/search")
     ResponseEntity<PageDto<ReservationDetailsResponseDto>> search(
             Authentication authentication,
@@ -43,8 +60,8 @@ public class ReservationController {
             @RequestParam(required = false, defaultValue = "") Long reservationCode,
             @RequestParam(required = false) List<String> categories,
             @RequestParam(required = false) List<String> status,
-            @RequestParam(required = false) LocalDate start,
-            @RequestParam(required = false) LocalDate end,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate start,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate end,
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "20") Integer size
     ){
@@ -76,6 +93,26 @@ public class ReservationController {
                 start, end,
                 page, size
         ));
+    }
+
+
+    // TODO security
+    @GetMapping("/planning/{type}")
+    ResponseEntity<List<ReservationCalenderResponseDto>> getRangReservations(
+            Authentication authentication,
+            @PathVariable String type,
+            @RequestParam() @Valid @NotNull(message = "Date debut requis") @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate start,
+            @RequestParam() @Valid @NotNull(message = "Date fin requis") @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate end
+    ){
+        List<ReservationCalenderResponseDto> reservations= new ArrayList<>();
+        if ("reservations".equals(type)) {
+            reservations = reservationService.getReservationForCalender(authentication, start, end);
+        } else if ("rooms".equals(type)) {
+            reservations = reservationService.getReservationForCalender(authentication, start, end);
+        }
+
+
+        return ResponseEntity.ok(reservations);
     }
 
 }

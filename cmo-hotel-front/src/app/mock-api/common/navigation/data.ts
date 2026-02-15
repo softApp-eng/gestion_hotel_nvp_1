@@ -30,10 +30,23 @@ export const defaultNavigation: FuseNavigationItem[] = [
         children: [
             {
                 id: 'reservations.list',
-                title: 'Reservations',
+                title: 'Réservations',
                 type: 'basic',
                 icon: 'heroicons_outline:clipboard-document-check',
                 link: '/managements/reservations',
+            },
+            {
+                id: 'reservations.sejours',
+                title: 'Séjours',
+                type: 'basic',
+                icon: 'heroicons_outline:clipboard-document-check',
+                link: '/managements/sejours',
+            },{
+                id: 'reservations.calender',
+                title: 'Occupation',
+                type: 'basic',
+                icon: 'heroicons_outline:calendar-days',
+                link: '/managements/calender',
             },
         ],
     },

@@ -17,17 +17,7 @@ export class ApiReservationService {
   {
   }
 
-  /*
-      @RequestParam(required = false, defaultValue = "") String key,
-            @RequestParam(required = false) List<String> categories,
-            @RequestParam(required = false) List<String> status,
-            @RequestParam(required = false) LocalDateTime start,
-            @RequestParam(required = false) LocalDateTime end,
-            @RequestParam(required = false, defaultValue = "0") Integer page,
-            @RequestParam(required = false, defaultValue = "20") Integer size
-   */
-
-    search(key='',reservationCode='',status=[],categories=[],start = null,end = null,page=0,size=20): Observable<any>{
+    search(key='',reservationCode='',status=[],categories=[],start = '',end = '',page=0,size=20): Observable<any>{
         let params = new HttpParams()
             .set('key', key)
             .set('reservationCode', reservationCode)
@@ -46,6 +36,17 @@ export class ApiReservationService {
             });
         }
         return this._httpClient.get(`${this.API_URL}/search`, { params });
+    }
+
+    getRangReservations(type:'reservations' | 'rooms'='reservations',start,end): Observable<any>{
+        let params = new HttpParams()
+            .set('start', start)
+            .set('end', end);
+        return this._httpClient.get(`${this.API_URL}/planning/${type}`, { params });
+    }
+
+    getUpcomingReservations(): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/upcoming`);
     }
 
     create(payload): Observable<any>{
