@@ -46,7 +46,7 @@ public class AppUser implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<AppRole> roles = new HashSet<>();;
+    private Set<AppRole> roles = new HashSet<>();
 
     @CreatedDate
     private LocalDateTime createdAt;

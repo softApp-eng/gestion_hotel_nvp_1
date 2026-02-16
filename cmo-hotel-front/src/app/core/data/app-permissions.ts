@@ -53,6 +53,8 @@ export const APP_PERMISSIONS = {
     // RESERVATION
     RESERVATION_CREATE:'reservations:reservation:create',
     RESERVATION_LIST:'reservations:reservation:list',
-
+    RESERVATION_ACCEPT:'reservations:reservation:accept',
+    RESERVATION_CANCEL:'reservations:reservation:cancel',
+    RESERVATION_DELETE:'reservations:reservation:delete',
 
 }

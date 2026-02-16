@@ -34,6 +34,9 @@ import { ApiCommonService } from '../../../core/service/api.common.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { UtilsService } from '../../../core/service/utils.service';
 import {DisableIfNoPermissionDirective} from "../../../core/auth/DisableIfNoPermissionDirective";
+import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../@fuse/services/confirmation';
+import { ToastrService } from 'ngx-toastr';
+import { Toastr } from '../../../core/service/toastr.service';
 
 @Component({
     selector: 'reservation-list',
@@ -57,7 +60,6 @@ import {DisableIfNoPermissionDirective} from "../../../core/auth/DisableIfNoPerm
         MatTabsModule,
         MatDatepickerModule,
         RouterLink,
-        HasPermissionDirective,
         DatePipe,
         ExtractGuestDataPipe,
         SlicePipe,
@@ -107,6 +109,28 @@ export class ReservationListComponent implements OnInit, OnDestroy {
     };
     isAdvancedFilter = false;
 
+    actionConfigDialogue: FuseConfirmationConfig = {
+        title: '',
+        message: '',
+        icon: {
+            show: true,
+            name: 'heroicons_outline:exclamation-triangle',
+            color: 'warn',
+        },
+        actions: {
+            confirm: {
+                show: true,
+                label: 'Confirmer',
+                color: 'warn',
+            },
+            cancel: {
+                show: true,
+                label: 'Annuler',
+            },
+        },
+        dismissible: true,
+    };
+
     /**
      * Constructor
      */
@@ -114,8 +138,10 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         private _apiReservationService: ApiReservationService,
         private _apiCommonService: ApiCommonService,
         private _matDialog: MatDialog,
+        private _toast: Toastr,
         private _utilsService: UtilsService,
         private _changeDetectorRef: ChangeDetectorRef,
+        private _fuseConfirmationService: FuseConfirmationService,
         private _fuseMediaWatcherService: FuseMediaWatcherService
     ) {}
 
@@ -326,5 +352,68 @@ export class ReservationListComponent implements OnInit, OnDestroy {
                 .join(', ');
 
         return labels;
+    }
+
+    deleteReservation(reservation) {
+        if (!reservation.code)
+            return;
+        this.actionConfigDialogue.title = `Confirmer la suppression de la reservation #${reservation.code}.`;
+        this.actionConfigDialogue.message = `Êtes-vous sûr de vouloir supprimer cette reservation #${reservation.code}?<br> Cette action est irréversible. Toutes les données de cette reservation seront supprimées.`;
+        const dialogRef = this._fuseConfirmationService.open(
+            this.actionConfigDialogue
+        );
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result === 'confirmed')
+                this._apiReservationService.deleteReservation(reservation.code).subscribe({
+                    next: (value) => {
+                        this._toast.success('reservation supprimée');
+                        let data = this.dataSource.data;
+                        data = data.filter((s) => s.code !== reservation.code);
+                        this.dataSource.data = data;
+
+                        if (this.dataSource.paginator) {
+                            this.dataSource.paginator.length =
+                                data.length;
+                        }
+                    },
+                    error: (err) =>
+                        this._toast.error(
+                            err?.error?.description ||
+                            "Une erreur s'est produit"
+                        ),
+                });
+        });
+    }
+
+    cancelReservation(reservation) {
+        if (!reservation.code)
+            return;
+        this.actionConfigDialogue.title = `Confirmer l'annulation de la reservation #${reservation.code}.`;
+        this.actionConfigDialogue.message = `Êtes-vous sûr de vouloir annuler cette reservation #${reservation.code} ?`;
+        const dialogRef = this._fuseConfirmationService.open(
+            this.actionConfigDialogue
+        );
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result === 'confirmed')
+                this._apiReservationService.cancelReservation(reservation.code).subscribe({
+                    next: (value) => {
+                        this._toast.success('reservation annulée');
+                        let data = this.dataSource.data;
+                        data = data.map((s) => {
+                            if (s.code === reservation.code){
+                                reservation.status.code = 'CANCELED';
+                                reservation.status.name = 'Annulée';
+                            }
+                            return s;
+                        });
+                        this.dataSource.data = data;
+                    },
+                    error: (err) =>
+                        this._toast.error(
+                            err?.error?.description ||
+                            "Une erreur s'est produit"
+                        ),
+                });
+        });
     }
 }

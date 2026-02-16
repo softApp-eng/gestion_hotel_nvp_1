@@ -75,6 +75,51 @@ public class ReservationService {
         log.info("{} create reservation num {} for people {}", authentication.getName(),details.getCode(), dto.persons());
     }
 
+    @Transactional
+    public void acceptReservation(Authentication authentication, Long code,LocalDateTime date) {
+        ReservationDetails reservationDetails = getReservationDetailsByCode(code);
+        if (reservationDetails.getStatus().equals(EReservationStatus.CONFIRMED))
+            throw new BadRequestException("reservation déja confirmée");
+
+        if (reservationDetails.getStatus().equals(EReservationStatus.CLOSED))
+            throw new BadRequestException("reservation déja facturée");
+
+        if (reservationDetails.getStatus().equals(EReservationStatus.CANCELED))
+            throw new BadRequestException("reservation déja annulée");
+
+        // Change status
+        reservationDetails.setStatus(EReservationStatus.CONFIRMED);
+        reservationDetails.setCheckin(date);
+        reservationDetailsRepository.save(reservationDetails);
+        log.info("{} accept reservation num {} ", authentication.getName(),code);
+    }
+
+    @Transactional
+    public void cancelReservation(Authentication authentication, Long code) {
+        ReservationDetails reservationDetails = getReservationDetailsByCode(code);
+        if (reservationDetails.getStatus().equals(EReservationStatus.CONFIRMED) || reservationDetails.getStatus().equals(EReservationStatus.CLOSED))
+            throw new BadRequestException("reservation déja traitée");
+
+        if (reservationDetails.getStatus().equals(EReservationStatus.CANCELED))
+            throw new BadRequestException("reservation déja annulée");
+        // Change status
+        reservationDetails.setStatus(EReservationStatus.CANCELED);
+        reservationDetailsRepository.save(reservationDetails);
+        log.info("{} cancel reservation num {} ", authentication.getName(),code);
+    }
+
+    @Transactional
+    public void deleteReservation(Authentication authentication, Long code) {
+        ReservationDetails reservationDetails = getReservationDetailsByCode(code);
+        if (!reservationDetails.getStatus().equals(EReservationStatus.PENDING))
+            throw new BadRequestException("Vous ne pouvez pas supprimer une reservation déja traitée");
+
+        List<Reservation> reservations = reservationDetails.getReservations();
+        reservationRepository.deleteAll(reservations);
+        reservationDetailsRepository.delete(reservationDetails);
+        log.info("{} delete reservation num {} ", authentication.getName(),code);
+    }
+
 
     public PageDto<ReservationDetailsResponseDto> search(
             Authentication authentication,
@@ -127,6 +172,8 @@ public class ReservationService {
         LocalDateTime today = LocalDateTime.now().with(LocalTime.MIN);
         return reservationRepository.findFutureReservedRooms(today);
     }
+
+
 
     /// /////////////////////////////////////////////////////////////////////////////
     ///                              EXTRAS FUNCTIONS                             ///

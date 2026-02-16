@@ -64,6 +64,9 @@ public enum EPermissions {
     RESERVATION_CREATE(EPermissionsModule.RESERVATION, "reservation:create", "Créer une réservation", EPermissionsGroup.CREATE,true,""),
     RESERVATION_LIST(EPermissionsModule.RESERVATION, "reservation:list", "lister les réservations", EPermissionsGroup.READ,true,""),
     RESERVATION_ONE(EPermissionsModule.RESERVATION, "reservation:one", "charger une réservation", EPermissionsGroup.READ,true,""),
+    RESERVATION_ACCEPT(EPermissionsModule.RESERVATION, "reservation:accept", "accepter une réservation", EPermissionsGroup.MANAGE,true,""),
+    RESERVATION_CANCEL(EPermissionsModule.RESERVATION, "reservation:cancel", "annuler une réservation", EPermissionsGroup.MANAGE,true,""),
+    RESERVATION_DELETE(EPermissionsModule.RESERVATION, "reservation:delete", "supprimer une réservation", EPermissionsGroup.DELETE,true,""),
 
 
 

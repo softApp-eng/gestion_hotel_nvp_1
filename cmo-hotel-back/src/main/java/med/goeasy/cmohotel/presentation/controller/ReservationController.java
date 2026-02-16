@@ -21,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +37,34 @@ public class ReservationController {
     ResponseEntity<ApiResponse> create(Authentication authentication,@Valid @RequestBody ReservationRequestDto dto){
         reservationService.create(authentication,dto);
         return ResponseEntity.ok(ApiResponse.builder().message("reservation crée").build());
+    }
+
+    @PutMapping("/accept")
+    ResponseEntity<ApiResponse> acceptReservation(
+            Authentication authentication,
+            @Valid @NotNull(message = "code de reservation requis") @RequestParam() Long code,
+            @RequestParam() @Valid @NotNull(message = "Date checkin requise") @DateTimeFormat(pattern = "dd/MM/yyyy hh:mm") LocalDateTime checkin
+    ){
+        reservationService.acceptReservation(authentication,code,checkin);
+        return ResponseEntity.ok(ApiResponse.builder().message("reservation acceptée").build());
+    }
+
+    @PutMapping("/cancel")
+    ResponseEntity<ApiResponse> cancelReservation(
+            Authentication authentication,
+            @Valid @NotNull(message = "code de reservation requis") @RequestParam() Long code
+    ){
+        reservationService.cancelReservation(authentication,code);
+        return ResponseEntity.ok(ApiResponse.builder().message("reservation annulée").build());
+    }
+
+    @DeleteMapping("/delete")
+    ResponseEntity<ApiResponse> deleteReservation(
+            Authentication authentication,
+            @Valid @NotNull(message = "code de reservation requis") @RequestParam() Long code
+    ){
+        reservationService.deleteReservation(authentication,code);
+        return ResponseEntity.ok(ApiResponse.builder().message("reservation supprimée").build());
     }
 
     @GetMapping("/one")
@@ -96,7 +125,6 @@ public class ReservationController {
     }
 
 
-    // TODO security
     @GetMapping("/planning/{type}")
     ResponseEntity<List<ReservationCalenderResponseDto>> getRangReservations(
             Authentication authentication,

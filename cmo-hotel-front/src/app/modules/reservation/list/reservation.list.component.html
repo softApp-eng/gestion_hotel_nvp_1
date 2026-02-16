@@ -395,10 +395,32 @@
                                         <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
                                     </button>
                                     <mat-menu #menuAction="matMenu" >
-                                        <button mat-menu-item [routerLink]="'./edit/' + row?.id" >
-                                            <mat-icon svgIcon="edit" ></mat-icon>
-                                            <span>Modifier</span>
+                                        <button mat-menu-item >
+                                            <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:edit_calendar'"></mat-icon>
+                                            <span>Modifier </span>
                                         </button>
+
+                                        <button mat-menu-item [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_ACCEPT]">
+                                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                                            <span>Confirmer </span>
+                                        </button>
+
+
+
+                                        @if (row?.status?.code === 'PENDING') {
+                                            <button mat-menu-item (click)="cancelReservation(row)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_CANCEL]">
+                                                <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:cancel'"></mat-icon>
+                                                <span>Annuler</span>
+                                            </button>
+                                        }
+                                        @if (row?.status?.code === 'PENDING') {
+                                            <button class="text-red-800 dark:text-red-50 " mat-menu-item (click)="deleteReservation(row)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_DELETE]">
+                                                <mat-icon class="icon-size-5 text-red-800 dark:text-red-50" [svgIcon]="'mat_solid:delete_forever'"></mat-icon>
+                                                <span>Supprimer</span>
+                                            </button>
+                                        }
+
+
                                     </mat-menu>
                                 </td>
                             </ng-container>

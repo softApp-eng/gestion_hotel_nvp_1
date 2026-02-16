@@ -41,7 +41,7 @@ public class CmoHotelBackApplication {
             //feeder.grantPermissionToRole(EPermissions.RESERVATION_ONE,ERoleSystem.ADMIN);
             //feeder.grantPermissionToRole(EPermissions.ROOM_TYPE_DELETE,ERoleSystem.ADMIN);
             //feeder.resetRolePermissions(ERoleSystem.ADMIN);
-            //Feed database
+            //Feed database0
             if (shouldFeed)
                 feeder.feed();
 
