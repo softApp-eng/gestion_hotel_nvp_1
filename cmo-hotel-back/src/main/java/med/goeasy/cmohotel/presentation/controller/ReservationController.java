@@ -16,6 +16,9 @@ import med.goeasy.cmohotel.presentation.dto.reservation.ReservedRoomResponseDto;
 import med.goeasy.cmohotel.service.ReservationService;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -43,7 +46,7 @@ public class ReservationController {
     ResponseEntity<ApiResponse> acceptReservation(
             Authentication authentication,
             @Valid @NotNull(message = "code de reservation requis") @RequestParam() Long code,
-            @RequestParam() @Valid @NotNull(message = "Date checkin requise") @DateTimeFormat(pattern = "dd/MM/yyyy hh:mm") LocalDateTime checkin
+            @RequestParam() @Valid @NotNull(message = "Date checkin requise") @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm") LocalDateTime checkin
     ){
         reservationService.acceptReservation(authentication,code,checkin);
         return ResponseEntity.ok(ApiResponse.builder().message("reservation acceptée").build());
@@ -141,6 +144,17 @@ public class ReservationController {
 
 
         return ResponseEntity.ok(reservations);
+    }
+
+    @GetMapping("/invoice")
+    public ResponseEntity<byte[]> downloadInvoice(@Valid @NotNull(message = "code de reservation requis") @RequestParam() Long code) throws Exception {
+        byte[] pdf = reservationService.generateInvoice(code);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "Reservation_" + code + ".pdf");
+
+        return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
     }
 
 }

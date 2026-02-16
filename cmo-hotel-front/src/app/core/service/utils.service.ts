@@ -19,6 +19,28 @@ export class UtilsService {
       }
   }
 
+    convertToLocalDateTime(date, time) {
+        let dt;
+
+        // 1. On récupère la base de la date
+        if (DateTime.isDateTime(date)) {
+            dt = date;
+        } else {
+            dt = DateTime.fromJSDate(date);
+        }
+
+        // 2. On extrait les heures et minutes de la chaîne "HH:mm"
+        const [hours, minutes] = time.split(':').map(Number);
+
+        // 3. On applique l'heure à la date et on formate
+        return dt.set({
+            hour: hours,
+            minute: minutes,
+            second: 0,
+            millisecond: 0
+        }).toFormat('dd/MM/yyyy HH:mm');
+    }
+
     calculateDuration(startAt,endAt) {
         if (startAt && endAt) {
             const start = new Date(startAt);

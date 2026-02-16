@@ -53,7 +53,7 @@ public class ReservationDetails {
 
     private String observation;
 
-    private Boolean priseEnCharge;
+    private boolean priseEnCharge;
     private String priseEnChargeReference;
 
     // audit

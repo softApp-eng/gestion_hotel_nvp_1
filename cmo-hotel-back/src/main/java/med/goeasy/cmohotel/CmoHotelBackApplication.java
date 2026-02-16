@@ -2,6 +2,7 @@ package med.goeasy.cmohotel;
 
 import med.goeasy.cmohotel.config.ConfigProperties;
 import med.goeasy.cmohotel.persistence.repository.ReservationRepository;
+import med.goeasy.cmohotel.presentation.dto.prices.PriceEstimationResponse;
 import med.goeasy.cmohotel.presentation.dto.reservation.ReservedRoomResponseDto;
 import med.goeasy.cmohotel.security.enums.EPermissions;
 import med.goeasy.cmohotel.security.enums.ERoleSystem;
@@ -32,11 +33,11 @@ public class CmoHotelBackApplication {
     private boolean shouldFeed;
 
     @Bean
-    CommandLineRunner runner(Feeder feeder, ReservationRepository reservationRepository){
+    CommandLineRunner runner(Feeder feeder){
         return args -> {
-//            List<ReservedRoomResponseDto> futureReservedRooms = reservationRepository.findFutureReservedRooms(LocalDateTime.now());
-//            System.err.println(futureReservedRooms.size());
-//            futureReservedRooms.forEach(System.out::println);
+
+            //PriceEstimationResponse price = reservationPricingService.calculateEstimationByCode(501L);
+            //System.err.println(price);
             //feeder.seedMassiveReservations(500);
             //feeder.grantPermissionToRole(EPermissions.RESERVATION_ONE,ERoleSystem.ADMIN);
             //feeder.grantPermissionToRole(EPermissions.ROOM_TYPE_DELETE,ERoleSystem.ADMIN);

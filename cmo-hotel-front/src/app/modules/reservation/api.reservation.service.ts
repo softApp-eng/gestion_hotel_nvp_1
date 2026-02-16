@@ -68,4 +68,17 @@ export class ApiReservationService {
         return this._httpClient.delete(`${this.API_URL}/delete`, { params });
     }
 
+    downloadInvoice(code): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/invoice?code=${code}`, {
+            responseType: 'blob'
+        });
+    }
+
+    downloadDailyInPersonAssistanceExcel(day: string) {
+        return this._httpClient.get(`${environment.solidarityApi}/v1/in-person-assistances/export/excel`, {
+            params: { day },
+            responseType: 'blob'
+        });
+    }
+
 }

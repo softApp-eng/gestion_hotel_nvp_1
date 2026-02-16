@@ -39,6 +39,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Toastr } from '../../../core/service/toastr.service';
 import { PersonManageModel } from '../dialog-manage-person/person-manage.model';
 import { AcceptReservationModel } from './dialog-accept-reservation/accept.reservation.model';
+import { ReservationDetailsModel } from '../dialog-reservation-details/reservation.details.model';
 
 @Component({
     selector: 'reservation-list',
@@ -429,9 +430,19 @@ export class ReservationListComponent implements OnInit, OnDestroy {
             })
             .afterClosed()
             .subscribe((result) => {
-                if (result) {
-                    console.log(result);
+                if (result.reload) {
+                    this.search();
                 }
             });
+    }
+
+    raiseReservationDetailsDialog(reservation) {
+        this._matDialog
+            .open(ReservationDetailsModel, {
+                data: { reservation: reservation},
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe();
     }
 }

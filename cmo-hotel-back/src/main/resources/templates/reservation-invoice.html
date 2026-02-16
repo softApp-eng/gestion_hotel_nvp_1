@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style>
+        body { font-family: 'Helvetica', sans-serif; color: #333; margin: 0; padding: 30px; }
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #2c3e50; padding-bottom: 20px; }
+        .hotel-name { font-size: 24px; font-weight: bold; color: #2c3e50; text-transform: uppercase; }
+        .invoice-title { font-size: 20px; color: #7f8c8d; text-align: right; }
+        .section { margin-top: 30px; }
+        .section-title { font-size: 14px; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 15px; }
+        .info-grid { display: flex; flex-wrap: wrap; margin-bottom: 20px; }
+        .info-item { width: 50%; margin-bottom: 10px; font-size: 12px; }
+        .info-label { font-weight: bold; color: #7f8c8d; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background-color: #f8f9fa; color: #2c3e50; text-align: left; padding: 12px; font-size: 12px; border-bottom: 2px solid #dee2e6; }
+        td { padding: 12px; font-size: 12px; border-bottom: 1px solid #eee; vertical-align: top; }
+        .total-section { margin-top: 30px; text-align: right; }
+        .total-box { display: inline-block; background: #2c3e50; color: white; padding: 15px 30px; border-radius: 5px; }
+        .badge { background: #e8f4fd; color: #2980b9; padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; }
+        .footer { margin-top: 50px; font-size: 10px; color: #95a5a6; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
+    </style>
+</head>
+<body>
+<div th:if="${details.priseEnCharge}"
+     style="background: #eafaf1; color: #27ae60; border: 1px solid #27ae60; padding: 10px; text-align: center; border-radius: 5px; margin-bottom: 20px; font-weight: bold; font-size: 14px;">
+    DOCUMENT DE RÉSERVATION AVEC PRISE EN CHARGE ADMINISTRATIVE
+</div>
+<div class="header">
+    <div class="hotel-name">CMO HOTEL - GESTION DES RÉSERVATIONS</div>
+    <div class="invoice-title">RÉSUMÉ DE RÉSERVATION #<span th:text="${details.code}">001</span></div>
+</div>
+
+<div class="section">
+    <div class="section-title">INFORMATIONS GÉNÉRALES</div>
+    <div class="info-grid">
+        <div class="info-item"><span class="info-label">Catégorie:</span> <span th:text="${details.category.name}">MISSION</span></div>
+        <div class="info-item"><span class="info-label">Statut:</span> <span class="badge" th:text="${details.status.name}">CONFIRMÉ</span></div>
+        <div class="info-item"><span class="info-label">Période:</span> <span th:text="${#temporals.format(details.plannedStart, 'dd/MM/yyyy')}">16/02/2026</span> au <span th:text="${#temporals.format(details.plannedEnd, 'dd/MM/yyyy')}">17/02/2026</span></div>
+        <div class="info-item"><span class="info-label">Durée:</span> <span th:text="${estimation.durationInDays}">1</span> Nuit(s)</div>
+        <div class="info-item" th:if="${details.priseEnCharge}"><span class="info-label">Référence Prise en Charge:</span> <span th:text="${details.priseEnChargeReference}">PEC-2026</span></div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-title">DÉTAILS DES OCCUPANTS PAR CHAMBRE</div>
+    <table>
+        <thead>
+        <tr>
+            <th>Chambre / Type</th>
+            <th>Occupants / Rôles</th>
+            <th>Prix Unitaire</th>
+            <th>Total Chambre</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="roomDetail, iter : ${estimation.details}">
+            <td>
+                <strong th:text="${roomDetail.roomName}">Standard / Room 101</strong>
+            </td>
+            <td>
+                <div th:each="res : ${details.reservations}" th:if="${(res.room.roomType.type + ' / ' + res.room.name) == roomDetail.roomName}">
+                    <span th:text="${res.person.grade.code + ' ' + res.person.firstName + ' ' + res.person.lastName}">Nom Prénom</span>
+                    <small>(<span th:text="${res.role}">INVITÉ</span>)</small>
+                </div>
+            </td>
+            <td th:text="${#numbers.formatDecimal(roomDetail.unitPrice, 1, 2) + ' MAD'}">150.00 MAD</td>
+            <td th:text="${#numbers.formatDecimal(roomDetail.totalPrice, 1, 2) + ' MAD'}">150.00 MAD</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="total-section">
+    <div th:if="${details.priseEnCharge}" class="total-box" style="background: #27ae60;">
+        <div style="font-size: 11px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px;">
+            Statut Paiement
+        </div>
+        <div style="font-size: 22px; font-weight: bold;">0.00 MAD</div>
+        <div style="font-size: 10px; margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 5px;">
+            PRIS EN CHARGE (Réf: <span th:text="${details.priseEnChargeReference}">-</span>)
+        </div>
+    </div>
+
+    <div th:if="${not details.priseEnCharge}" class="total-box">
+        <div style="font-size: 11px; opacity: 0.8;">MONTANT TOTAL À PAYER</div>
+        <div style="font-size: 24px; font-weight: bold;"
+             th:text="${#numbers.formatDecimal(estimation.totalAmount, 1, 2) + ' MAD'}">
+            150.00 MAD
+        </div>
+    </div>
+</div>
+
+<!--<div class="total-section">
+    <div class="total-box">
+        <div style="font-size: 12px; opacity: 0.8;">MONTANT TOTAL À PAYER</div>
+        <div style="font-size: 24px; font-weight: bold;" th:text="${#numbers.formatDecimal(estimation.totalAmount, 1, 2) + ' MAD'}">150.00 MAD</div>
+    </div>
+</div>-->
+
+<div class="section" th:if="${details.observation}">
+    <div class="section-title">OBSERVATIONS</div>
+    <p style="font-size: 11px;" th:text="${details.observation}">Aucune observation.</p>
+</div>
+
+<div class="footer">
+    Document généré le <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}">16/02/2026</span><br/>
+    CMO HOTEL - Système de Gestion Automatisé
+</div>
+</body>
+</html>

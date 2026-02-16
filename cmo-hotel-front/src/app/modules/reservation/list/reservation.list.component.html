@@ -277,7 +277,7 @@
                             <ng-container matColumnDef="code">
                                 <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 6%"> NUM </th>
                                 <td mat-cell class="text-center" *matCellDef="let row">
-                                    <p class="text-md font-bold " [innerHTML]="row?.code + '' | highlight:key"></p>
+                                    <p class="text-md font-bold cursor-pointer" (click)="raiseReservationDetailsDialog(row)" [innerHTML]="row?.code + '' | highlight:key"></p>
                                 </td>
                             </ng-container>
 
@@ -395,16 +395,22 @@
                                         <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
                                     </button>
                                     <mat-menu #menuAction="matMenu" >
+                                        <button mat-menu-item (click)="raiseReservationDetailsDialog(row)">
+                                            <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:info'"></mat-icon>
+                                            <span>Détails </span>
+                                        </button>
+
                                         <button mat-menu-item >
                                             <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:edit_calendar'"></mat-icon>
                                             <span>Modifier </span>
                                         </button>
 
-                                        <button mat-menu-item [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_ACCEPT]" (click)="raiseAcceptReservation(row?.code)">
-                                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:check'"></mat-icon>
-                                            <span>Confirmer </span>
-                                        </button>
-
+                                        @if (row?.status?.code === 'PENDING') {
+                                            <button mat-menu-item [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_ACCEPT]" (click)="raiseAcceptReservation(row?.code)">
+                                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                                                <span>Confirmer</span>
+                                            </button>
+                                        }
 
 
                                         @if (row?.status?.code === 'PENDING') {
@@ -413,6 +419,7 @@
                                                 <span>Annuler</span>
                                             </button>
                                         }
+
                                         @if (row?.status?.code === 'PENDING') {
                                             <button class="text-red-800 dark:text-red-50 " mat-menu-item (click)="deleteReservation(row)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_DELETE]">
                                                 <mat-icon class="icon-size-5 text-red-800 dark:text-red-50" [svgIcon]="'mat_solid:delete_forever'"></mat-icon>

@@ -5,18 +5,19 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import {
     ReactiveFormsModule,
-    UntypedFormBuilder,
+    UntypedFormBuilder, UntypedFormGroup, Validators,
 } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { ToastrService } from 'ngx-toastr';
 import { MatDatepicker, MatDatepickerInput, MatDatepickerToggle } from '@angular/material/datepicker';
+import { ApiReservationService } from '../../api.reservation.service';
+import { UtilsService } from '../../../../core/service/utils.service';
 
 @Component({
     selector: 'accept-reservation',
     templateUrl: './accept.reservation.model.html',
-    styleUrls: ['./accept.reservation.model.scss'],
     encapsulation: ViewEncapsulation.None,
     standalone: true,
     imports: [
@@ -26,7 +27,6 @@ import { MatDatepicker, MatDatepickerInput, MatDatepickerToggle } from '@angular
         MatInputModule,
         ReactiveFormsModule,
         MatToolbarModule,
-        MatSelectModule,
         MatDatepicker,
         MatDatepickerInput,
         MatDatepickerToggle,
@@ -35,13 +35,18 @@ import { MatDatepicker, MatDatepickerInput, MatDatepickerToggle } from '@angular
 export class AcceptReservationModel implements OnInit {
     title = 'Accepter la reservation #';
     code;
+    date;
+    time;
+    form: UntypedFormGroup;
 
     /**
      * Constructor
      */
     constructor(
         private _formBuilder: UntypedFormBuilder,
+        private _utilsService: UtilsService,
         public matDialogRef: MatDialogRef<AcceptReservationModel>,
+        private _apiReservationService: ApiReservationService,
         private _toast: ToastrService,
         @Inject(MAT_DIALOG_DATA)
         public data: { code: any }
@@ -49,39 +54,32 @@ export class AcceptReservationModel implements OnInit {
         this.code = data.code;
     }
 
-    ngOnInit(): void {}
+    ngOnInit(): void {
+        this.form = this._formBuilder.group({
+            date: [null, [Validators.required]],
+            time: ['12:00', [Validators.required]]
+        });
+    }
 
-    /*save() {
-        // Do nothing if the form is invalid
-        if (this.form.invalid) {
-            return;
-        }
+    save(): void {
+        if (this.form.invalid) return;
 
-        // Disable the form
-        this.form.disable();
+        const rawDate = this.form.get('date').value;
+        const rawTime = this.form.get('time').value;
 
-        this._apiUsersService
-            .updateMdpUser(this.form.value,this.userid)
-            .pipe(
-                finalize(() => {
-                    // Show the alert
-                    this.form.enable();
-                    window.scroll({
-                        top: 0,
-                        left: 0,
-                        behavior: 'smooth',
-                    });
-                })
-            )
+        // Conversion au format attendu par le backend : "16/02/2026 18:30"
+        const formattedDateTime = this._utilsService.convertToLocalDateTime(rawDate, rawTime);
+
+        this._apiReservationService
+            .acceptReservation(this.code,formattedDateTime)
             .subscribe({
-                next: (value) => {
-                    this._toast.success('Mdp changer');
-                    this.matDialogRef.close();
+                next: () => {
+                    this._toast.success('Réservation acceptée');
+                    this.matDialogRef.close({ reload: true });
                 },
                 error: (err) => {
-                    this._toast.error(err?.error?.description || 'Problème de modification');
-                },
+                    this._toast.error(err?.error?.description || 'Erreur lors de la validation');
+                }
             });
-
-    }*/
+    }
 }
