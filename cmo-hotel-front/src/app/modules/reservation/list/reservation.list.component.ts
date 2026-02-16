@@ -37,6 +37,8 @@ import {DisableIfNoPermissionDirective} from "../../../core/auth/DisableIfNoPerm
 import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../@fuse/services/confirmation';
 import { ToastrService } from 'ngx-toastr';
 import { Toastr } from '../../../core/service/toastr.service';
+import { PersonManageModel } from '../dialog-manage-person/person-manage.model';
+import { AcceptReservationModel } from './dialog-accept-reservation/accept.reservation.model';
 
 @Component({
     selector: 'reservation-list',
@@ -415,5 +417,21 @@ export class ReservationListComponent implements OnInit, OnDestroy {
                         ),
                 });
         });
+    }
+
+    raiseAcceptReservation(code) {
+        if (!code)
+            return;
+        this._matDialog
+            .open(AcceptReservationModel, {
+                data: { code: code},
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((result) => {
+                if (result) {
+                    console.log(result);
+                }
+            });
     }
 }

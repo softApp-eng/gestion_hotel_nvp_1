@@ -1,0 +1,45 @@
+<div class="-m-6 flex flex-auto flex-col md:w-160 md:min-w-160 overflow-hidden">
+    <mat-toolbar class=" mat-accent h-14 min-h-14 px-2 m-0 flex-none">
+        <div class="flex items-center w-full justify-between">
+            <div class="flex items-center" >
+                <mat-icon class="icon-size-5 mr-3 text-white" [svgIcon]="'heroicons_solid:filter'"></mat-icon>
+                <span class="text-xl  text-white">{{title + code}}</span>
+            </div>
+            <button mat-icon-button (click)="matDialogRef.close()" aria-label="fermer" class="text-white">
+                <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
+            </button>
+        </div>
+    </mat-toolbar>
+
+    <div class="m-6">
+        <form >
+
+            <div class="flex flex-row items-center gap-2 w-full">
+
+                <mat-form-field class="flex-auto text-2xl" [appearance]="'outline'" [subscriptSizing]="'dynamic'">
+                    <mat-label>Date de naissance</mat-label>
+                    <input matInput [matDatepicker]="dp3">
+                    <mat-datepicker-toggle matIconSuffix [for]="dp3"></mat-datepicker-toggle>
+                    <mat-datepicker #dp3></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field class="w-44 text-2xl" [appearance]="'outline'" [subscriptSizing]="'dynamic'">
+                    <mat-label>Heure</mat-label>
+                    <input matInput type="time" [placeholder]="'Heure checkin'">
+                </mat-form-field>
+
+            </div>
+
+            <div class="flex items-start justify-between mx-3 mt-8">
+                <button mat-stroked-button (click)="matDialogRef.close()">
+                    Annuler
+                </button>
+                <button mat-flat-button [color]="'primary'" [disabled]="">
+                    Valider
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>

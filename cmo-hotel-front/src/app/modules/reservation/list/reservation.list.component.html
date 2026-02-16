@@ -400,7 +400,7 @@
                                             <span>Modifier </span>
                                         </button>
 
-                                        <button mat-menu-item [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_ACCEPT]">
+                                        <button mat-menu-item [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_ACCEPT]" (click)="raiseAcceptReservation(row?.code)">
                                             <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:check'"></mat-icon>
                                             <span>Confirmer </span>
                                         </button>
