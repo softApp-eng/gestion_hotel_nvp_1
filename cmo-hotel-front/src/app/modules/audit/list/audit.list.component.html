@@ -1,0 +1,113 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+        <div class="min-w-0 flex-1">
+            <!-- Breadcrumbs -->
+            <div class="flex flex-wrap items-center font-medium">
+                <div>
+                    <a class="whitespace-nowrap text-primary-500">Administration</a>
+                </div>
+            </div>
+            <!-- Title -->
+            <div class="mt-2">
+                <div class="flex items-center">
+                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'vpn_key'"></mat-icon>
+                    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+                        Audits
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-6">
+        <div class="w-full bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+
+            <div class="flex items-start justify-between">
+                <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded min-w-64">
+                    <mat-icon class="icon-size-5" matPrefix [svgIcon]="'search'"></mat-icon>
+                    <input
+                        matInput
+                        #input
+                        [matTooltip]="'Chercher'"
+                        [autocomplete]="'off'"
+                        [(ngModel)]="key"
+                        (input)="search()"
+                        [placeholder]="'Chercher'">
+                </mat-form-field>
+            </div>
+
+            <table mat-table [dataSource]="dataSource" >
+
+                <ng-container matColumnDef="username">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> UTILISATEUR </th>
+                    <td mat-cell *matCellDef="let row" >
+                        <p [innerHTML]="row?.username | highlight:key"></p>
+                    </td>
+                </ng-container>
+
+
+                <ng-container matColumnDef="ENTITE">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> ENTITE </th>
+                    <td mat-cell *matCellDef="let row">
+                        <p [innerHTML]="row?.actionTarget.name | highlight:key"></p>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="OPERATION">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> OPERATION </th>
+                    <td mat-cell *matCellDef="let row">
+                        <p [innerHTML]="row?.actionOperation.name | highlight:key"></p>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="date">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> DATE OPS </th>
+                    <td mat-cell *matCellDef="let row">
+                        {{row?.timestamp | date:'dd/MM/yyyy hh:mm':'':'en-US'}}
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="ip">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> IP </th>
+                    <td mat-cell *matCellDef="let row">
+                        <p [innerHTML]="row?.ipAddress | highlight:key"></p>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="message">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 50%"> ACTION </th>
+                    <td mat-cell *matCellDef="let row">
+                        <p [innerHTML]="row?.message | highlight:key"></p>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let element; columns: displayedColumns;" class="example-element-row"></tr>
+
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+
+                        <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                            @if (!isLoading){
+                                Aucune ligne trouvée
+                            } @else {
+                                Chargement...
+                            }
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <mat-paginator
+                class="w-full border-b dark:bg-transparent"
+                showFirstLastButtons="true"
+                #paginator
+                [length]="totalRows"
+                [pageIndex]="currentPage"
+                [pageSize]="10"
+                [pageSizeOptions]="[10, 20, 50]"
+            ></mat-paginator>
+            </div>
+    </div>
+</div>

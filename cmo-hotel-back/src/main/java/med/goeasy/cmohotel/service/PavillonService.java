@@ -1,7 +1,11 @@
 package med.goeasy.cmohotel.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import med.goeasy.cmohotel.audit.ActivityLogService;
+import med.goeasy.cmohotel.audit.EAuditActionOperation;
+import med.goeasy.cmohotel.audit.EAuditActionTarget;
 import med.goeasy.cmohotel.exception.BadRequestException;
 import med.goeasy.cmohotel.persistence.entity.Pavillon;
 import med.goeasy.cmohotel.persistence.repository.PavillonRepository;
@@ -23,6 +27,8 @@ public class PavillonService {
 
     private final PavillonRepository pavillonRepository;
     private final RoomRepository roomRepository;
+    private final ActivityLogService activityLogService;
+    private final HttpServletRequest request;
 
     @Transactional
     public void create(Authentication authentication, PavillonRequestDto dto) {
@@ -32,7 +38,13 @@ public class PavillonService {
         }
         Pavillon pavillon = PavillonRequestDto.mapToEntity(dto);
         pavillonRepository.save(pavillon);
-        log.info("{} save new pavillon with name {}", authentication.getName(), dto.name());
+        activityLogService.logActivity(
+                EAuditActionTarget.PAVILLON,
+                EAuditActionOperation.CREATE,
+                String.format("Création du nouveau pavillon '%s'.",pavillon.getName()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     @Transactional
@@ -45,11 +57,20 @@ public class PavillonService {
         Pavillon pavillon = PavillonRequestDto.mapToEntity(dto);
         pavillon.setId(pavillonDb.getId());
         pavillonRepository.save(pavillon);
-        log.info("{} update pavillon with id {}", authentication.getName(), pavillon.getId());
+        activityLogService.logActivity(
+                EAuditActionTarget.PAVILLON,
+                EAuditActionOperation.UPDATE,
+                String.format(
+                        pavillonDb.getName().equals(dto.name()) ?
+                                String.format("Mise à jour des informations du pavillon '%s'.", dto.name()) :
+                                String.format("Modification du pavillon : '%s' a été renommé en '%s'.", pavillonDb.getName(), dto.name())
+                ),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     public List<PavillonResponseDto> getPavillons(Authentication authentication) {
-        log.info("{} get pavillons", authentication.getName());
         return pavillonRepository.getPavillons()
                 .stream()
                 .map(pavillon -> {
@@ -63,6 +84,20 @@ public class PavillonService {
         log.info("{} loads pavillon with id {}", authentication.getName(), id);
         return PavillonResponseDto.mapToDto(
                 getPavillonById(id)
+        );
+    }
+
+    @Transactional // à implémenter plus tard
+    public void delete(Authentication authentication, Long id) {
+        Pavillon pavillon = getPavillonById(id);
+        pavillonRepository.delete(pavillon);
+
+        activityLogService.logActivity(
+                EAuditActionTarget.PAVILLON,
+                EAuditActionOperation.DELETE,
+                String.format("Suppression définitive du pavillon '%s'.", pavillon.getName()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
         );
     }
 

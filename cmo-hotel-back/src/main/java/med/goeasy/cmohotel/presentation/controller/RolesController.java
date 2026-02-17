@@ -34,17 +34,18 @@ public class RolesController {
     }
 
     @PostMapping("/create")
-    ResponseEntity<ApiResponse> createRole(@Valid @RequestBody RoleRequestDto dto){
-        rolesService.createRole(dto);
+    ResponseEntity<ApiResponse> createRole( Authentication authentication,@Valid @RequestBody RoleRequestDto dto){
+        rolesService.createRole(authentication, dto);
         return ResponseEntity.ok(ApiResponse.builder().message("role crée").build());
     }
 
     @PutMapping("/update")
     ResponseEntity<ApiResponse> update(
+            Authentication authentication,
             @Valid @RequestBody RoleRequestDto dto,
             @Valid @NotNull(message = "role id requis") @RequestParam() String roleid
     ){
-        rolesService.updateRole(dto,roleid);
+        rolesService.updateRole(authentication, dto,roleid);
         return ResponseEntity.ok(ApiResponse.builder().message("role modifié").build());
     }
 
@@ -57,17 +58,19 @@ public class RolesController {
 
     @DeleteMapping("/delete")
     ResponseEntity<ApiResponse> delete(
+            Authentication authentication,
             @Valid @NotNull(message = "role id requis") @RequestParam() String roleid
     ){
-        rolesService.deleteRole(roleid);
+        rolesService.deleteRole(authentication, roleid);
         return ResponseEntity.ok(ApiResponse.builder().message("role supprimé").build());
     }
 
     @GetMapping("/clone")
     ResponseEntity<ApiResponse> clone(
+            Authentication authentication,
             @Valid @NotNull(message = "role id requis") @RequestParam() String roleid
     ){
-        rolesService.cloneRole(roleid);
+        rolesService.cloneRole(authentication, roleid);
         return ResponseEntity.ok(ApiResponse.builder().message("role dupliqué").build());
     }
 

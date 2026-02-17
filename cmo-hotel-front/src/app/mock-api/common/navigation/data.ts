@@ -111,6 +111,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type: 'basic',
                 icon: 'mat_outline:vpn_key',
                 link: '/admin/roles',
+            },
+            {
+                id: 'audit.logs',
+                title: 'Audit',
+                type: 'basic',
+                icon: 'mat_outline:history',
+                link: '/admin/audit/logs',
             }
         ],
     },

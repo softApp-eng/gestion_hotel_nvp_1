@@ -25,12 +25,14 @@ public record ReservationDetailsResponseDto(
         LocalDateTime plannedStart,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         LocalDateTime plannedEnd,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm")
         LocalDateTime checkin,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm")
         LocalDateTime checkout,
         List<ReservationResponseDto> guests,
         String createdBy,
+        boolean priseEnCharge,
+        String priseEnChargeReference,
         String lastModifiedBy,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
@@ -53,6 +55,8 @@ public record ReservationDetailsResponseDto(
                 .updatedAt(entity.getUpdatedAt())
                 .status(entity.getStatus())
                 .observation(entity.getObservation())
+                .priseEnCharge(entity.isPriseEnCharge())
+                .priseEnChargeReference(entity.getPriseEnChargeReference())
                 .build();
     }
 }

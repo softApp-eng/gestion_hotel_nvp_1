@@ -60,6 +60,12 @@ export const appRoutes: Route[] = [
                 data: {
                     module:[APP_MODULES.ROLES]
                 },
+            },{
+                path: 'audit',
+                loadChildren: () => import('app/modules/audit/audit.routes'),
+                data: {
+                    module:[APP_MODULES.AUDIT]
+                },
             }
         ]
     },

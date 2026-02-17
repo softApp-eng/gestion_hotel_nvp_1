@@ -52,6 +52,16 @@ public class ReservationController {
         return ResponseEntity.ok(ApiResponse.builder().message("reservation acceptée").build());
     }
 
+    @PutMapping("/close")
+    ResponseEntity<ApiResponse> closeReservation(
+            Authentication authentication,
+            @Valid @NotNull(message = "code de reservation requis") @RequestParam() Long code,
+            @RequestParam() @Valid @NotNull(message = "Date checkin requise") @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm") LocalDateTime checkout
+    ){
+        reservationService.closeReservation(authentication,code,checkout);
+        return ResponseEntity.ok(ApiResponse.builder().message("reservation cloturée").build());
+    }
+
     @PutMapping("/cancel")
     ResponseEntity<ApiResponse> cancelReservation(
             Authentication authentication,
@@ -147,8 +157,8 @@ public class ReservationController {
     }
 
     @GetMapping("/invoice")
-    public ResponseEntity<byte[]> downloadInvoice(@Valid @NotNull(message = "code de reservation requis") @RequestParam() Long code) throws Exception {
-        byte[] pdf = reservationService.generateInvoice(code);
+    public ResponseEntity<byte[]> downloadInvoice( Authentication authentication,@Valid @NotNull(message = "code de reservation requis") @RequestParam() Long code) throws Exception {
+        byte[] pdf = reservationService.generateInvoice(authentication,code);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);

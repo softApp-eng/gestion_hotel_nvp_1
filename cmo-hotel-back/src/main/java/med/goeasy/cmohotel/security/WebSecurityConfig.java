@@ -78,6 +78,7 @@ public class WebSecurityConfig {
 						.requestMatchers(PUT,"/v1/users/update").hasAuthority(EPermissions.ADMIN_USERS_UPDATE.getAuthority())
 						.requestMatchers(PUT,"/v1/users/password").hasAuthority(EPermissions.ADMIN_USERS_PASSWORD_MODIFY.getAuthority())
 						.requestMatchers(PUT,"/v1/users/roles/assign").hasAuthority(EPermissions.ADMIN_USERS_ASSIGN_ROLES.getAuthority())
+						.requestMatchers(PUT,"/v1/audit/logs/search").hasAuthority(EPermissions.ADMIN_AUDIT_ACTIVITY_LOGS.getAuthority())
 						// roles
 						.requestMatchers(GET,"/v1/roles/list").hasAuthority(EPermissions.ADMIN_ROLES_LIST.getAuthority())
 						.requestMatchers(GET,"/v1/roles/permissions").hasAuthority(EPermissions.ADMIN_ROLES_PERMISSIONS_LIST.getAuthority())
@@ -120,6 +121,7 @@ public class WebSecurityConfig {
 						.requestMatchers(GET,"/v1/reservations/one").hasAuthority(EPermissions.RESERVATION_ONE.getAuthority())
 						.requestMatchers(PUT,"/v1/reservations/accept").hasAuthority(EPermissions.RESERVATION_ACCEPT.getAuthority())
 						.requestMatchers(PUT,"/v1/reservations/cancel").hasAuthority(EPermissions.RESERVATION_CANCEL.getAuthority())
+						.requestMatchers(PUT,"/v1/reservations/close").hasAuthority(EPermissions.RESERVATION_CLOSE.getAuthority())
 						.requestMatchers(DELETE,"/v1/reservations/delete").hasAuthority(EPermissions.RESERVATION_DELETE.getAuthority())
 
 						//.anyRequest().authenticated()

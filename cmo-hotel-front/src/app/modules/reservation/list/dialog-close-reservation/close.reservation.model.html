@@ -1,0 +1,52 @@
+<div class="-m-6 flex flex-auto flex-col md:w-160 md:min-w-160 overflow-hidden">
+    <mat-toolbar class="mat-accent h-14 min-h-14 px-2 m-0 flex-none">
+        <div class="flex items-center w-full justify-between">
+            <div class="flex items-center">
+                <mat-icon class="icon-size-5 mr-3 text-white" [svgIcon]="'heroicons_solid:check-circle'"></mat-icon>
+                <span class="text-xl text-white">Clôture de Séjour (Check-out) : #{{code}}</span>
+            </div>
+            <button mat-icon-button (click)="matDialogRef.close()" class="text-white">
+                <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
+            </button>
+        </div>
+    </mat-toolbar>
+
+    <div class="m-6">
+        <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-2 rounded-md mb-4 flex items-center shadow-sm">
+            <mat-icon class="icon-size-5 mr-2 text-blue-600" [svgIcon]="'heroicons_outline:information-circle'"></mat-icon>
+            <span class="text-sm italic">
+                La validation du check-out libérera la chambre et clôturera définitivement le dossier de réservation.
+            </span>
+        </div>
+        <form [formGroup]="form" class="flex flex-col">
+            <p class="mb-4 text-secondary text-sm">
+                Veuillez confirmer la date et l'heure de départ effectif du client.
+            </p>
+            <div class="flex flex-row items-center gap-2 w-full">
+                <mat-form-field class="flex-auto text-2xl" [appearance]="'outline'" [subscriptSizing]="'dynamic'">
+                    <mat-label>Date de départ</mat-label>
+                    <input matInput [matDatepicker]="dp3" formControlName="date">
+                    <mat-datepicker-toggle matIconSuffix [for]="dp3"></mat-datepicker-toggle>
+                    <mat-datepicker #dp3></mat-datepicker>
+                    <mat-error *ngIf="form.get('date').hasError('required')">Date requise</mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="w-44 text-2xl" [appearance]="'outline'" [subscriptSizing]="'dynamic'">
+                    <mat-label>Heure de départ</mat-label>
+                    <input matInput type="time" formControlName="time">
+                    <mat-error *ngIf="form.get('time').hasError('required')">Heure requise</mat-error>
+                </mat-form-field>
+            </div>
+
+            <div class="flex items-start justify-between mx-3 mt-8">
+                <button type="button" mat-stroked-button (click)="matDialogRef.close()">
+                    Annuler
+                </button>
+                <button type="submit" mat-flat-button [color]="'primary'"
+                        [disabled]="form.invalid" (click)="save()">
+                    Finaliser le Check-out
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

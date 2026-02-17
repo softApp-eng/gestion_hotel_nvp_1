@@ -3,7 +3,7 @@
         <div class="flex items-center w-full justify-between">
             <div class="flex items-center">
                 <mat-icon class="icon-size-5 mr-3 text-white" [svgIcon]="'heroicons_solid:check-circle'"></mat-icon>
-                <span class="text-xl text-white">{{title + code}}</span>
+                <span class="text-xl text-white">Check-in Réel : Réservation #{{code}}</span>
             </div>
             <button mat-icon-button (click)="matDialogRef.close()" class="text-white">
                 <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
@@ -12,8 +12,16 @@
     </mat-toolbar>
 
     <div class="m-6">
+        <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-2 rounded-md mb-4 flex items-center shadow-sm">
+            <mat-icon class="icon-size-5 mr-2 text-blue-600" [svgIcon]="'heroicons_outline:information-circle'"></mat-icon>
+            <span class="text-sm italic">
+                Veuillez confirmer l'heure de présentation effective du client pour finaliser l'affectation de la chambre.
+            </span>
+        </div>
         <form [formGroup]="form" class="flex flex-col">
-
+            <p class="mb-4 text-secondary text-sm">
+                Saisie des informations de présentation effective du client à l'hotel.
+            </p>
             <div class="flex flex-row items-center gap-2 w-full">
                 <mat-form-field class="flex-auto text-2xl" [appearance]="'outline'" [subscriptSizing]="'dynamic'">
                     <mat-label>Date d'arrivée</mat-label>
@@ -24,7 +32,7 @@
                 </mat-form-field>
 
                 <mat-form-field class="w-44 text-2xl" [appearance]="'outline'" [subscriptSizing]="'dynamic'">
-                    <mat-label>Heure</mat-label>
+                    <mat-label>Heure d'arrivée</mat-label>
                     <input matInput type="time" formControlName="time">
                     <mat-error *ngIf="form.get('time').hasError('required')">Heure requise</mat-error>
                 </mat-form-field>
@@ -36,7 +44,7 @@
                 </button>
                 <button type="submit" mat-flat-button [color]="'primary'"
                         [disabled]="form.invalid" (click)="save()">
-                    Valider l'acceptation
+                    Confirmer l'arrivée du client
                 </button>
             </div>
         </form>

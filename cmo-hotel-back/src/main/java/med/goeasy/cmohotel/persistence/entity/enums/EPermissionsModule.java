@@ -9,6 +9,7 @@ public enum EPermissionsModule {
 
     GENERAL("general","Général"),
     USERS("users","Utilisateurs"),
+    AUDIT("audits","Audit"),
     ROLES("roles","Roles"),
     MANAGEMENT("managements","Management"),
     REPORTING("reporting","Generer des rapports"),

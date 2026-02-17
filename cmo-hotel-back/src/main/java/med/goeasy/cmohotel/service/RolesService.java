@@ -1,7 +1,11 @@
 package med.goeasy.cmohotel.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import med.goeasy.cmohotel.audit.ActivityLogService;
+import med.goeasy.cmohotel.audit.EAuditActionOperation;
+import med.goeasy.cmohotel.audit.EAuditActionTarget;
 import med.goeasy.cmohotel.exception.BadRequestException;
 import med.goeasy.cmohotel.persistence.entity.auth.AppPermission;
 import med.goeasy.cmohotel.persistence.entity.auth.AppRole;
@@ -28,6 +32,8 @@ public class RolesService {
     private final AppUserRepository appUserRepository;
     private final AppRoleRepository appRoleRepository;
     private final AppPermissionRepository appPermissionRepository;
+    private final ActivityLogService activityLogService;
+    private final HttpServletRequest request;
 
     public List<RoleResponse> list(Authentication authentication) {
         AppUser user = (AppUser) authentication.getPrincipal();
@@ -38,7 +44,7 @@ public class RolesService {
 
     // create role
     @Transactional
-    public void createRole(RoleRequestDto dto){
+    public void createRole(Authentication authentication, RoleRequestDto dto){
         if (appRoleRepository.existsByTitle(dto.title()))
             throw new BadRequestException("nom deja existe");
         List<AppPermission> permissions = appPermissionRepository.findAllById(dto.permissions());
@@ -54,12 +60,20 @@ public class RolesService {
                 .permissions(new HashSet<>(permissions))
                 .build();
         appRoleRepository.save(role);
-        log.info("new role created with name {}",role.getName());
+
+        activityLogService.logActivity(
+                EAuditActionTarget.ROLE,
+                EAuditActionOperation.CREATE,
+                String.format("Création du rôle '%s'.",
+                        role.getTitle()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     // update role
     @Transactional
-    public void updateRole(RoleRequestDto dto,String roleid){
+    public void updateRole(Authentication authentication, RoleRequestDto dto,String roleid){
         AppRole role = getRoleById(roleid);
         if (role.isSystem())
             throw new BadRequestException("Role système ne peut pas être modifié");
@@ -76,10 +90,18 @@ public class RolesService {
         role.setPermissions(new HashSet<>(permissions));
         appRoleRepository.save(role);
         log.info("role with id {} updated",role.getId());
+        activityLogService.logActivity(
+                EAuditActionTarget.ROLE,
+                EAuditActionOperation.UPDATE,
+                String.format("Mise à jour du rôle '%s' (id: %s).",
+                        role.getTitle(),role.getId()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     @Transactional
-    public void cloneRole(String roleid){
+    public void cloneRole(Authentication authentication, String roleid){
         AppRole original = getRoleById(roleid);
 
         String baseName = original.getName() + "_CLONE";
@@ -104,7 +126,14 @@ public class RolesService {
                 .build();
 
         appRoleRepository.save(clonedRole);
-        log.info("clone of role {} created",original.getName());
+        activityLogService.logActivity(
+                EAuditActionTarget.ROLE,
+                EAuditActionOperation.UPDATE,
+                String.format("Clonage du rôle '%s' vers un nouveau rôle nommé '%s'.",
+                        original.getTitle(), clonedRole.getTitle()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
     // get role by id
     public RoleResponse roleById(String roleid){
@@ -119,7 +148,7 @@ public class RolesService {
     }
     // delete role
     @Transactional
-    public void deleteRole(String roleId) {
+    public void deleteRole(Authentication authentication, String roleId) {
         AppRole role = getRoleById(roleId);
         if (role.isSystem())
             throw new BadRequestException("Role système ne peut pas être modifié");
@@ -133,6 +162,14 @@ public class RolesService {
         appUserRepository.saveAll(usersWithRole);
         appRoleRepository.delete(role);
         log.info("role with id {} and name {} deleted",role.getId(),role.getName());
+        activityLogService.logActivity(
+                EAuditActionTarget.ROLE,
+                EAuditActionOperation.DELETE,
+                String.format("Suppression définitive du rôle '%s'.",
+                        role.getTitle()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     /// /////////////////////////////////////////////////////////////////////////////

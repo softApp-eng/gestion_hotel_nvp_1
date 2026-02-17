@@ -35,6 +35,7 @@ import { UtilsService } from '../../../core/service/utils.service';
 import { FuseMediaWatcherService } from '../../../../@fuse/services/media-watcher';
 import { PersonManageModel } from '../../reservation/dialog-manage-person/person-manage.model';
 import { ReservationDetailsModel } from '../../reservation/dialog-reservation-details/reservation.details.model';
+import { CloseReservationModel } from '../../reservation/list/dialog-close-reservation/close.reservation.model';
 
 @Component({
     selector: 'sejour-list',
@@ -182,5 +183,21 @@ export class SejourListComponent implements OnInit, OnDestroy {
 
     closeDrawer() {
         this.matDrawer.close();
+    }
+
+    raiseCloseReservation(code) {
+        if (!code)
+            return;
+        this._matDialog
+            .open(CloseReservationModel, {
+                data: { code: code},
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((result) => {
+                if (result.reload) {
+                    this.search();
+                }
+            });
     }
 }

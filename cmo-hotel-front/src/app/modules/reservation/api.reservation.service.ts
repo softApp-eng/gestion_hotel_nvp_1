@@ -54,8 +54,11 @@ export class ApiReservationService {
     }
 
     acceptReservation(code,checkin): Observable<any>{
-
         return this._httpClient.put(`${this.API_URL}/accept?code=${code}&checkin=${checkin}`, {});
+    }
+
+    closeReservation(code,checkout): Observable<any>{
+        return this._httpClient.put(`${this.API_URL}/close?code=${code}&checkout=${checkout}`, {});
     }
 
     cancelReservation(code): Observable<any>{

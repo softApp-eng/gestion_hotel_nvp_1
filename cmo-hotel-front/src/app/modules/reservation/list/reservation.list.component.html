@@ -285,7 +285,7 @@
                                 <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 15%"> CHECK-IN </th>
                                 <td mat-cell *matCellDef="let row" class="text-center">
                                     @if (row?.checkin) {
-                                        {{row?.checkin | date:'dd/MM/yyyy':'':'en-US'}}
+                                        {{row?.checkin | date:'dd/MM/yyyy hh:mm':'':'en-US'}}
                                     } @else {
                                         <span class="text-sm font-medium text-blue-400 italic">
                                             {{'Prévu le  '+ (row?.plannedStart | date:'dd/MM/yyyy':'':'en-US')}}
@@ -298,7 +298,7 @@
                                 <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 15%"> CHECK-OUT </th>
                                 <td mat-cell *matCellDef="let row" class="text-center">
                                     @if (row?.checkout) {
-                                        {{row?.checkout | date:'dd/MM/yyyy':'':'en-US'}}
+                                        {{row?.checkout | date:'dd/MM/yyyy hh:mm':'':'en-US'}}
                                     } @else {
                                         <span class="text-sm font-medium text-blue-400 italic">
                                             {{'Prévu le  '+ (row?.plannedEnd | date:'dd/MM/yyyy':'':'en-US')}}
@@ -404,6 +404,13 @@
                                             <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:edit_calendar'"></mat-icon>
                                             <span>Modifier </span>
                                         </button>
+
+                                        @if (row?.status?.code === 'CONFIRMED') {
+                                            <button mat-menu-item (click)="raiseCloseReservation(row?.code)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_CLOSE]">
+                                                <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:edit_calendar'"></mat-icon>
+                                                <span>Cloturer </span>
+                                            </button>
+                                        }
 
                                         @if (row?.status?.code === 'PENDING') {
                                             <button mat-menu-item [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_ACCEPT]" (click)="raiseAcceptReservation(row?.code)">

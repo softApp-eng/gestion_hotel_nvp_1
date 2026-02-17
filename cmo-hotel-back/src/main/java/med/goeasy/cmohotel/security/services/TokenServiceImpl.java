@@ -1,8 +1,12 @@
 package med.goeasy.cmohotel.security.services;
 
 import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import med.goeasy.cmohotel.audit.ActivityLogService;
+import med.goeasy.cmohotel.audit.EAuditActionOperation;
+import med.goeasy.cmohotel.audit.EAuditActionTarget;
 import med.goeasy.cmohotel.config.ConfigProperties;
 import med.goeasy.cmohotel.exception.OperationNotPermittedException;
 import med.goeasy.cmohotel.exception.TokenRefreshException;
@@ -24,13 +28,15 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
-@Transactional  // TODO TEST
+@Transactional
 @Service
 public class TokenServiceImpl implements TokenServiceFace {
 
     private final JwtUtils jwtUtils;
     private final AppTokenRepository appTokenRepository;
     private final ConfigProperties ConfigProperties;
+    private final ActivityLogService activityLogService;
+    private final HttpServletRequest request;
 
 
     @Override
@@ -54,6 +60,14 @@ public class TokenServiceImpl implements TokenServiceFace {
         );
         token.setUser(UserResponse.mapToUserResponse(user));
         log.info(String.format("token generated for -> %s",user.getId()));
+        activityLogService.logActivity(
+                EAuditActionTarget.AUTH,
+                EAuditActionOperation.LOGIN,
+                String.format("Connexion réussie : L'utilisateur '%s' s'est authentifié avec succès. token ID: %s.",
+                        user.getUsername(), tokenId),
+                activityLogService.getClientIp(request),
+                user.getUsername()
+        );
         return token;
     }
 

@@ -262,6 +262,12 @@
                                             <mat-icon svgIcon="edit" ></mat-icon>
                                             <span>Modifier</span>
                                         </button>
+                                        @if (row?.status?.code === 'CONFIRMED') {
+                                            <button mat-menu-item (click)="raiseCloseReservation(row?.code)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_CLOSE]">
+                                                <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:edit_calendar'"></mat-icon>
+                                                <span>Cloturer </span>
+                                            </button>
+                                        }
                                     </mat-menu>
                                 </td>
                             </ng-container>

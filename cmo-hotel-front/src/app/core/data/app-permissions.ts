@@ -7,6 +7,7 @@ export const APP_PERMISSIONS = {
     ADMIN_USERS_UPDATE:'users:user:update',
     ADMIN_USERS_PASSWORD_MODIFY:'users:user:password:modify',
     ADMIN_USERS_ASSIGN_ROLES:'users:user:assign:roles',
+    ADMIN_AUDIT_ACTIVITY_LOGS:'audits:logs:filter',
 
     // roles
     ADMIN_ROLES_LIST:'roles:role:list',
@@ -54,6 +55,7 @@ export const APP_PERMISSIONS = {
     RESERVATION_CREATE:'reservations:reservation:create',
     RESERVATION_LIST:'reservations:reservation:list',
     RESERVATION_ACCEPT:'reservations:reservation:accept',
+    RESERVATION_CLOSE:'reservations:reservation:close',
     RESERVATION_CANCEL:'reservations:reservation:cancel',
     RESERVATION_DELETE:'reservations:reservation:delete',
 

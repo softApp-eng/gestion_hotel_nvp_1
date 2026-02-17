@@ -40,6 +40,7 @@ import { Toastr } from '../../../core/service/toastr.service';
 import { PersonManageModel } from '../dialog-manage-person/person-manage.model';
 import { AcceptReservationModel } from './dialog-accept-reservation/accept.reservation.model';
 import { ReservationDetailsModel } from '../dialog-reservation-details/reservation.details.model';
+import { CloseReservationModel } from './dialog-close-reservation/close.reservation.model';
 
 @Component({
     selector: 'reservation-list',
@@ -425,6 +426,22 @@ export class ReservationListComponent implements OnInit, OnDestroy {
             return;
         this._matDialog
             .open(AcceptReservationModel, {
+                data: { code: code},
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((result) => {
+                if (result.reload) {
+                    this.search();
+                }
+            });
+    }
+
+    raiseCloseReservation(code) {
+        if (!code)
+            return;
+        this._matDialog
+            .open(CloseReservationModel, {
                 data: { code: code},
                 disableClose: true,
             })

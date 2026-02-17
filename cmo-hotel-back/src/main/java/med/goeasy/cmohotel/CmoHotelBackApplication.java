@@ -39,7 +39,7 @@ public class CmoHotelBackApplication {
             //PriceEstimationResponse price = reservationPricingService.calculateEstimationByCode(501L);
             //System.err.println(price);
             //feeder.seedMassiveReservations(500);
-            //feeder.grantPermissionToRole(EPermissions.RESERVATION_ONE,ERoleSystem.ADMIN);
+            //feeder.grantPermissionToRole(EPermissions.RESERVATION_CLOSE,ERoleSystem.ADMIN);
             //feeder.grantPermissionToRole(EPermissions.ROOM_TYPE_DELETE,ERoleSystem.ADMIN);
             //feeder.resetRolePermissions(ERoleSystem.ADMIN);
             //Feed database0

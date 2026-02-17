@@ -1,7 +1,11 @@
 package med.goeasy.cmohotel.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import med.goeasy.cmohotel.audit.ActivityLogService;
+import med.goeasy.cmohotel.audit.EAuditActionOperation;
+import med.goeasy.cmohotel.audit.EAuditActionTarget;
 import med.goeasy.cmohotel.exception.BadRequestException;
 import med.goeasy.cmohotel.persistence.entity.Pavillon;
 import med.goeasy.cmohotel.persistence.entity.Room;
@@ -27,6 +31,8 @@ public class RoomService {
     private final RoomTypeRepository roomTypeRepository;
     private final RoomPriceRepository roomPriceRepository;
     private final PavillonService pavillonService;
+    private final ActivityLogService activityLogService;
+    private final HttpServletRequest request;
 
     @Transactional
     public void create(Authentication authentication, RoomRequestDto dto) {
@@ -40,7 +46,15 @@ public class RoomService {
         room.setRoomType(roomType);
         room.setPavillon(pavillon);
         roomRepository.save(room);
-        log.info("{} save new room with code {}", authentication.getName(), dto.code());
+
+        activityLogService.logActivity(
+                EAuditActionTarget.ROOM,
+                EAuditActionOperation.CREATE,
+                String.format("Création de la chambre '%s' dans le pavillon '%s' (Type: %s).",
+                        room.getName(), pavillon.getName(), roomType.getType()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     @Transactional
@@ -57,7 +71,14 @@ public class RoomService {
         room.setPavillon(pavillon);
         room.setId(roomDb.getId());
         roomRepository.save(room);
-        log.info("{} update room with id {}", authentication.getName(), room.getId());
+        activityLogService.logActivity(
+                EAuditActionTarget.ROOM,
+                EAuditActionOperation.UPDATE,
+                String.format("Mise à jour de la chambre '%s'. Pavillon: %s, Type: %s.",
+                        roomDb.getName(), pavillon.getName(), roomType.getType()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     public List<RoomResponseDto> getRooms(Authentication authentication, Long pavillonId, Boolean clean) {
@@ -97,7 +118,13 @@ public class RoomService {
                 .description(dto.description())
                 .build();
         roomTypeRepository.save(type);
-        log.info("{} save new room type with name {}", authentication.getName(), dto.type());
+        activityLogService.logActivity(
+                EAuditActionTarget.ROOM_TYPE,
+                EAuditActionOperation.CREATE,
+                String.format("Définition d'un nouveau type de chambre : '%s'.", type.getType()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     @Transactional
@@ -110,7 +137,13 @@ public class RoomService {
         roomTypeDb.setType(dto.type());
         roomTypeDb.setDescription(dto.description());
         roomTypeRepository.save(roomTypeDb);
-        log.info("{} update room type with id {}", authentication.getName(), id);
+        activityLogService.logActivity(
+                EAuditActionTarget.ROOM_TYPE,
+                EAuditActionOperation.UPDATE,
+                String.format("Mise à jour du type de la chambre : '%s' (id: *%d).", roomTypeDb.getType(),roomTypeDb.getId()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     @Transactional
@@ -123,8 +156,14 @@ public class RoomService {
         roomRepository.saveAll(rooms);
         roomTypeRepository.delete(roomType);
 
-        log.info("{} remove room type with id {} and unlinked {} rooms",
-                authentication.getName(), id, rooms.size());
+        activityLogService.logActivity(
+                EAuditActionTarget.ROOM_TYPE,
+                EAuditActionOperation.DELETE,
+                String.format("Suppression du type de chambre '%s'. %d chambre(s) ont été dissociées.",
+                        roomType.getType(), rooms.size()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     /// /////////////////////////////////////////////////////////////////////////////
@@ -159,7 +198,14 @@ public class RoomService {
                 .price(dto.price())
                 .build();
         roomPriceRepository.save(price);
-        log.info("{} save new room price", authentication.getName());
+        activityLogService.logActivity(
+                EAuditActionTarget.ROOM_PRICE,
+                EAuditActionOperation.CREATE,
+                String.format("Nouveau tarif configuré : %.2f MAD pour le type '%s' (Catégorie: %s).",
+                        price.getPrice(), roomTypeDb.getType(), price.getCategory()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     @Transactional
@@ -169,19 +215,34 @@ public class RoomService {
             throw new BadRequestException("Prix déja existe");
         }
         RoomPrice roomPriceDb = getRoomPriceById(id);
+        double oldPrice = roomPriceDb.getPrice();
         RoomType  roomTypeDb = getRoomTypeById(dto.roomTypeId());
         roomPriceDb.setRoomType(roomTypeDb);
         roomPriceDb.setCategory(dto.category());
         roomPriceDb.setPrice(dto.price());
         roomPriceRepository.save(roomPriceDb);
-        log.info("{} update room price with id {}", authentication.getName(), id);
+        activityLogService.logActivity(
+                EAuditActionTarget.ROOM_PRICE,
+                EAuditActionOperation.UPDATE,
+                String.format("Changement de tarif pour '%s' (%s) : %.2f MAD -> %.2f MAD.",
+                        roomTypeDb.getType(), roomPriceDb.getCategory(), oldPrice, dto.price()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     @Transactional
     public void deleteRoomPrice(Authentication authentication, Long id) {
         RoomPrice roomPrice = getRoomPriceById(id);
         roomPriceRepository.delete(roomPrice);
-        log.info("{} remove room price with id {}", authentication.getName(), id);
+        activityLogService.logActivity(
+                EAuditActionTarget.ROOM_PRICE,
+                EAuditActionOperation.DELETE,
+                String.format("Suppression du tarif %.2f MAD pour le type '%s' (%s).",
+                        roomPrice.getPrice(), roomPrice.getRoomType().getType(), roomPrice.getCategory()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     /// /////////////////////////////////////////////////////////////////////////////

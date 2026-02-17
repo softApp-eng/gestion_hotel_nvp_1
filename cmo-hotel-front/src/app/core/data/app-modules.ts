@@ -5,6 +5,7 @@ export const APP_MODULES = {
     PERSON:'persons',
     PAVILLON:'pavillons',
     ROOM:'rooms',
+    AUDIT:'audits',
 
 }
 

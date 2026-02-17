@@ -8,7 +8,6 @@ import {
     UntypedFormBuilder, UntypedFormGroup, Validators,
 } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MatSelectModule } from '@angular/material/select';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { ToastrService } from 'ngx-toastr';
 import { MatDatepicker, MatDatepickerInput, MatDatepickerToggle } from '@angular/material/datepicker';
@@ -33,7 +32,6 @@ import { UtilsService } from '../../../../core/service/utils.service';
     ],
 })
 export class AcceptReservationModel implements OnInit {
-    title = 'Accepter la reservation #';
     code;
     date;
     time;

@@ -1,7 +1,11 @@
 package med.goeasy.cmohotel.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import med.goeasy.cmohotel.audit.ActivityLogService;
+import med.goeasy.cmohotel.audit.EAuditActionOperation;
+import med.goeasy.cmohotel.audit.EAuditActionTarget;
 import med.goeasy.cmohotel.exception.BadRequestException;
 import med.goeasy.cmohotel.persistence.entity.Person;
 import med.goeasy.cmohotel.persistence.entity.enums.ERelationshipType;
@@ -24,6 +28,8 @@ public class PersonService {
 
     private final PersonRepository personRepository;
     private final CommonService commonService;
+    private final ActivityLogService activityLogService;
+    private final HttpServletRequest request;
 
     @Transactional
     public PersonResponseDto create(Authentication authentication, PersonRequestDto dto) {
@@ -45,7 +51,14 @@ public class PersonService {
 //        }
         person.setArchived(false);
         person = personRepository.save(person);
-        log.info("{} save new person with id {}", authentication.getName(), person.getId());
+        activityLogService.logActivity(
+                EAuditActionTarget.PERSON,
+                EAuditActionOperation.CREATE,
+                String.format("Enregistrement de l'invité '%s %s' (Grade: %s), (Identité: %s)",
+                        person.getFirstName(), person.getLastName(), person.getGrade().getName(),person.getIdentity()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
         return PersonResponseDto.mapToDto(
                 person
         );
@@ -64,7 +77,14 @@ public class PersonService {
         person.setId(personDb.getId());
 
         person = personRepository.save(person);
-        log.info("{} update person with id {}", authentication.getName(), person.getId());
+        activityLogService.logActivity(
+                EAuditActionTarget.PERSON,
+                EAuditActionOperation.UPDATE,
+                String.format("Mise à jour des informations de l'invité '%s %s' (Grade: %s), (Identité: %s).",
+                        person.getFirstName(), person.getLastName(), person.getGrade().getName(),person.getIdentity()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
         return PersonResponseDto.mapToDto(
                 person
         );
@@ -90,11 +110,18 @@ public class PersonService {
 
     @Transactional
     public void delete(Authentication authentication,String personId) {
-        log.info("{} delete person with id {}", authentication.getName(), personId);
         Person person = getPersonById(personId);
         // TODO if person has reservation history archive it otherwise delete it
         person.setArchived(true);
         personRepository.save(person);
+        activityLogService.logActivity(
+                EAuditActionTarget.PERSON,
+                EAuditActionOperation.DELETE,
+                String.format("Supprission de l'invité '%s %s', (Grade: %s), (Identité: %s).",
+                        person.getFirstName(), person.getLastName(),person.getGrade().getName(),person.getIdentity()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     /// /////////////////////////////////////////////////////////////////////////////

@@ -1,8 +1,12 @@
 package med.goeasy.cmohotel.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import med.goeasy.cmohotel.audit.ActivityLogService;
+import med.goeasy.cmohotel.audit.EAuditActionOperation;
+import med.goeasy.cmohotel.audit.EAuditActionTarget;
 import med.goeasy.cmohotel.exception.BadRequestException;
 import med.goeasy.cmohotel.persistence.entity.*;
 import med.goeasy.cmohotel.persistence.entity.enums.EGradeCategory;
@@ -46,6 +50,8 @@ public class ReservationService {
     private final PersonService personService;
     private final RoomService roomService;
     private final TemplateEngine templateEngine;
+    private final ActivityLogService activityLogService;
+    private final HttpServletRequest request;
 
     @Transactional
     public void create(Authentication authentication, ReservationRequestDto dto) {
@@ -85,7 +91,18 @@ public class ReservationService {
             reservationRepository.save(reservation);
         }
 
-        log.info("{} create reservation num {} for people {}", authentication.getName(),details.getCode(), dto.persons());
+        activityLogService.logActivity(
+                EAuditActionTarget.RESERVATION,
+                EAuditActionOperation.CREATE,
+                String.format("Nouvelle réservation enregistrée (#%d) pour %d personne(s) du %s au %s (Catégorie: %s).",
+                        details.getCode(),
+                        dto.persons().size(),
+                        dto.startDate(),
+                        dto.endDate(),
+                        details.getCategory()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     @Transactional
@@ -104,7 +121,38 @@ public class ReservationService {
         reservationDetails.setStatus(EReservationStatus.CONFIRMED);
         reservationDetails.setCheckin(date);
         reservationDetailsRepository.save(reservationDetails);
-        log.info("{} accept reservation num {} ", authentication.getName(),code);
+        activityLogService.logActivity(
+                EAuditActionTarget.RESERVATION,
+                EAuditActionOperation.UPDATE,
+                String.format("Check-in effectué : Le client s'est présenté à l'hôtel le %s. La réservation (#%d) est désormais confirmée.",
+                        date.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")), reservationDetails.getCode()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+    }
+
+    @Transactional
+    public void closeReservation(Authentication authentication, Long code,LocalDateTime date) {
+        ReservationDetails reservationDetails = getReservationDetailsByCode(code);
+        if (reservationDetails.getStatus().equals(EReservationStatus.CLOSED))
+            throw new BadRequestException("reservation déja clôturée");
+
+       if (!reservationDetails.getStatus().equals(EReservationStatus.CONFIRMED))
+            throw new BadRequestException("reservation doit etre confirmée pour proceder à la cloture");
+
+        // Change status
+        reservationDetails.setStatus(EReservationStatus.CLOSED);
+        reservationDetails.setCheckout(date);
+        reservationDetailsRepository.save(reservationDetails);
+        activityLogService.logActivity(
+                EAuditActionTarget.RESERVATION,
+                EAuditActionOperation.UPDATE,
+                String.format("Check-out effectué le %s, pour la reservation (#%d).",
+                        date.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
+                        reservationDetails.getCode()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     @Transactional
@@ -118,7 +166,13 @@ public class ReservationService {
         // Change status
         reservationDetails.setStatus(EReservationStatus.CANCELED);
         reservationDetailsRepository.save(reservationDetails);
-        log.info("{} cancel reservation num {} ", authentication.getName(),code);
+        activityLogService.logActivity(
+                EAuditActionTarget.RESERVATION,
+                EAuditActionOperation.UPDATE,
+                String.format("Réservation (#%d) annulée.", reservationDetails.getCode()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     @Transactional
@@ -130,7 +184,13 @@ public class ReservationService {
         List<Reservation> reservations = reservationDetails.getReservations();
         reservationRepository.deleteAll(reservations);
         reservationDetailsRepository.delete(reservationDetails);
-        log.info("{} delete reservation num {} ", authentication.getName(),code);
+        activityLogService.logActivity(
+                EAuditActionTarget.RESERVATION,
+                EAuditActionOperation.UPDATE,
+                String.format("Suppression définitive de la réservation #%d.", reservationDetails.getCode()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
 
@@ -173,8 +233,6 @@ public class ReservationService {
         return rangeReservations.stream().map(ReservationCalenderResponseDto::mapToDto).toList();
     }
 
-
-
     public ReservationDetailsResponseDto getReservationByCode(Authentication authentication, Long code) {
         return ReservationDetailsResponseDto.mapToDto(
                 getReservationDetailsByCode(code)
@@ -186,14 +244,19 @@ public class ReservationService {
         return reservationRepository.findFutureReservedRooms(today);
     }
 
-    public byte[] generateInvoice(Long code) throws Exception {
+    public byte[] generateInvoice(Authentication authentication, Long code) throws Exception {
         ReservationDetails details = reservationDetailsRepository.findById(code)
                 .orElseThrow(() -> new EntityNotFoundException("Réservation non trouvée pour le code: " + code));
         if (details.getStatus() != EReservationStatus.CLOSED)
             throw new BadRequestException("La reservation doit être cloturée pour générer la facture");
 
-        //PriceEstimationResponse priceEstimationResponse = calculateEstimationByCode(details);
-
+        activityLogService.logActivity(
+                EAuditActionTarget.RESERVATION,
+                EAuditActionOperation.SELECT,
+                String.format("Génération de la facture pour la réservation #%d.", details.getCode()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
         return generateReservationInvoice(details);
     }
 

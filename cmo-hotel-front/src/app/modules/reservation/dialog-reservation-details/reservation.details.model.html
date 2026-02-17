@@ -22,6 +22,12 @@
                 <div class="px-3 py-1 rounded-full text-sm font-semibold bg-gray-200 text-gray-700">
                     {{reservation?.category?.name}}
                 </div>
+                @if (reservation?.priseEnCharge) {
+                    <div class="px-3 py-1 rounded-full text-sm font-semibold bg-warn text-white">
+                        Prise en charge
+                    </div>
+                }
+
             </div>
             <div class="text-secondary text-md flex items-center">
                 <mat-icon class="icon-size-4 mr-1" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>

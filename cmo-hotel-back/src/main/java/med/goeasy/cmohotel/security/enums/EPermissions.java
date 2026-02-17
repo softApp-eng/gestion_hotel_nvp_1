@@ -19,6 +19,7 @@ public enum EPermissions {
     ADMIN_USERS_UPDATE(EPermissionsModule.USERS, "user:update", "update user",  EPermissionsGroup.UPDATE,false,""),
     ADMIN_USERS_PASSWORD_MODIFY(EPermissionsModule.USERS, "user:password:modify", "modify user password",  EPermissionsGroup.UPDATE,false,""),
     ADMIN_USERS_ASSIGN_ROLES(EPermissionsModule.USERS, "user:assign:roles", "assign roles to user", EPermissionsGroup.MANAGE,false,""),
+    ADMIN_AUDIT_ACTIVITY_LOGS(EPermissionsModule.AUDIT, "logs:filter", "filtrer les activités des utilisateurs", EPermissionsGroup.MANAGE,false,""),
 
     //ROLES
     ADMIN_ROLES_LIST(EPermissionsModule.ROLES, "role:list", "list roles", EPermissionsGroup.READ,false,""),
@@ -66,6 +67,7 @@ public enum EPermissions {
     RESERVATION_ONE(EPermissionsModule.RESERVATION, "reservation:one", "charger une réservation", EPermissionsGroup.READ,true,""),
     RESERVATION_ACCEPT(EPermissionsModule.RESERVATION, "reservation:accept", "accepter une réservation", EPermissionsGroup.MANAGE,true,""),
     RESERVATION_CANCEL(EPermissionsModule.RESERVATION, "reservation:cancel", "annuler une réservation", EPermissionsGroup.MANAGE,true,""),
+    RESERVATION_CLOSE(EPermissionsModule.RESERVATION, "reservation:close", "cloturer une réservation", EPermissionsGroup.MANAGE,true,""),
     RESERVATION_DELETE(EPermissionsModule.RESERVATION, "reservation:delete", "supprimer une réservation", EPermissionsGroup.DELETE,true,""),
 
 

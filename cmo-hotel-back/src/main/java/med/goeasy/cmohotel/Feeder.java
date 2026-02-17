@@ -202,6 +202,7 @@ public class Feeder {
         resourceDatabasePopulator.execute(dataSource);
         log.info("--> data.sql file loaded");
         roles();
+        seedMassiveReservations(500);
         log.info("Feeder : end");
     }
 }
