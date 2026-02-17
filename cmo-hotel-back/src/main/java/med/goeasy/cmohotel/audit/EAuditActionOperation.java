@@ -7,11 +7,11 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-public enum EAuditActionOperation {
+public enum EAuditActionOperation{
 
     CREATE("CREATE","Creation"),
     UPDATE("UPDATE","Modification"),
-    DELETE("DELETE","Supprission"),
+    DELETE("DELETE","Suppression"),
     SELECT("SELECT","Selection"),
     LOGIN("LOGIN","Authentication"),
     ;

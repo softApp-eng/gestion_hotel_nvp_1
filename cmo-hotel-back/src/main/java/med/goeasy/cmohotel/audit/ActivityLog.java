@@ -31,7 +31,7 @@ public class ActivityLog {
     private String message;
 
     private String username;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime timestamp;
     private String ipAddress;
 }

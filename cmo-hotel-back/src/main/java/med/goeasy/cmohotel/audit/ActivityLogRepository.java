@@ -12,30 +12,31 @@ import java.util.List;
 public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> {
 
     @Query(value = """
-        SELECT l FROM ActivityLog l
-        WHERE
-               (:key IS NULL OR :key = '' OR (
-                           upper(l.message) LIKE upper(concat('%', :key, '%'))
-                           OR upper(l.username) LIKE upper(concat('%', :key, '%'))
-                           OR upper(l.ipAddress) LIKE upper(concat('%', :key, '%'))
-                           OR upper(l.actionTarget) LIKE upper(concat('%', :key, '%'))
-                           OR upper(l.actionOperation) LIKE upper(concat('%', :key, '%'))
-                       ))
-               AND (:username IS NULL OR l.username = :username)
-               AND (:targets IS NULL OR l.actionTarget IN :targets)
-               AND (:operations IS NULL OR l.actionOperation IN :operations)
-               
-        ORDER BY l.timestamp DESC
-        """)
+    SELECT l FROM ActivityLog l
+    WHERE
+           (:key IS NULL OR :key = '' OR (
+                       upper(l.message) LIKE upper(concat('%', :key, '%'))
+                       OR upper(l.username) LIKE upper(concat('%', :key, '%'))
+                       OR l.ipAddress LIKE concat('%', :key, '%')
+                   ))
+           AND (:usernames IS NULL OR l.username IN :usernames)
+           AND (:targets IS NULL OR l.actionTarget IN :targets)
+           AND (:operations IS NULL OR l.actionOperation IN :operations)
+           AND (:range IS FALSE OR (l.timestamp BETWEEN :start AND :end))
+    """)
     Page<ActivityLog> search(
             @Param("key") String key,
             @Param("targets") List<EAuditActionTarget> actionTargets,
             @Param("operations") List<EAuditActionOperation> actionOperations,
-            @Param("username") String username,
+            @Param("usernames") List<String> username,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end,
+            @Param("range") boolean isRange,
             Pageable pageable
     );
 
-    //AND ( :start IS NULL OR (l.timestamp <= :end AND l.timestamp >= :start))
+    @Query("SELECT distinct u.username FROM AppUser u order by u.username")
+    List<String> getAccount();
+
+
 }

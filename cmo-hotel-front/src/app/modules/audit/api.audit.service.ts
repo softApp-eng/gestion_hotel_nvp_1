@@ -18,10 +18,9 @@ export class ApiAuditService
   {
   }
 
-    search(key='',username='',targets=[],operations=[],start = '',end = '',page=0,size=20): Observable<any>{
-        /*let params = new HttpParams()
+    search(key='',usernames=[],targets=[],operations=[],start = '',end = '',page=0,size=20): Observable<any>{
+        let params = new HttpParams()
             .set('key', key)
-            .set('username', username)
             .set('start', start)
             .set('end', end)
             .set('page', page)
@@ -31,13 +30,29 @@ export class ApiAuditService
                 params = params.append('targets', s);
             });
         }
+        if (usernames && usernames.length > 0) {
+            usernames.forEach(s => {
+                params = params.append('usernames', s);
+            });
+        }
         if (operations && operations.length > 0) {
             operations.forEach(s => {
                 params = params.append('operations', s);
             });
-        }*/
-        //return this._httpClient.get(`${this.API_URL}/search`, { params });
-        return this._httpClient.get(`${this.API_URL}/search`);
+        }
+        return this._httpClient.get(`${this.API_URL}/search`, { params });
+    }
+
+    getActionTargets(): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/targets`);
+    }
+
+    getActionOperations(): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/operations`);
+    }
+
+    getAccounts(): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/accounts`);
     }
 
 }

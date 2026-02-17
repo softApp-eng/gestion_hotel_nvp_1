@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-public enum EAuditActionTarget {
+public enum EAuditActionTarget{
 
     RESERVATION("RESERVATION","Réservation"),
     PAVILLON("PAVILLON","Pavillon"),

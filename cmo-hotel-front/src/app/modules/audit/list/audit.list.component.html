@@ -11,9 +11,9 @@
             <!-- Title -->
             <div class="mt-2">
                 <div class="flex items-center">
-                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'vpn_key'"></mat-icon>
+                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'mat_outline:history'"></mat-icon>
                     <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
-                        Audits
+                        Piste d'Audit
                     </h2>
                 </div>
             </div>
@@ -24,90 +24,224 @@
     <div class="flex-auto p-4 sm:p-6">
         <div class="w-full bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
 
-            <div class="flex items-start justify-between">
-                <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded min-w-64">
-                    <mat-icon class="icon-size-5" matPrefix [svgIcon]="'search'"></mat-icon>
-                    <input
-                        matInput
-                        #input
-                        [matTooltip]="'Chercher'"
-                        [autocomplete]="'off'"
-                        [(ngModel)]="key"
-                        (input)="search()"
-                        [placeholder]="'Chercher'">
-                </mat-form-field>
-            </div>
+            <div class="flex flex-0 flex-col sm:flex-row sm:items-start justify-between mb-4">
+                <div class="flex flex-row items-center flex-wrap gap-2">
 
-            <table mat-table [dataSource]="dataSource" >
-
-                <ng-container matColumnDef="username">
-                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> UTILISATEUR </th>
-                    <td mat-cell *matCellDef="let row" >
-                        <p [innerHTML]="row?.username | highlight:key"></p>
-                    </td>
-                </ng-container>
-
-
-                <ng-container matColumnDef="ENTITE">
-                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> ENTITE </th>
-                    <td mat-cell *matCellDef="let row">
-                        <p [innerHTML]="row?.actionTarget.name | highlight:key"></p>
-                    </td>
-                </ng-container>
-
-                <ng-container matColumnDef="OPERATION">
-                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> OPERATION </th>
-                    <td mat-cell *matCellDef="let row">
-                        <p [innerHTML]="row?.actionOperation.name | highlight:key"></p>
-                    </td>
-                </ng-container>
-
-                <ng-container matColumnDef="date">
-                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> DATE OPS </th>
-                    <td mat-cell *matCellDef="let row">
-                        {{row?.timestamp | date:'dd/MM/yyyy hh:mm':'':'en-US'}}
-                    </td>
-                </ng-container>
-
-                <ng-container matColumnDef="ip">
-                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 10%"> IP </th>
-                    <td mat-cell *matCellDef="let row">
-                        <p [innerHTML]="row?.ipAddress | highlight:key"></p>
-                    </td>
-                </ng-container>
-
-                <ng-container matColumnDef="message">
-                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 50%"> ACTION </th>
-                    <td mat-cell *matCellDef="let row">
-                        <p [innerHTML]="row?.message | highlight:key"></p>
-                    </td>
-                </ng-container>
-
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let element; columns: displayedColumns;" class="example-element-row"></tr>
-
-                <tr class="mat-row" *matNoDataRow>
-                    <td class="mat-cell" [attr.colspan]="displayedColumns.length">
-
-                        <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
-                            @if (!isLoading){
-                                Aucune ligne trouvée
-                            } @else {
-                                Chargement...
+                    <button mat-button [matMenuTriggerFor]="filterMenu" #filterMenuTrigger="matMenuTrigger" class="bg-gray-100 dark:bg-slate-800 rounded-lg px-4 py-2 shrink-0">
+                        <div class="flex items-center gap-2">
+                            <mat-icon [svgIcon]="'search'" class="icon-size-5 text-secondary"></mat-icon>
+                            <span class="font-medium text-secondary">Filtres avancés</span>
+                            @if (activeFiltersCount > 0) {
+                                <span class="flex items-center justify-center bg-primary text-white text-[10px] rounded-full h-5 w-5">
+                                                        {{activeFiltersCount}}
+                                                    </span>
                             }
                         </div>
-                    </td>
-                </tr>
-            </table>
+                    </button>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        @if (filters.key?.length > 0) {
+                            <div class="flex items-center bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-100 px-3 py-1 rounded-full text-xs font-medium h-8">
+                                <span>Mot clé: {{ filters.key }}</span>
+                                <button class="ml-1.5 flex items-center" (click)="removeSpecificFilter('key')">
+                                    <mat-icon class="icon-size-3.5" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                                </button>
+                            </div>
+                        }
+
+                        @if (filters.targets.length > 0) {
+                            <div class="flex items-center bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 px-3 py-1 rounded-full text-xs font-medium h-8">
+                                <span>Entités : {{ getSelectedFilterLabels('targets') }}</span>
+                                <button class="ml-1.5 flex items-center" (click)="removeSpecificFilter('targets')">
+                                    <mat-icon class="icon-size-3.5" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                                </button>
+                            </div>
+                        }
+
+                        @if (filters.usernames.length > 0) {
+                            <div class="flex items-center bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 px-3 py-1 rounded-full text-xs font-medium h-8">
+                                <span>Entités : {{ getSelectedFilterLabels('usernames') }}</span>
+                                <button class="ml-1.5 flex items-center" (click)="removeSpecificFilter('usernames')">
+                                    <mat-icon class="icon-size-3.5" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                                </button>
+                            </div>
+                        }
+
+                        @if (filters.operations.length > 0) {
+                            <div class="flex items-center bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 px-3 py-1 rounded-full text-xs font-medium h-8">
+                                <span>Opérations : {{ getSelectedFilterLabels('operations') }}</span>
+                                <button class="ml-1.5 flex items-center" (click)="removeSpecificFilter('operations')">
+                                    <mat-icon class="icon-size-3.5" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                                </button>
+                            </div>
+                        }
+
+                        @if (filters.startDate != null) {
+                            <div class="flex items-center bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 px-3 py-1 rounded-full text-xs font-medium h-8">
+                                <span>Période : {{ (filters.startDate | date:'dd/MM/yyyy':'':'en-US' ) + '-' + (filters.endDate | date:'dd/MM/yyyy':'':'en-US' ) }}</span>
+                                <button class="ml-1.5 flex items-center" (click)="removeSpecificFilter('range')">
+                                    <mat-icon class="icon-size-3.5" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <mat-menu #filterMenu="matMenu" class="filter-panel-menu !max-w-none">
+                    <div class="w-72 flex flex-col" (click)="$event.stopPropagation()">
+
+                        <div class="px-4 pt-4 pb-2">
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-hint">Critères de recherche</h3>
+                        </div>
+
+                        <div class="px-4 py-2 max-h-80 overflow-y-auto flex flex-col gap-4 custom-scrollbar">
+                            <mat-form-field class="w-full" [appearance]="'outline'">
+                                <mat-label>Mot clé</mat-label>
+                                <input matInput [(ngModel)]="filters.key" placeholder="Mot clé">
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                                <mat-label>Entités</mat-label>
+                                <mat-select [(ngModel)]="filters.targets" multiple>
+                                    @for (s of targets; track s.code) {
+                                        <mat-option [value]="s.code">{{ s.name }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                                <mat-label>Comptes</mat-label>
+                                <mat-select [(ngModel)]="filters.usernames" multiple>
+                                    @for (s of accounts; track s) {
+                                        <mat-option [value]="s">{{ s }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                                <mat-label>Opérations</mat-label>
+                                <mat-select [(ngModel)]="filters.operations" multiple>
+                                    @for (c of operations; track c.code) {
+                                        <mat-option [value]="c.code">{{ c.name }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                                <mat-label>Période</mat-label>
+                                <mat-date-range-input [rangePicker]="picker">
+                                    <input matStartDate [(ngModel)]="filters.startDate" placeholder="Début">
+                                    <input matEndDate [(ngModel)]="filters.endDate" placeholder="Fin">
+                                </mat-date-range-input>
+                                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                                <mat-date-range-picker #picker></mat-date-range-picker>
+                            </mat-form-field>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 border-t border-gray-100 bg-gray-50 dark:bg-transparent">
+                            <button class="text-red-500" mat-button (click)="resetFilters(filterMenuTrigger)">
+                                Réinitialiser
+                            </button>
+                            <button mat-flat-button color="primary" (click)="applyFilters(filterMenuTrigger)" class="rounded-md">
+                                Appliquer
+                            </button>
+                        </div>
+                    </div>
+                </mat-menu>
+
+            </div>
+
+            <div class="w-full bg-primary-50 dark:bg-transparent border rounded-xl overflow-hidden shadow-sm">
+                <div class="overflow-x-auto">
+                    <table mat-table [dataSource]="dataSource" class="min-w-full">
+
+                        <ng-container matColumnDef="username">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 10%"> Utilisateur </th>
+                            <td mat-cell *matCellDef="let row">
+                                <div class="flex items-center justify-center w-full">
+                                    <span class="font-semibold" [innerHTML]="row?.username | highlight:filters.key"></span>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="date">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 15%"> Date & Heure </th>
+                            <td mat-cell *matCellDef="let row">
+                                <div class="flex flex-col leading-tight items-center justify-center w-full">
+                                    <span class="font-medium">{{ row?.timestamp | date:'dd MMM yyyy' }}</span>
+                                    <span class="text-xs text-hint">{{ row?.timestamp | date:'HH:mm':'fr-FR' }}</span>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="target">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 15%"> Entité </th>
+                            <td mat-cell *matCellDef="let row">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium justify-center w-full">
+                                    {{ row?.actionTarget?.name }}
+                                </span>
+                             </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="OPERATION">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 15%"> Opération </th>
+                            <td mat-cell *matCellDef="let row">
+                                <span [ngClass]="{
+                                    'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-100': row?.actionOperation?.code === 'CREATE',
+                                    'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100': row?.actionOperation?.code === 'UPDATE' || row?.actionOperation?.code === 'LOGIN',
+                                    'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-100': row?.actionOperation?.code === 'DELETE',
+                                    'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-100': row?.actionOperation?.code === 'SELECT'
+                                }" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide uppercase justify-center w-full">
+                                    {{ row?.actionOperation?.name }}
+                                </span>
+                            </td>
+                        </ng-container>
+
+
+
+                        <ng-container matColumnDef="ip">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 10%"> IP </th>
+                            <td mat-cell *matCellDef="let row">
+                                <code class="text-sm bg-slate-50 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-secondary justify-center w-full">
+                                    {{ row?.ipAddress }}
+                                </code>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="message">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 35%"> Action effectuée </th>
+                            <td mat-cell *matCellDef="let row">
+                                <p class="leading-relaxed line-clamp-2 hover:line-clamp-none transition-all duration-300"
+                                   [innerHTML]="row?.message | highlight:filters.key"></p>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns" class="h-12"></tr>
+                        <tr mat-row *matRowDef="let element; columns: displayedColumns;"
+                            class="hover:bg-gray-50 dark:hover:bg-black/10 cursor-default transition-colors duration-150"></tr>
+
+                        <tr class="mat-row" *matNoDataRow>
+                            <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+                                <div class="flex flex-col items-center justify-center p-12 italic text-secondary">
+                                    <mat-icon class="icon-size-16 mb-4 opacity-20" [svgIcon]="'heroicons_outline:clipboard-document-list'"></mat-icon>
+                                    <span class="text-lg">
+                    {{ isLoading ? 'Chargement des données...' : 'Aucun log d\'audit ne correspond à vos critères.' }}
+                </span>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
             <mat-paginator
-                class="w-full border-b dark:bg-transparent"
+                [ngClass]="{ 'pointer-events-none': isLoading }"
                 showFirstLastButtons="true"
-                #paginator
                 [length]="totalRows"
                 [pageIndex]="currentPage"
-                [pageSize]="10"
-                [pageSizeOptions]="[10, 20, 50]"
+                [pageSize]="pageSize"
+                [pageSizeOptions]="pageSizeOptions"
+                (page)="pageChanged($event)"
             ></mat-paginator>
+                </div>
+            </div>
             </div>
     </div>
 </div>
