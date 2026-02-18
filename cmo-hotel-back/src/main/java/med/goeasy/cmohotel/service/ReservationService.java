@@ -140,6 +140,13 @@ public class ReservationService {
        if (!reservationDetails.getStatus().equals(EReservationStatus.CONFIRMED))
             throw new BadRequestException("reservation doit etre confirmée pour proceder à la cloture");
 
+        if (date.isBefore(reservationDetails.getCheckin())) {
+            throw new BadRequestException(String.format(
+                    "La date de départ (%s) ne peut pas être antérieure à la date d'arrivée (%s).",
+                    date.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
+                    reservationDetails.getCheckin().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+            ));
+        }
         // Change status
         reservationDetails.setStatus(EReservationStatus.CLOSED);
         reservationDetails.setCheckout(date);
