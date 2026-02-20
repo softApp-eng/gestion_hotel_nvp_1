@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface GradeRepository extends JpaRepository<Grade, Long> {
-    @Query("SELECT g FROM Grade g ORDER BY g.rating DESC")
+    @Query("SELECT g FROM Grade g ORDER BY g.rating ASC")
     List<Grade> getGrades();
 }

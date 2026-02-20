@@ -1,0 +1,91 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+        <div class="min-w-0 flex-1">
+            <!-- Breadcrumbs -->
+            <div class="flex flex-wrap items-center font-medium">
+                <div>
+                    <a class="whitespace-nowrap text-primary-500">Houose keeping</a>
+                </div>
+            </div>
+            <!-- Title -->
+            <div class="mt-2">
+                <div class="flex items-center">
+                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'mat_solid:local_hotel'"></mat-icon>
+                    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+                        Gestion des agents
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-6">
+        <div class="w-full bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+
+            <div class="flex items-end justify-end">
+                <button class="ml-4" mat-flat-button [color]="'primary'" (click)="raiseSaveAgent(null)" [disableIfNoPermission]="[APP_PERMISSIONS.HOUSE_KEEPING_AGENT_CREATE]">
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-2 mr-1">Ajouter</span>
+                </button>
+            </div>
+            <div class="w-full bg-primary-50 dark:bg-transparent border rounded-xl overflow-hidden shadow-sm mt-4">
+                <div class="overflow-x-auto">
+                    <table mat-table [dataSource]="dataSource" matSort >
+
+                        <ng-container matColumnDef="agents" >
+                            <th mat-header-cell mat-sort-header *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 20%"> AGENT </th>
+                            <td mat-cell *matCellDef="let row">
+                                <p class="font-semibold">{{row?.firstName + ' ' + row?.lastName}}</p>
+                            </td>
+                        </ng-container>
+
+
+                        <ng-container matColumnDef="tel" >
+                            <th mat-header-cell mat-sort-header *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 20%"> TELEPHONE </th>
+                            <td mat-cell *matCellDef="let row">
+                                <p class="font-semibold">{{row?.phone}}</p>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="action">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 5%">  </th>
+                            <td mat-cell *matCellDef="let row">
+                                <button mat-icon-button [matMenuTriggerFor]="menuAction">
+                                    <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
+                                </button>
+                                <mat-menu #menuAction="matMenu" >
+                                    <button mat-menu-item (click)="raiseSaveAgent(row)" [disableIfNoPermission]="[APP_PERMISSIONS.HOUSE_KEEPING_AGENT_UPDATE]">
+                                        <mat-icon svgIcon="edit" ></mat-icon>
+                                        <span>Modifier</span>
+                                    </button>
+                                    <button mat-menu-item class="text-red-800 dark:text-red-50" (click)="deleteAgent(row)" [disableIfNoPermission]="[APP_PERMISSIONS.HOUSE_KEEPING_AGENT_DELETE]">
+                                        <mat-icon class="text-red-800 dark:text-red-50" svgIcon="mat_solid:delete_forever" ></mat-icon>
+                                        <span class="font-semibold">Supprimer</span>
+                                    </button>
+                                </mat-menu>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                        <tr mat-row *matRowDef="let element; columns: displayedColumns;" class="example-element-row"></tr>
+
+                        <tr class="mat-row" *matNoDataRow>
+                            <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+
+                                <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                                    @if (!isLoading){
+                                        Aucune donnée trouvée
+                                    } @else {
+                                        Chargement
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -10,6 +10,7 @@ import med.goeasy.cmohotel.persistence.entity.Room;
 import med.goeasy.cmohotel.persistence.entity.auth.AppPermission;
 import med.goeasy.cmohotel.persistence.entity.auth.AppRole;
 import med.goeasy.cmohotel.persistence.entity.auth.AppUser;
+import med.goeasy.cmohotel.persistence.entity.auth.AppUserResource;
 import med.goeasy.cmohotel.persistence.entity.enums.EGuestRole;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
@@ -41,6 +42,7 @@ public class Feeder {
     private final ReservationDetailsRepository detailsRepository;
     private final PersonRepository personRepository;
     private final RoomRepository roomRepository;
+    private final AppUserResourceRepository appUserResourceRepository;
 
     @Transactional
     public void grantPermissionToRole(EPermissions permission,ERoleSystem role){
@@ -116,11 +118,20 @@ public class Feeder {
                     ;
                 });
         log.info("-> {} roles saved", roleList.size());
+
+        // create users
         createAdminAccount(
                 roleList.stream()
                         .filter(r -> r.getName().equals(ERoleSystem.ADMIN.getRoleName()))
                         .findFirst()
                         .orElseThrow(()-> new BadRequestException("no role found with name " + ERoleSystem.ADMIN.getRoleName()))
+        );
+
+        createGovernanceAccounts(
+                roleList.stream()
+                        .filter(r -> r.getName().equals(ERoleSystem.GOVERNANCE.getRoleName()))
+                        .findFirst()
+                        .orElseThrow(()-> new BadRequestException("no role found with name " + ERoleSystem.GOVERNANCE.getRoleName()))
         );
     }
 
@@ -134,6 +145,47 @@ public class Feeder {
         admin.setRoles( Set.of(adminRole));
         appUserRepository.save(admin);
         log.info("admin account created");
+    }
+
+    private void createGovernanceAccounts(AppRole governanceRole) {
+        Long OUDAIA_PAVILLON_ID = 1L;
+        Long CHELLAH_PAVILLON_ID = 2L;
+        List<Room> chellahRooms = roomRepository.getRooms(CHELLAH_PAVILLON_ID,null);
+        List<Room> oudayaRooms = roomRepository.getRooms(OUDAIA_PAVILLON_ID,null);
+
+        //save chellah governance
+        AppUser governanceChellah = new AppUser();
+        governanceChellah.setUsername("gouv_chellah");
+        governanceChellah.setPassword(encoder.encode("123456"));
+        governanceChellah.setAccountStatus(true);
+        governanceChellah.setFirstName("chellah");
+        governanceChellah.setLastName("chellah");
+        governanceChellah.setRoles( Set.of(governanceRole));
+        appUserRepository.save(governanceChellah);
+        AppUserResource resource = new AppUserResource();
+        resource.setUser(governanceChellah);
+        resource.setRooms(
+                new HashSet<>(chellahRooms)
+        );
+        appUserResourceRepository.save(resource);
+        log.info("governant chellah account created");
+
+        //save OUDAYA governance
+        AppUser governanceOudaya = new AppUser();
+        governanceOudaya.setUsername("gouv_oudaya");
+        governanceOudaya.setPassword(encoder.encode("123456"));
+        governanceOudaya.setAccountStatus(true);
+        governanceOudaya.setFirstName("oudaya");
+        governanceOudaya.setLastName("oudaya");
+        governanceOudaya.setRoles( Set.of(governanceRole));
+        appUserRepository.save(governanceOudaya);
+        AppUserResource resourceOudaya = new AppUserResource();
+        resourceOudaya.setUser(governanceOudaya);
+        resourceOudaya.setRooms(
+                new HashSet<>(oudayaRooms)
+        );
+        appUserResourceRepository.save(resourceOudaya);
+        log.info("governant oudaya account created");
     }
 
     @Transactional
@@ -202,7 +254,7 @@ public class Feeder {
         resourceDatabasePopulator.execute(dataSource);
         log.info("--> data.sql file loaded");
         roles();
-        seedMassiveReservations(500);
+        seedMassiveReservations(100);
         log.info("Feeder : end");
     }
 }

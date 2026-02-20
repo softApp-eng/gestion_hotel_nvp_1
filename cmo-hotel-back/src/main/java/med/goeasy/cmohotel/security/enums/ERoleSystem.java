@@ -26,10 +26,16 @@ public enum ERoleSystem {
                     EPermissions.DEFAULT
             )),
 
-    HOUSE_KEEPER("house_keeper",
+    GOVERNANCE("governance",
             "Profil d'accès pour la gestion des ménages des chambres.",
             EnumSet.of(
-                    EPermissions.DEFAULT
+                    EPermissions.DEFAULT,
+                    EPermissions.HOUSE_KEEPING_AGENT_CREATE,
+                    EPermissions.HOUSE_KEEPING_AGENT_UPDATE,
+                    EPermissions.HOUSE_KEEPING_AGENT_LIST,
+                    EPermissions.HOUSE_KEEPING_AGENT_DELETE,
+                    EPermissions.ROOM_LIST_GRANTED
+
             )),
 
     RESTAURATION_MANAGER("restauration_manager",

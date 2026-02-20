@@ -37,6 +37,9 @@ public class Room {
     private String name;
 
     private boolean clean;
+    private boolean available;
+    private boolean shared;
+
     @Column(nullable = false)
     private Integer capacity;
     private Integer floor;

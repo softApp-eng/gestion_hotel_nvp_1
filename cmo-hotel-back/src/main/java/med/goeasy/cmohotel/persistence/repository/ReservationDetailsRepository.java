@@ -35,8 +35,7 @@ public interface ReservationDetailsRepository extends JpaRepository<ReservationD
                AND (:status IS NULL OR rd.status IN :status)
                AND (:category IS NULL OR rd.category IN :category)
                AND ( :range IS FALSE OR (rd.plannedStart <= :end AND rd.plannedEnd >= :start))
-               
-        ORDER BY rd.plannedStart DESC
+        ORDER BY rd.code DESC
         """)
     Page<ReservationDetails> search(
             @Param("key") String key,

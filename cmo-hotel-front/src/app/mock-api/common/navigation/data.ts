@@ -27,6 +27,9 @@ export const defaultNavigation: FuseNavigationItem[] = [
         subtitle: 'Gérer les reservations',
         type: 'group',
         icon: 'heroicons_outline:clipboard-document-check',
+        data: {
+            modules:[APP_MODULES.RESERVATION]
+        },
         children: [
             {
                 id: 'reservations.list',
@@ -34,6 +37,9 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type: 'basic',
                 icon: 'heroicons_outline:clipboard-document-check',
                 link: '/managements/reservations',
+                data: {
+                    permissions:[APP_PERMISSIONS.RESERVATION_LIST]
+                },
             },
             {
                 id: 'reservations.sejours',
@@ -41,12 +47,61 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type: 'basic',
                 icon: 'heroicons_outline:clipboard-document-check',
                 link: '/managements/sejours',
+                data: {
+                    permissions:[APP_PERMISSIONS.RESERVATION_LIST]
+                },
             },{
                 id: 'reservations.calender',
                 title: 'Occupation',
                 type: 'basic',
                 icon: 'heroicons_outline:calendar-days',
                 link: '/managements/calender',
+                data: {
+                    permissions:[APP_PERMISSIONS.RESERVATION_LIST]
+                },
+            },
+        ],
+    },
+    {
+        id: 'housekeeping',
+        title: 'Housekeeping',
+        subtitle: 'housekeeping',
+        type: 'group',
+        icon: 'heroicons_outline:home',
+        data: {
+            modules:[APP_MODULES.HOUSEKEEPING]
+        },
+        children: [
+            {
+                id: 'housekeeping.housekeeping',
+                title: 'Housekeeping',
+                type: 'collapsable',
+                icon: 'mat_outline:house',
+                children: [
+                    {
+                        id: 'housekeeping.housekeeping.agents',
+                        title: 'Agents',
+                        type: 'basic',
+                        link: '/managements/housekeeping/agents',
+                        data: {
+                            permissions:[APP_PERMISSIONS.HOUSE_KEEPING_AGENT_LIST]
+                        },
+                    },
+
+
+
+                    {
+                        id: 'housekeeping.housekeeping.rooms',
+                        title: 'Chambres',
+                        type: 'basic',
+                        link: '/managements/housekeeping',
+                    },
+
+                    {   id: 'housekeeping.Housekeeping.anomalies',
+                        title: 'Anomalies',
+                        type: 'basic',
+                        link: '/managements/housekeeping/anomalies' },
+                ],
             },
         ],
     },

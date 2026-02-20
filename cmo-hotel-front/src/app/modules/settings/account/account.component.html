@@ -1,0 +1,66 @@
+<div class="w-full max-w-3xl">
+    <!-- Form -->
+    <form [formGroup]="form">
+        <!-- Section -->
+        <div class="w-full">
+            <div class="text-xl">
+                Profile
+            </div>
+            <div class="text-secondary">
+                Changer vos information du profile
+            </div>
+        </div>
+        <div class="mt-8 grid w-full gap-6 sm:grid-cols-4">
+
+            <!-- Username -->
+            <div class="sm:col-span-4">
+                <mat-form-field
+                    class="fuse-mat-emphasized-affix w-full"
+                    [subscriptSizing]="'dynamic'">
+                    <mat-label>Identifiant</mat-label>
+                    <input readonly="true" disabled="true" [value]="profile?.username" matInput />
+                </mat-form-field>
+            </div>
+
+            <!-- Name -->
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Nom</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:user'" matPrefix></mat-icon>
+                    <input [formControlName]="'firstName'" matInput />
+                    @if (form.get('firstName').hasError('required')) {
+                        <mat-error> Nom obligatoire </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+            <div class="sm:col-span-4">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Prénom</mat-label>
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:user'" matPrefix></mat-icon>
+                    <input [formControlName]="'lastName'" matInput />
+                    @if (form.get('lastName').hasError('required')) {
+                        <mat-error> Prénom obligatoire </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+        </div>
+
+        <!-- Divider -->
+        <div class="mb-10 mt-11 border-t"></div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end">
+            <button
+                class="ml-4"
+                mat-flat-button
+                type="button"
+                [color]="'primary'"
+                [disabled]="form.disabled || form.invalid"
+                (click)="update()"
+            >
+                Changer
+            </button>
+        </div>
+    </form>
+</div>

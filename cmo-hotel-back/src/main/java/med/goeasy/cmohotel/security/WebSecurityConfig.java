@@ -102,6 +102,7 @@ public class WebSecurityConfig {
 						.requestMatchers(POST,"/v1/rooms/create").hasAuthority(EPermissions.ROOM_CREATE.getAuthority())
 						.requestMatchers(PUT,"/v1/rooms/update").hasAuthority(EPermissions.ROOM_UPDATE.getAuthority())
 						.requestMatchers(GET,"/v1/rooms/all").hasAuthority(EPermissions.ROOM_LIST.getAuthority())
+						.requestMatchers(GET,"/v1/rooms/granted").hasAuthority(EPermissions.ROOM_LIST_GRANTED.getAuthority())
 						.requestMatchers(GET,"/v1/rooms/one").hasAuthority(EPermissions.ROOM_SELECT_ONE.getAuthority())
 						// Rooms types
 						.requestMatchers(POST,"/v1/rooms/types/create").hasAuthority(EPermissions.ROOM_TYPE_CREATE.getAuthority())
@@ -123,7 +124,11 @@ public class WebSecurityConfig {
 						.requestMatchers(PUT,"/v1/reservations/cancel").hasAuthority(EPermissions.RESERVATION_CANCEL.getAuthority())
 						.requestMatchers(PUT,"/v1/reservations/close").hasAuthority(EPermissions.RESERVATION_CLOSE.getAuthority())
 						.requestMatchers(DELETE,"/v1/reservations/delete").hasAuthority(EPermissions.RESERVATION_DELETE.getAuthority())
-
+						// House keeping
+						.requestMatchers(GET,"/v1/house-keeping/agents/all").hasAuthority(EPermissions.HOUSE_KEEPING_AGENT_LIST.getAuthority())
+						.requestMatchers(POST,"/v1/house-keeping/agents/create").hasAuthority(EPermissions.HOUSE_KEEPING_AGENT_CREATE.getAuthority())
+						.requestMatchers(PUT,"/v1/house-keeping/agents/update").hasAuthority(EPermissions.HOUSE_KEEPING_AGENT_UPDATE.getAuthority())
+						.requestMatchers(DELETE,"/v1/house-keeping/agents/delete").hasAuthority(EPermissions.HOUSE_KEEPING_AGENT_DELETE.getAuthority())
 						//.anyRequest().authenticated()
 						.anyRequest().hasAuthority(EPermissions.DEFAULT.getAuthority())
 				)

@@ -19,6 +19,8 @@ import {MatDrawer, MatSidenavModule} from "@angular/material/sidenav";
 import {NgClass} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {MatSelectModule} from "@angular/material/select";
+import { ReservationDetailsModel } from '../../reservation/dialog-reservation-details/reservation.details.model';
+import { MatDialog } from '@angular/material/dialog';
 
 
 @Component({
@@ -82,8 +84,9 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
                 error: (err) => failureCallback(err)
             });
         },
-        eventClick: (info) => {
-            console.log('Event:', info.event.title);
+        eventClick: (info:any) => {
+            console.log('Event:', info.event.id);
+            this.raiseReservationDetailsDialog(info.event.id)
         },
     });
 
@@ -109,6 +112,7 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
         private _apiRoomService: ApiRoomService,
         private _apiPavillonService: ApiPavillonService,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
+        private _matDialog: MatDialog,
         private _utilsService: UtilsService
     ) {}
 
@@ -154,7 +158,8 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
                     const guestsInThisRoom = res.guests.filter(g => g.room.id === roomId).length;
 
                     calendarEvents.push({
-                        id: `${res.code}-${roomId}`, // ID unique combiné
+                        id: `${res.code}`, // ID unique combiné
+                        reservation: `${res}`,
                         title: `${room.name} - ${room.roomType.type} (${guestsInThisRoom} pers.)`,
                         start: res.start,
                         end: res.end,
@@ -251,6 +256,21 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
             group.items.push(room);
             return acc;
         }, []);
+    }
+
+
+    raiseReservationDetailsDialog(code) {
+        this._apiReservationService.getReservation(code).subscribe({
+            next: (data) => {
+                this._matDialog
+                    .open(ReservationDetailsModel, {
+                        data: { reservation: data},
+                        disableClose: true,
+                    })
+                    .afterClosed()
+                    .subscribe();
+            }
+        })
     }
 
     /**

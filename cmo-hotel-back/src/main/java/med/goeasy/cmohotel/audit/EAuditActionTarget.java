@@ -18,6 +18,7 @@ public enum EAuditActionTarget{
     ROOM_PRICE("ROOM_PRICE","Prix de chambre"),
     USER("USER","Utilisateur"),
     AUTH("AUTH","Authentication"),
+    HOUSEKEEPING("HOUSEKEEPING","House keeping"),
     ;
 
     private final String code;

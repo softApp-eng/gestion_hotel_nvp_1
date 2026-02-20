@@ -6,6 +6,8 @@ export const APP_MODULES = {
     PAVILLON:'pavillons',
     ROOM:'rooms',
     AUDIT:'audits',
+    HOUSEKEEPING:'housekeepings',
+    RESERVATION:'reservations',
 
 }
 

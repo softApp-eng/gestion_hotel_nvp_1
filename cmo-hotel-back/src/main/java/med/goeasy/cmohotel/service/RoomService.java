@@ -11,6 +11,9 @@ import med.goeasy.cmohotel.persistence.entity.Pavillon;
 import med.goeasy.cmohotel.persistence.entity.Room;
 import med.goeasy.cmohotel.persistence.entity.RoomPrice;
 import med.goeasy.cmohotel.persistence.entity.RoomType;
+import med.goeasy.cmohotel.persistence.entity.auth.AppUser;
+import med.goeasy.cmohotel.persistence.entity.auth.AppUserResource;
+import med.goeasy.cmohotel.persistence.repository.AppUserResourceRepository;
 import med.goeasy.cmohotel.persistence.repository.RoomPriceRepository;
 import med.goeasy.cmohotel.persistence.repository.RoomRepository;
 import med.goeasy.cmohotel.persistence.repository.RoomTypeRepository;
@@ -28,6 +31,7 @@ import java.util.List;
 public class RoomService {
 
     private final RoomRepository roomRepository;
+    private final AppUserResourceRepository resourceRepository;
     private final RoomTypeRepository roomTypeRepository;
     private final RoomPriceRepository roomPriceRepository;
     private final PavillonService pavillonService;
@@ -84,6 +88,13 @@ public class RoomService {
     public List<RoomResponseDto> getRooms(Authentication authentication, Long pavillonId, Boolean clean) {
         log.info("{} get rooms in pavillon id {}", authentication.getName(),pavillonId);
         return  roomRepository.getRooms(pavillonId,clean).stream().map(RoomResponseDto::mapToDto).toList();
+    }
+
+    public List<RoomResponseDto> getGrantedRooms(Authentication authentication) {
+        AppUser connectedUser = (AppUser) authentication.getDetails();
+        log.info("{} get granted rooms", authentication.getName());
+        return resourceRepository.findGrantedRooms(connectedUser.getId())
+                .stream().map(RoomResponseDto::mapToDto).toList();
     }
 
     public RoomResponseDto findById(Authentication authentication,Long id) {

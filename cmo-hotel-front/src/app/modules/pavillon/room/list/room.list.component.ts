@@ -7,16 +7,14 @@ import { finalize } from 'rxjs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
-import { MatDialog } from '@angular/material/dialog';
-import { NgClass } from '@angular/common';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { HighlightPipe } from '../../../../../@fuse/pipes/HighlightPipe';
-import { HasPermissionDirective } from '../../../../core/auth/HasPermissionDirective';
 import { ApiRoomService } from '../../api.room.service';
 import { ApiPavillonService } from '../../api.pavillon.service';
 import { APP_PERMISSIONS } from '../../../../core/data/app-permissions';
 import { DisableIfNoPermissionDirective } from '../../../../core/auth/DisableIfNoPermissionDirective';
+import { DatePipe } from '@angular/common';
 
 @Component({
     selector: 'room-list',
@@ -31,12 +29,11 @@ import { DisableIfNoPermissionDirective } from '../../../../core/auth/DisableIfN
         MatMenuModule,
         MatTableModule,
         MatTooltipModule,
-        NgClass,
         RouterLink,
         MatPaginator,
         MatSortModule,
-        HasPermissionDirective,
         DisableIfNoPermissionDirective,
+        DatePipe,
     ],
 })
 export class RoomListComponent implements OnInit, AfterViewInit {

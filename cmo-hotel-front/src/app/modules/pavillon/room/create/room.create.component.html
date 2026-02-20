@@ -94,6 +94,12 @@
                     <input type="number" matInput [formControlName]="'floor'" placeholder="Etage">
                 </mat-form-field>
 
+                <mat-slide-toggle
+                    class="w-full p-2 text-2xl"
+                    [formControlName]="'shared'">
+                    Chambre partagée
+                </mat-slide-toggle>
+
                 <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
                     <mat-label>Observation</mat-label>
                     <textarea

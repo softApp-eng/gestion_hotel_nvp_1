@@ -20,6 +20,7 @@ import { Toastr } from '../../../../core/service/toastr.service';
 import { FuseAlertComponent, FuseAlertType } from '../../../../../@fuse/components/alert';
 import { fuseAnimations } from '../../../../../@fuse/animations';
 import { ApiRoomTypeService } from '../../../prices/room/type/api.room-type.service';
+import { MatCheckbox } from '@angular/material/checkbox';
 
 @Component({
     selector: 'room-add',
@@ -36,7 +37,8 @@ import { ApiRoomTypeService } from '../../../prices/room/type/api.room-type.serv
         MatSelectModule,
         RouterLink,
         FuseAlertComponent,
-        MatSlideToggleModule
+        MatSlideToggleModule,
+        MatCheckbox,
     ],
 })
 export class RoomCreateComponent implements OnInit {
@@ -60,46 +62,44 @@ export class RoomCreateComponent implements OnInit {
         private _toastr: Toastr,
         private _activeRoute: ActivatedRoute,
         private _apiPavillonService: ApiPavillonService,
-        private _apiRoomTypeService: ApiRoomTypeService,
-
+        private _apiRoomTypeService: ApiRoomTypeService
     ) {
         this.loadCurrentPavillon();
         this.loadTypes();
     }
 
     ngOnInit(): void {
-        this.form = this._formBuilder.group(
-            {
-                roomTypeId: ['', [Validators.required]],
-                code: ['', [Validators.required]],
-                name: ['', [Validators.required]],
-                capacity: ['', [Validators.required]],
-                floor: [''],
-                description: [''],
-            }
-        );
+        this.form = this._formBuilder.group({
+            roomTypeId: ['', [Validators.required]],
+            code: ['', [Validators.required]],
+            name: ['', [Validators.required]],
+            capacity: ['', [Validators.required]],
+            floor: [''],
+            shared: [false],
+            description: [''],
+        });
         // initialize form if edit mode
         if (this._router.url.includes('edit')) {
             this.initializeForm();
         }
     }
 
-    loadCurrentPavillon(){
+    loadCurrentPavillon() {
         const pavillonId = this._activeRoute.snapshot.params['pavillonId'];
         this._apiPavillonService.one(pavillonId).subscribe({
-            next: data => {
+            next: (data) => {
                 this.pavillon = data;
-                console.log("pavillon", this.pavillon);
-            }
-        })
+                console.log('pavillon', this.pavillon);
+            },
+        });
     }
 
-    loadTypes(){
+    loadTypes() {
         this._apiRoomTypeService.all().subscribe({
-            next: data => {
+            next: (data) => {
                 this.roomTypes = data;
-            }
-        })
+            },
+        });
     }
 
     save() {
@@ -119,11 +119,11 @@ export class RoomCreateComponent implements OnInit {
         // Hide the alert
         this.showAlert = false;
 
-        let payload = { ...this.form.value, pavillonId: this.pavillon?.id};
+        let payload = { ...this.form.value, pavillonId: this.pavillon?.id };
 
         if (this.roomId) {
             this._apiRoomService
-                .update(payload,this.roomId)
+                .update(payload, this.roomId)
                 .pipe(
                     finalize(() => {
                         // Show the alert
@@ -180,8 +180,6 @@ export class RoomCreateComponent implements OnInit {
                     },
                 });
         }
-
-
     }
 
     initializeForm() {
@@ -196,13 +194,14 @@ export class RoomCreateComponent implements OnInit {
                     name: data?.name,
                     capacity: data?.capacity,
                     floor: data?.floor,
+                    shared: data?.shared,
                     description: data?.description,
                 });
 
                 this.form.enable();
             },
             error: (err) => {
-                this._toastr.error("error chargement de la chambre");
+                this._toastr.error('error chargement de la chambre');
             },
         });
     }

@@ -70,6 +70,19 @@ export const appRoutes: Route[] = [
         ]
     },
     {
+        path: 'profile',
+        canActivate: [AuthGuard],
+        canActivateChild: [AuthGuard],
+        component: LayoutComponent,
+        resolve: {
+            initialData: initialDataResolver
+        },
+        children: [
+            {path: 'settings', loadChildren: () => import('app/modules/settings/settings.routes'),},
+        ]
+    },
+
+    {
         path: 'settings',
         canActivate: [AuthGuard],
         canActivateChild: [AuthGuard],
@@ -107,9 +120,30 @@ export const appRoutes: Route[] = [
             initialData: initialDataResolver
         },
         children: [
-            {path: 'reservations', loadChildren: () => import('app/modules/reservation/reservation.routes'),},
-            {path: 'sejours', loadChildren: () => import('app/modules/sejour/sejour.routes'),},
-            {path: 'calender', loadChildren: () => import('app/modules/planning-calender/planning-calender.routes'),},
+            {
+                path: 'reservations', loadChildren: () => import('app/modules/reservation/reservation.routes'),
+                data: {
+                    module:[APP_MODULES.RESERVATION]
+                },
+            },
+            {
+                path: 'housekeeping',
+                data: {
+                    module:[APP_MODULES.HOUSEKEEPING]
+                },
+                loadChildren: () => import('app/modules/house-keeping/housekeeping.routes')
+            },
+            {
+                path: 'sejours', loadChildren: () => import('app/modules/sejour/sejour.routes'),
+                data: {
+                    module:[APP_MODULES.RESERVATION]
+                },},
+            {
+                path: 'calender', loadChildren: () => import('app/modules/planning-calender/planning-calender.routes'),
+                data: {
+                    module:[APP_MODULES.RESERVATION]
+                },
+            },
         ]
     },
 

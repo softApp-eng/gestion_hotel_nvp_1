@@ -23,6 +23,7 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> 
            AND (:targets IS NULL OR l.actionTarget IN :targets)
            AND (:operations IS NULL OR l.actionOperation IN :operations)
            AND (:range IS FALSE OR (l.timestamp BETWEEN :start AND :end))
+               ORDER BY l.timestamp desc
     """)
     Page<ActivityLog> search(
             @Param("key") String key,

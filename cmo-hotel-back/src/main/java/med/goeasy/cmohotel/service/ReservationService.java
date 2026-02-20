@@ -233,7 +233,7 @@ public class ReservationService {
 
     public List<ReservationCalenderResponseDto> getReservationForCalender(Authentication authentication,LocalDate start,LocalDate end){
         List<ReservationDetails> rangeReservations = reservationDetailsRepository.getRangeReservations(
-                List.of(EReservationStatus.PENDING, EReservationStatus.CLOSED, EReservationStatus.CONFIRMED),
+                List.of(EReservationStatus.PENDING, EReservationStatus.CONFIRMED),
                 start != null ? start.atStartOfDay() : null,
                 start != null ? end.atTime(23, 59, 59) : null
                 );

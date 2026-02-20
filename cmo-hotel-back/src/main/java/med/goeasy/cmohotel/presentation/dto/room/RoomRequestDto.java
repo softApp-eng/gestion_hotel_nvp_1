@@ -16,7 +16,8 @@ public record RoomRequestDto(
         @NotNull(message = "capacité obligatoire")
         Integer capacity,
         Integer floor,
-        String description
+        String description,
+        Boolean shared
 ) {
         public static Room mapToEntity(RoomRequestDto dto){
                 if (dto == null)
@@ -27,6 +28,7 @@ public record RoomRequestDto(
                         .capacity(dto.capacity())
                         .floor(dto.floor())
                         .description(dto.description())
+                        .shared(dto.shared() != null && dto.shared())
                         .build();
         }
 }

@@ -49,6 +49,10 @@ export class ApiReservationService {
         return this._httpClient.get(`${this.API_URL}/upcoming`);
     }
 
+    getReservation(code): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/one?code=${code}`);
+    }
+
     create(payload): Observable<any>{
         return this._httpClient.post(`${this.API_URL}/create`, payload);
     }
@@ -73,13 +77,6 @@ export class ApiReservationService {
 
     downloadInvoice(code): Observable<any>{
         return this._httpClient.get(`${this.API_URL}/invoice?code=${code}`, {
-            responseType: 'blob'
-        });
-    }
-
-    downloadDailyInPersonAssistanceExcel(day: string) {
-        return this._httpClient.get(`${environment.solidarityApi}/v1/in-person-assistances/export/excel`, {
-            params: { day },
             responseType: 'blob'
         });
     }

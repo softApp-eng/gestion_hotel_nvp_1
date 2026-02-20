@@ -1,11 +1,11 @@
-package med.goeasy.cmohotel.persistence.entity;
+package med.goeasy.cmohotel.persistence.entity.auth;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import med.goeasy.cmohotel.persistence.entity.auth.AppUser;
+import med.goeasy.cmohotel.persistence.entity.Room;
 
 import java.util.HashSet;
 import java.util.Set;

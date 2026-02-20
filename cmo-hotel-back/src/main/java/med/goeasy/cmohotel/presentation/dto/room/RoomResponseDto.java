@@ -15,7 +15,8 @@ public record RoomResponseDto(
         String name,
         Integer capacity,
         Integer floor,
-        String description
+        String description,
+        boolean shared
 ) {
         public static RoomResponseDto mapToDto(Room entity){
                 if (entity == null)
@@ -29,6 +30,7 @@ public record RoomResponseDto(
                         .capacity(entity.getCapacity())
                         .floor(entity.getFloor())
                         .description(entity.getDescription())
+                        .shared(entity.isShared())
                         .build();
         }
 }
