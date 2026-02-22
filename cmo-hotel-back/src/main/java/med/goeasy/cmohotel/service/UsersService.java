@@ -8,10 +8,14 @@ import med.goeasy.cmohotel.audit.EAuditActionOperation;
 import med.goeasy.cmohotel.audit.EAuditActionTarget;
 import med.goeasy.cmohotel.exception.BadRequestException;
 import med.goeasy.cmohotel.exception.OperationNotPermittedException;
+import med.goeasy.cmohotel.persistence.entity.Room;
 import med.goeasy.cmohotel.persistence.entity.auth.AppRole;
 import med.goeasy.cmohotel.persistence.entity.auth.AppUser;
+import med.goeasy.cmohotel.persistence.entity.auth.AppUserResource;
 import med.goeasy.cmohotel.persistence.repository.AppRoleRepository;
 import med.goeasy.cmohotel.persistence.repository.AppUserRepository;
+import med.goeasy.cmohotel.persistence.repository.AppUserResourceRepository;
+import med.goeasy.cmohotel.persistence.repository.RoomRepository;
 import med.goeasy.cmohotel.presentation.dto.user.*;
 import med.goeasy.cmohotel.security.enums.ERoleSystem;
 import org.springframework.data.domain.Sort;
@@ -32,6 +36,8 @@ public class UsersService {
 
     private final AppUserRepository appUserRepository;
     private final AppRoleRepository appRoleRepository;
+    private final AppUserResourceRepository appUserResourceRepository;
+    private final RoomService roomService;
     private final PasswordEncoder encoder;
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
@@ -141,6 +147,43 @@ public class UsersService {
                 activityLogService.getClientIp(request),
                 authentication.getName()
         );
+    }
+
+    @Transactional
+    public void assignRoomsResource(Authentication authentication, UserRoomResource dto){
+        AppUser user = getUser(dto.userid());
+        if (user.isSystem()) {
+            throw new OperationNotPermittedException("utilisateur système non modifiable");
+        }
+        Set<Room> rooms = new HashSet<>();
+        if (dto.rooms() != null && !dto.rooms().isEmpty()) {
+            dto.rooms().forEach(roomId -> {
+                rooms.add(roomService.getRoomById(roomId));
+            });
+        }
+        AppUserResource resource = appUserResourceRepository.findAppUserResourceByUser(user.getId())
+                .orElse(
+                        AppUserResource.builder()
+                                .user(user)
+                                .build()
+                );
+
+        resource.setRooms(rooms);
+        appUserResourceRepository.save(resource);
+        String roomList = rooms.stream().map(Room::getCode).collect(Collectors.joining(", "));
+        activityLogService.logActivity(
+                EAuditActionTarget.USER,
+                EAuditActionOperation.UPDATE,
+                String.format("Modification des ressources d'accès pour '%s'. Nouvelles chambres assignés : [%s].",
+                        user.getUsername(), roomList.isEmpty() ? "Aucun" : roomList),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+    }
+
+    public UserResourceDto getAssignedResources(Authentication authentication, String userid){
+        AppUserResource appUserResource = appUserResourceRepository.findAppUserResourceByUser(userid).orElse(null);
+        return UserResourceDto.mapToDto(appUserResource);
     }
 
 

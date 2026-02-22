@@ -64,23 +64,23 @@ export const defaultNavigation: FuseNavigationItem[] = [
     },
     {
         id: 'housekeeping',
-        title: 'Housekeeping',
-        subtitle: 'housekeeping',
+        title: 'Gouvernance',
+        subtitle: 'Maintenance & Entretien',
         type: 'group',
-        icon: 'heroicons_outline:home',
+        icon: 'mat_outline:layers',
         data: {
             modules:[APP_MODULES.HOUSEKEEPING]
         },
         children: [
             {
                 id: 'housekeeping.housekeeping',
-                title: 'Housekeeping',
+                title: 'Gouvernance',
                 type: 'collapsable',
-                icon: 'mat_outline:house',
+                icon: 'mat_outline:layers',
                 children: [
                     {
                         id: 'housekeeping.housekeeping.agents',
-                        title: 'Agents',
+                        title: 'Agents de ménage',
                         type: 'basic',
                         link: '/managements/housekeeping/agents',
                         data: {
@@ -92,13 +92,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
 
                     {
                         id: 'housekeeping.housekeeping.rooms',
-                        title: 'Chambres',
+                        title: 'Statut des Chambres',
                         type: 'basic',
                         link: '/managements/housekeeping',
                     },
 
                     {   id: 'housekeeping.Housekeeping.anomalies',
-                        title: 'Anomalies',
+                        title: 'Maintenance & Incidents',
                         type: 'basic',
                         link: '/managements/housekeeping/anomalies' },
                 ],

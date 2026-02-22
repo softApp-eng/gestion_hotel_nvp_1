@@ -14,7 +14,6 @@ import { NgClass } from '@angular/common';
 import { UserUpdateModel } from '../update-model/user-update';
 import { UserUpdateMdpModel } from '../update-mdp-model/user.update-mdp.model';
 import { AssignRolesModel } from '../assign-roles-model/assign-roles-model';
-import { HasPermissionDirective } from '../../../core/auth/HasPermissionDirective';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
 import { DisableIfNoPermissionDirective } from '../../../core/auth/DisableIfNoPermissionDirective';
 
@@ -33,7 +32,6 @@ import { DisableIfNoPermissionDirective } from '../../../core/auth/DisableIfNoPe
         MatTooltipModule,
         NgClass,
         RouterLink,
-        HasPermissionDirective,
         DisableIfNoPermissionDirective,
     ],
 })
@@ -125,4 +123,6 @@ export class UserListComponent implements OnInit {
     }
 
     protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
+
+
 }

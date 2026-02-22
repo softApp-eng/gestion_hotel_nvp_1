@@ -57,4 +57,18 @@ public record UserResponse(
                 )
                 .build();
     }
+
+    public static UserResponse mapToShortDto(AppUser user){
+        if (user == null)
+            return null;
+        return UserResponse.builder()
+                .userid(user.getId())
+                .username(user.getUsername())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .avatar(user.getAvatar())
+                .status(user.getAccountStatus())
+                .isSystem(user.isSystem())
+                .build();
+    }
 }

@@ -48,6 +48,7 @@ public class Person {
     private String language;
     private String matricule;
     private String unite;
+    @Column(length = 500)
     private String observation;
 
     private boolean archived; // true : person archived or deleted, false : person active

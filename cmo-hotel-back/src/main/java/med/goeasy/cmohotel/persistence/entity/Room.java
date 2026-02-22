@@ -43,6 +43,7 @@ public class Room {
     @Column(nullable = false)
     private Integer capacity;
     private Integer floor;
+    @Column(length = 500)
     private String description;
 
     private boolean archived;

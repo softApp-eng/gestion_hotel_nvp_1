@@ -21,13 +21,6 @@ export class ApiUsersService
         );
     }
 
-
-    getAllSites(){
-        return this._httpClient.get(
-            `${environment.solidarityApi}/v1/users/sites/all`
-        );
-    }
-
     getUser(userid){
         let params = new HttpParams().set('userID', userid);
         return this._httpClient.get(
@@ -68,10 +61,18 @@ export class ApiUsersService
         );
     }
 
-    assignSites(userID,sitesID){
+    assignRoomsResource(userID,roomsID){
         return this._httpClient.put(
-            `${environment.solidarityApi}/v1/users/sites/assign`,
-            {userid:userID,sites:sitesID}
+            `${environment.solidarityApi}/v1/users/resources/rooms`,
+            {userid:userID,rooms:roomsID}
+        );
+    }
+
+    getUserResources(userid){
+        let params = new HttpParams().set('userID', userid);
+        return this._httpClient.get(
+            `${environment.solidarityApi}/v1/users/resources`,
+            { params }
         );
     }
 

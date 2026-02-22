@@ -22,6 +22,7 @@ public enum EPermissions {
     ADMIN_USERS_UPDATE(USERS, "user:update", "update user",  UPDATE,false,""),
     ADMIN_USERS_PASSWORD_MODIFY(USERS, "user:password:modify", "modify user password",  UPDATE,false,""),
     ADMIN_USERS_ASSIGN_ROLES(USERS, "user:assign:roles", "assign roles to user", MANAGE,false,""),
+    ADMIN_USERS_RESOURCES_MANAGE(USERS, "user:resources:manage", "Gérer les ressources des utilisateurs", MANAGE,false,""),
     ADMIN_AUDIT_ACTIVITY_LOGS(AUDIT, "logs:filter", "filtrer les activités des utilisateurs", MANAGE,false,""),
 
     //ROLES

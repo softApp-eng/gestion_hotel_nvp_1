@@ -54,4 +54,15 @@ public class UsersController {
         usersService.assignRoles(authentication, dto);
         return ResponseEntity.ok(ApiResponse.builder().message("Roles assignés").build());
     }
+
+    @PutMapping("/resources/rooms")
+    ResponseEntity<ApiResponse> assignRoomsResource(Authentication authentication, @Valid @RequestBody UserRoomResource dto){
+        usersService.assignRoomsResource(authentication, dto);
+        return ResponseEntity.ok(ApiResponse.builder().message("chambres assignées").build());
+    }
+
+    @GetMapping("/resources")
+    ResponseEntity<UserResourceDto> getResources(Authentication authentication,@Valid @NotBlank(message = "Utilisateur id requis") @RequestParam() String userID){
+        return ResponseEntity.ok(usersService.getAssignedResources(authentication, userID));
+    }
 }

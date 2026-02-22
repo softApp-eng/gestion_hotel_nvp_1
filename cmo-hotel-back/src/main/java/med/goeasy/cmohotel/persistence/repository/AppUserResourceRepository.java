@@ -5,10 +5,14 @@ import med.goeasy.cmohotel.persistence.entity.auth.AppUserResource;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Optional;
 import java.util.Set;
 
 public interface AppUserResourceRepository extends JpaRepository<AppUserResource, Long> {
 
     @Query("select o.rooms from AppUserResource o where o.user.id = ?1")
     Set<Room> findGrantedRooms(String userid);
+
+    @Query("select o from AppUserResource o where o.user.id = ?1")
+    Optional<AppUserResource> findAppUserResourceByUser(String userid);
 }

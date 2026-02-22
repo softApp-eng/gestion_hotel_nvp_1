@@ -51,6 +51,7 @@ public class ReservationDetails {
     @Enumerated(EnumType.STRING)
     private EReservationStatus status;
 
+    @Column(length = 500)
     private String observation;
 
     private boolean priseEnCharge;

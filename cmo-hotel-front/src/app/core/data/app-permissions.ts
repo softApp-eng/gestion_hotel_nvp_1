@@ -7,6 +7,7 @@ export const APP_PERMISSIONS = {
     ADMIN_USERS_UPDATE:'users:user:update',
     ADMIN_USERS_PASSWORD_MODIFY:'users:user:password:modify',
     ADMIN_USERS_ASSIGN_ROLES:'users:user:assign:roles',
+    ADMIN_USERS_RESOURCES_MANAGE:'users:user:resources:manage',
     ADMIN_AUDIT_ACTIVITY_LOGS:'audits:logs:filter',
 
     // roles
