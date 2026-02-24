@@ -79,6 +79,17 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 icon: 'mat_outline:layers',
                 children: [
                     {
+                        id: 'housekeeping.housekeeping.rooms',
+                        title: 'Statut des Chambres',
+                        type: 'basic',
+                        link: '/managements/housekeeping/manage',
+                    },
+                    {   id: 'housekeeping.Housekeeping.anomalies',
+                        title: 'Historiques',
+                        type: 'basic',
+                        link: '/managements/housekeeping/history'
+                    },
+                    {
                         id: 'housekeeping.housekeeping.agents',
                         title: 'Agents de ménage',
                         type: 'basic',
@@ -89,18 +100,6 @@ export const defaultNavigation: FuseNavigationItem[] = [
                     },
 
 
-
-                    {
-                        id: 'housekeeping.housekeeping.rooms',
-                        title: 'Statut des Chambres',
-                        type: 'basic',
-                        link: '/managements/housekeeping',
-                    },
-
-                    {   id: 'housekeeping.Housekeeping.anomalies',
-                        title: 'Maintenance & Incidents',
-                        type: 'basic',
-                        link: '/managements/housekeeping/anomalies' },
                 ],
             },
         ],

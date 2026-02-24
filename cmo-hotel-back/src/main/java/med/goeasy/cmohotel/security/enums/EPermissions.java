@@ -80,6 +80,11 @@ public enum EPermissions {
     HOUSE_KEEPING_AGENT_UPDATE(HOUSE_KEEPING, "agent:update", "modifier un agent", UPDATE,true,""),
     HOUSE_KEEPING_AGENT_LIST(HOUSE_KEEPING, "agent:list", "lister les agents", READ,true,""),
     HOUSE_KEEPING_AGENT_DELETE(HOUSE_KEEPING, "agent:delete", "Supprimer un agent", DELETE,true,""),
+    HOUSE_KEEPING_ROOM_DISPONIBILITY(HOUSE_KEEPING, "room:disponibility", "bloquer/autoriser une chambre", MANAGE,true,""),
+    HOUSE_KEEPING_ROOM_CLEAN_STATUS(HOUSE_KEEPING, "room:clean:status", "changer la statut de menage d'une chambre", MANAGE,true,""),
+    HOUSE_KEEPING_HISTORY_SEARCH(HOUSE_KEEPING, "history:search", "Chercher l'historiquer de menage", READ,true,""),
+    HOUSE_KEEPING_HISTORY_UPDATE(HOUSE_KEEPING, "history:update", "modifier l'historiquer de menage", UPDATE,true,""),
+    HOUSE_KEEPING_HISTORY_DELETE(HOUSE_KEEPING, "history:delete", "supprimer l'historiquer de menage", DELETE,true,""),
 
 
 

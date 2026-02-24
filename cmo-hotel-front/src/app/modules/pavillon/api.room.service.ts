@@ -33,6 +33,10 @@ export class ApiRoomService {
         return this._httpClient.get(`${this.API_URL}/all`, { params });
     }
 
+    grantedRooms(): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/granted`);
+    }
+
     one(id): Observable<any>{
         let params = new HttpParams().set('id', id);
         return this._httpClient.get(`${this.API_URL}/one`, { params });

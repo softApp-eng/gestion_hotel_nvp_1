@@ -16,7 +16,10 @@ public record RoomResponseDto(
         Integer capacity,
         Integer floor,
         String description,
-        boolean shared
+        boolean shared,
+        boolean clean,
+        boolean available,
+        boolean reserved
 ) {
         public static RoomResponseDto mapToDto(Room entity){
                 if (entity == null)
@@ -31,6 +34,27 @@ public record RoomResponseDto(
                         .floor(entity.getFloor())
                         .description(entity.getDescription())
                         .shared(entity.isShared())
+                        .clean(entity.isClean())
+                        .available(entity.isAvailable())
+                        .build();
+        }
+
+        public static RoomResponseDto mapToDtoWithReservationStatus(Room entity, boolean isReserved){
+                if (entity == null)
+                        return null;
+                return RoomResponseDto.builder()
+                        .id(entity.getId())
+                        .pavillon(PavillonResponseDto.mapToDto(entity.getPavillon()))
+                        .roomType(RoomTypeDto.mapToDto(entity.getRoomType()))
+                        .code(entity.getCode())
+                        .name(entity.getName())
+                        .capacity(entity.getCapacity())
+                        .floor(entity.getFloor())
+                        .description(entity.getDescription())
+                        .shared(entity.isShared())
+                        .clean(entity.isClean())
+                        .available(entity.isAvailable())
+                        .reserved(isReserved)
                         .build();
         }
 }

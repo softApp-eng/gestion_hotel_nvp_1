@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import med.goeasy.cmohotel.presentation.dto.ApiResponse;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
 import med.goeasy.cmohotel.presentation.dto.housekeeping.request.HousekeepingAgentRequestDto;
+import med.goeasy.cmohotel.presentation.dto.housekeeping.request.UpdateRoomCleanRequest;
 import med.goeasy.cmohotel.presentation.dto.housekeeping.response.HousekeepingAgentResponseDto;
 import med.goeasy.cmohotel.presentation.dto.housekeeping.response.RoomHousekeepingDto;
 import med.goeasy.cmohotel.service.HouseKeepingService;
@@ -32,13 +33,14 @@ public class HousekeepingController {
     ///                          HOUSE KEEPING FUNCTIONS                          ///
     /// /////////////////////////////////////////////////////////////////////////////
 
-    @GetMapping("/history/search") // TODO SEC
+    @GetMapping("/history/search")
     ResponseEntity<PageDto<RoomHousekeepingDto>> searchHouseKeepingHistory(
             Authentication authentication,
             @RequestParam(required = false, defaultValue = "") String key,
             @RequestParam(required = false) List<Long> RoomTypes,
             @RequestParam(required = false) List<Long> rooms,
             @RequestParam(required = false) List<Long> agents,
+            @RequestParam(required = false) Boolean anomalie,
             @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate end,
             @RequestParam(required = false, defaultValue = "0") Integer page,
@@ -51,9 +53,48 @@ public class HousekeepingController {
                 RoomTypes != null ? RoomTypes : new ArrayList<>(),
                 rooms != null ? rooms : new ArrayList<>(),
                 agents != null ? agents : new ArrayList<>(),
+                anomalie != null ? anomalie: false,
                 start, end,
                 page, size
         ));
+    }
+
+
+    @PutMapping("/housekeeping/room/availability")
+    ResponseEntity<ApiResponse> toggleRoomAvailability(
+            Authentication authentication,
+            @Valid @NotNull(message = "agent id requis") @RequestParam() Long id
+    ){
+        houseKeepingService.toggleRoomAvailability(authentication, id);
+        return ResponseEntity.ok(ApiResponse.builder().message("Etat de chambre modifié").build());
+    }
+
+    @PutMapping("/housekeeping/room/clean")
+    ResponseEntity<ApiResponse> updateClean(
+            Authentication authentication,
+            @Valid @RequestBody() UpdateRoomCleanRequest dto
+    ){
+        houseKeepingService.updateClean(authentication, dto);
+        return ResponseEntity.ok(ApiResponse.builder().message("Etat de chambre modifié").build());
+    }
+
+    @PutMapping("/housekeeping/history/update")
+    ResponseEntity<ApiResponse> updateHistory(
+            Authentication authentication,
+            @Valid @NotNull(message = "id requis") @RequestParam() Long id,
+            @Valid @RequestBody() UpdateRoomCleanRequest dto
+    ){
+        houseKeepingService.updateHistory(authentication, dto,id);
+        return ResponseEntity.ok(ApiResponse.builder().message("modifié").build());
+    }
+
+    @DeleteMapping("/housekeeping/history/delete")
+    ResponseEntity<ApiResponse> deleteHistory(
+            Authentication authentication,
+            @Valid @NotNull(message = "id requis") @RequestParam() Long id
+    ){
+        houseKeepingService.deleteHistory(authentication,id);
+        return ResponseEntity.ok(ApiResponse.builder().message("supprimé").build());
     }
 
 

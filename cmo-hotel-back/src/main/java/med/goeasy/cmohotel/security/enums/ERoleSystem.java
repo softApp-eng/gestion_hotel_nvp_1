@@ -34,7 +34,11 @@ public enum ERoleSystem {
                     EPermissions.HOUSE_KEEPING_AGENT_UPDATE,
                     EPermissions.HOUSE_KEEPING_AGENT_LIST,
                     EPermissions.HOUSE_KEEPING_AGENT_DELETE,
-                    EPermissions.ROOM_LIST_GRANTED
+                    EPermissions.ROOM_LIST_GRANTED,
+                    EPermissions.HOUSE_KEEPING_ROOM_DISPONIBILITY,
+                    EPermissions.HOUSE_KEEPING_ROOM_CLEAN_STATUS,
+                    EPermissions.HOUSE_KEEPING_HISTORY_SEARCH,
+                    EPermissions.HOUSE_KEEPING_HISTORY_UPDATE
 
             )),
 

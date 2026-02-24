@@ -1,0 +1,252 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+        <div class="min-w-0 flex-1">
+            <!-- Breadcrumbs -->
+            <div class="flex flex-wrap items-center font-medium">
+                <div>
+                    <a class="whitespace-nowrap text-primary-500">Gouvernance</a>
+                </div>
+            </div>
+            <!-- Title -->
+            <div class="mt-2">
+                <div class="flex items-center">
+                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'mat_outline:history'"></mat-icon>
+                    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+                        Historique
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-6">
+        <div class="w-full bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+
+            <div class="flex flex-0 flex-col sm:flex-row sm:items-start justify-between mb-4">
+                <div class="flex flex-row items-center flex-wrap gap-2">
+
+                    <button mat-button [matMenuTriggerFor]="filterMenu" #filterMenuTrigger="matMenuTrigger" class="bg-gray-100 dark:bg-slate-800 rounded-lg px-4 py-2 shrink-0">
+                        <div class="flex items-center gap-2">
+                            <mat-icon [svgIcon]="'search'" class="icon-size-5 text-secondary"></mat-icon>
+                            <span class="font-medium text-secondary">Filtres avancés</span>
+                            @if (activeFiltersCount > 0) {
+                                <span class="flex items-center justify-center bg-primary text-white text-[10px] rounded-full h-5 w-5">
+                                                        {{activeFiltersCount}}
+                                                    </span>
+                            }
+                        </div>
+                    </button>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        @if (filters.key?.length > 0) {
+                            <div class="flex items-center bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-100 px-3 py-1 rounded-full text-xs font-medium h-8">
+                                <span>Mot clé: {{ filters.key }}</span>
+                                <button class="ml-1.5 flex items-center" (click)="removeSpecificFilter('key')">
+                                    <mat-icon class="icon-size-3.5" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                                </button>
+                            </div>
+                        }
+
+                        @if (filters.rooms.length > 0) {
+                            <div class="flex items-center bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 px-3 py-1 rounded-full text-xs font-medium h-8">
+                                <span>Chambres : {{ getSelectedFilterLabels('rooms') }}</span>
+                                <button class="ml-1.5 flex items-center" (click)="removeSpecificFilter('rooms')">
+                                    <mat-icon class="icon-size-3.5" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                                </button>
+                            </div>
+                        }
+
+                        @if (filters.agents.length > 0) {
+                            <div class="flex items-center bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 px-3 py-1 rounded-full text-xs font-medium h-8">
+                                <span>Agents : {{ getSelectedFilterLabels('agents') }}</span>
+                                <button class="ml-1.5 flex items-center" (click)="removeSpecificFilter('agents')">
+                                    <mat-icon class="icon-size-3.5" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                                </button>
+                            </div>
+                        }
+
+                        @if (filters.anomalie) {
+                            <div class="flex items-center bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 px-3 py-1 rounded-full text-xs font-medium h-8">
+                                <span>Agents : {{ getSelectedFilterLabels('anomalie') }}</span>
+                                <button class="ml-1.5 flex items-center" (click)="removeSpecificFilter('anomalie')">
+                                    <mat-icon class="icon-size-3.5" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                                </button>
+                            </div>
+                        }
+
+                        @if (filters.startDate != null) {
+                            <div class="flex items-center bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 px-3 py-1 rounded-full text-xs font-medium h-8">
+                                <span>Période : {{ (filters.startDate | date:'dd/MM/yyyy':'':'en-US' ) + '-' + (filters.endDate | date:'dd/MM/yyyy':'':'en-US' ) }}</span>
+                                <button class="ml-1.5 flex items-center" (click)="removeSpecificFilter('range')">
+                                    <mat-icon class="icon-size-3.5" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <mat-menu #filterMenu="matMenu" class="filter-panel-menu !max-w-none">
+                    <div class="w-72 flex flex-col" (click)="$event.stopPropagation()">
+
+                        <div class="px-4 pt-4 pb-2">
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-hint">Critères de recherche</h3>
+                        </div>
+
+                        <div class="px-4 py-2 max-h-80 overflow-y-auto flex flex-col gap-4 custom-scrollbar">
+                            <mat-form-field class="w-full" [appearance]="'outline'">
+                                <mat-label>Mot clé</mat-label>
+                                <input matInput [(ngModel)]="filters.key" placeholder="Mot clé">
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                                <mat-label>Chambres</mat-label>
+                                <mat-select [(ngModel)]="filters.rooms" multiple>
+                                    @for (s of rooms; track s.code) {
+                                        <mat-option [value]="s.id">{{ s.name }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                                <mat-label>Agents</mat-label>
+                                <mat-select [(ngModel)]="filters.agents" multiple>
+                                    @for (s of agents; track s) {
+                                        <mat-option [value]="s.id">{{ s?.lastName + ' ' + s?.firstName }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                                <mat-label>Période</mat-label>
+                                <mat-date-range-input [rangePicker]="picker">
+                                    <input matStartDate [(ngModel)]="filters.startDate" placeholder="Début">
+                                    <input matEndDate [(ngModel)]="filters.endDate" placeholder="Fin">
+                                </mat-date-range-input>
+                                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                                <mat-date-range-picker #picker></mat-date-range-picker>
+                            </mat-form-field>
+
+                            <mat-checkbox
+                                [color]="'primary'"
+                                [checked]="filters.anomalie"
+                            (change)="filters.anomalie = !filters.anomalie">
+                                Anomalies uniquement
+                            </mat-checkbox>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 border-t border-gray-100 bg-gray-50 dark:bg-transparent">
+                            <button class="text-red-500" mat-button (click)="resetFilters(filterMenuTrigger)">
+                                Réinitialiser
+                            </button>
+                            <button mat-flat-button color="primary" (click)="applyFilters(filterMenuTrigger)" class="rounded-md">
+                                Appliquer
+                            </button>
+                        </div>
+                    </div>
+                </mat-menu>
+
+            </div>
+
+            <div class="w-full bg-primary-50 dark:bg-transparent border rounded-xl overflow-hidden shadow-sm">
+                <div class="overflow-x-auto">
+                    <table mat-table [dataSource]="dataSource" class="min-w-full">
+
+                        <ng-container matColumnDef="room">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 15%"> Chambre </th>
+                            <td mat-cell *matCellDef="let row">
+                                <div class="flex flex-col leading-tight items-center justify-center w-full">
+                                    <span class="font-semibold" [innerHTML]="row?.room?.code | highlight:filters.key"></span>
+                                    <span class="text-xs text-hint" [innerHTML]="row?.room?.roomType?.type | highlight:filters.key"></span>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="agent">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 15%"> Agent </th>
+                            <td mat-cell *matCellDef="let row">
+                                <div class="flex items-center justify-center w-full">
+                                    <span class="" [innerHTML]="(row?.agent?.firstName + ' ' + row?.agent?.lastName) | highlight:filters.key"></span>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="date">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 15%"> Date </th>
+                            <td mat-cell *matCellDef="let row">
+                                <div class="flex flex-col leading-tight items-center justify-center w-full">
+                                    <span class="font-medium">{{ row?.startAt | date:'dd MMM yyyy' }}</span>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="Heure">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 18%"> Horaires </th>
+                            <td mat-cell *matCellDef="let row">
+                                <div class="flex items-center justify-center space-x-2 w-full font-medium text-secondary">
+                                    <span class="text-gray-900 dark:text-gray-100">{{ row?.startAt | date:'HH:mm' }}</span>
+                                    <mat-icon class="icon-size-4 opacity-50" [svgIcon]="'heroicons_outline:arrow-long-right'"></mat-icon>
+                                    <span class="text-gray-900 dark:text-gray-100">{{ row?.endAt | date:'HH:mm' }}</span>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="anomalie">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 35%">anomalie </th>
+                            <td mat-cell *matCellDef="let row">
+                                <div class="flex flex-col leading-tight items-center justify-center w-full">
+                                    <p class="leading-relaxed line-clamp-2 hover:line-clamp-none transition-all duration-300"
+                                       [innerHTML]="row?.comment | highlight:filters.key"></p>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="action">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 2%">  </th>
+                            <td mat-cell *matCellDef="let row">
+                                <button mat-icon-button [matMenuTriggerFor]="menuAction">
+                                    <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
+                                </button>
+                                <mat-menu #menuAction="matMenu" >
+                                    <button mat-menu-item (click)="raiseUpdateHistory(row)" [disableIfNoPermission]="[APP_PERMISSIONS.HOUSE_KEEPING_HISTORY_UPDATE]">
+                                        <mat-icon svgIcon="edit" ></mat-icon>
+                                        <span>Modifier</span>
+                                    </button>
+                                    <button mat-menu-item class="text-red-800 dark:text-red-50" (click)="deleteHistory(row)" [disableIfNoPermission]="[APP_PERMISSIONS.HOUSE_KEEPING_HISTORY_DELETE]">
+                                        <mat-icon class="text-red-800 dark:text-red-50" svgIcon="mat_solid:delete_forever" ></mat-icon>
+                                        <span class="font-semibold">Supprimer</span>
+                                    </button>
+                                </mat-menu>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns" class="h-12"></tr>
+                        <tr mat-row *matRowDef="let element; columns: displayedColumns;"
+                            class="hover:bg-gray-50 dark:hover:bg-black/10 cursor-default transition-colors duration-150"></tr>
+
+                        <tr class="mat-row" *matNoDataRow>
+                            <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+                                <div class="flex flex-col items-center justify-center p-12 italic text-secondary">
+                                    <mat-icon class="icon-size-16 mb-4 opacity-20" [svgIcon]="'heroicons_outline:clipboard-document-list'"></mat-icon>
+                                    <span class="text-lg">
+                    {{ isLoading ? 'Chargement des données...' : 'Aucune donnée trouvée.' }}
+                </span>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+            <mat-paginator
+                [ngClass]="{ 'pointer-events-none': isLoading }"
+                showFirstLastButtons="true"
+                [length]="totalRows"
+                [pageIndex]="currentPage"
+                [pageSize]="pageSize"
+                [pageSizeOptions]="pageSizeOptions"
+                (page)="pageChanged($event)"
+            ></mat-paginator>
+                </div>
+            </div>
+            </div>
+    </div>
+</div>

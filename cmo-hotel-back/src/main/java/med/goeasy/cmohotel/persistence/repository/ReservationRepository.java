@@ -26,4 +26,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, String
         AND d.status != 'CANCELLED'
     """)
     List<ReservedRoomResponseDto> findFutureReservedRooms(@Param("today") LocalDateTime today);
+
+    @Query("""
+        SELECT COUNT(r) > 0
+        FROM Reservation r JOIN r.details rd
+        WHERE r.room.id = :roomId 
+        AND rd.status = 'CONFIRMED'
+        AND :targetDate >= COALESCE(rd.checkin, rd.plannedStart)
+        AND :targetDate <= COALESCE(rd.checkout, rd.plannedEnd)
+    """)
+    boolean isRoomOccupiedAt(@Param("roomId") Long roomId, @Param("targetDate") LocalDateTime targetDate);
+
 }

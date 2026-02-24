@@ -13,6 +13,7 @@ import { ToastrService } from 'ngx-toastr';
 import { MatDatepicker, MatDatepickerInput, MatDatepickerToggle } from '@angular/material/datepicker';
 import { ApiReservationService } from '../../api.reservation.service';
 import { UtilsService } from '../../../../core/service/utils.service';
+import { NgIf } from '@angular/common';
 
 @Component({
     selector: 'accept-reservation',
@@ -29,6 +30,7 @@ import { UtilsService } from '../../../../core/service/utils.service';
         MatDatepicker,
         MatDatepickerInput,
         MatDatepickerToggle,
+        NgIf,
     ],
 })
 export class AcceptReservationModel implements OnInit {
@@ -55,7 +57,7 @@ export class AcceptReservationModel implements OnInit {
     ngOnInit(): void {
         this.form = this._formBuilder.group({
             date: [null, [Validators.required]],
-            time: ['12:00', [Validators.required]]
+            time: ['12:00', [Validators.required]],
         });
     }
 
@@ -66,18 +68,24 @@ export class AcceptReservationModel implements OnInit {
         const rawTime = this.form.get('time').value;
 
         // Conversion au format attendu par le backend : "16/02/2026 18:30"
-        const formattedDateTime = this._utilsService.convertToLocalDateTime(rawDate, rawTime);
+        const formattedDateTime = this._utilsService.convertToLocalDateTime(
+            rawDate,
+            rawTime
+        );
 
         this._apiReservationService
-            .acceptReservation(this.code,formattedDateTime)
+            .acceptReservation(this.code, formattedDateTime)
             .subscribe({
                 next: () => {
                     this._toast.success('Réservation acceptée');
                     this.matDialogRef.close({ reload: true });
                 },
                 error: (err) => {
-                    this._toast.error(err?.error?.description || 'Erreur lors de la validation');
-                }
+                    this._toast.error(
+                        err?.error?.description ||
+                            'Erreur lors de la validation'
+                    );
+                },
             });
     }
 }

@@ -13,17 +13,18 @@ import med.goeasy.cmohotel.persistence.entity.RoomPrice;
 import med.goeasy.cmohotel.persistence.entity.RoomType;
 import med.goeasy.cmohotel.persistence.entity.auth.AppUser;
 import med.goeasy.cmohotel.persistence.entity.auth.AppUserResource;
-import med.goeasy.cmohotel.persistence.repository.AppUserResourceRepository;
-import med.goeasy.cmohotel.persistence.repository.RoomPriceRepository;
-import med.goeasy.cmohotel.persistence.repository.RoomRepository;
-import med.goeasy.cmohotel.persistence.repository.RoomTypeRepository;
+import med.goeasy.cmohotel.persistence.repository.*;
 import med.goeasy.cmohotel.presentation.dto.room.*;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,6 +38,7 @@ public class RoomService {
     private final PavillonService pavillonService;
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
+    private final ReservationRepository reservationRepository;
 
     @Transactional
     public void create(Authentication authentication, RoomRequestDto dto) {
@@ -91,10 +93,23 @@ public class RoomService {
     }
 
     public List<RoomResponseDto> getGrantedRooms(Authentication authentication) {
-        AppUser connectedUser = (AppUser) authentication.getDetails();
+        AppUser user = (AppUser) authentication.getPrincipal();
+        Set<Room> rooms;
+        LocalDateTime now = LocalDateTime.now();
+        if (user.isAdmin())
+            rooms = new HashSet<>(roomRepository.getRooms(null,null));
+        else
+            rooms = resourceRepository.findGrantedRooms(user.getId());
+
         log.info("{} get granted rooms", authentication.getName());
-        return resourceRepository.findGrantedRooms(connectedUser.getId())
-                .stream().map(RoomResponseDto::mapToDto).toList();
+        //return rooms.stream().map(RoomResponseDto::mapToDto).toList();
+        return rooms.stream()
+                .map(room -> {
+                    // On appelle la requête pour chaque chambre
+                    boolean isReserved = reservationRepository.isRoomOccupiedAt(room.getId(), now);
+                    return RoomResponseDto.mapToDtoWithReservationStatus(room, isReserved);
+                })
+                .toList();
     }
 
     public RoomResponseDto findById(Authentication authentication,Long id) {
@@ -261,7 +276,7 @@ public class RoomService {
     /// /////////////////////////////////////////////////////////////////////////////
 
     protected Room getRoomById(Long id){
-        return roomRepository.findById(id)
+        return roomRepository.findRoomById(id)
                 .orElseThrow(()-> new BadRequestException("Chambre n'existe pas"));
     }
 

@@ -32,6 +32,7 @@ public interface HousekeepingHistoryRepository extends JpaRepository<Housekeepin
                AND (:roomTypes IS NULL OR t.id IN :roomTypes)
                AND (:rooms IS NULL OR r.id IN :rooms)
                AND (:agents IS NULL OR a.id IN :agents)
+               AND (:anomalie IS FALSE OR (hk.comment IS NOT NULL AND TRIM(hk.comment) <> ''))
                AND ( :range IS FALSE OR (hk.startAt <= :end AND hk.endAt >= :start))
         ORDER BY hk.startAt DESC
         """)
@@ -40,6 +41,7 @@ public interface HousekeepingHistoryRepository extends JpaRepository<Housekeepin
             @Param("roomTypes") List<Long> RoomTypes,
             @Param("rooms") List<Long> rooms,
             @Param("agents") List<Long> agents,
+            @Param("anomalie") boolean anomalie,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end,
             @Param("range") boolean isRange,

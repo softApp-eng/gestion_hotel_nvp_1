@@ -17,6 +17,15 @@ export class ApiHousekeepingService {
     {
     }
 
+
+    toggleRoomAvailability(id): Observable<any>{
+        let params = new HttpParams().set('id', id);
+        return this._httpClient.put(`${this.API_URL}/housekeeping/room/availability`, {}, { params });
+    }
+
+    updateClean(payload): Observable<any>{
+        return this._httpClient.put(`${this.API_URL}/housekeeping/room/clean`, payload);
+    }
     listAllAgent(): Observable<any>{
         return this._httpClient.get(`${this.API_URL}/agents/all`);
     }
@@ -35,6 +44,37 @@ export class ApiHousekeepingService {
     deleteAgent(id): Observable<any>{
         let params = new HttpParams().set('id', id);
         return this._httpClient.delete(`${this.API_URL}/agents/delete`, { params });
+    }
+
+    search(key='',rooms=[],agents=[],start = '',end = '',anomalie=false, page=0,size=20): Observable<any>{
+        let params = new HttpParams()
+            .set('key', key)
+            .set('start', start)
+            .set('end', end)
+            .set('page', page)
+            .set('size', size)
+            .set('anomalie', anomalie);
+        if (rooms && rooms.length > 0) {
+            rooms.forEach(s => {
+                params = params.append('rooms', s);
+            });
+        }
+
+        if (agents && agents.length > 0) {
+            agents.forEach(s => {
+                params = params.append('agents', s);
+            });
+        }
+        return this._httpClient.get(`${this.API_URL}/history/search`, { params });
+    }
+
+    deleteHistory(id): Observable<any>{
+        let params = new HttpParams().set('id', id);
+        return this._httpClient.delete(`${this.API_URL}/housekeeping/history/delete`, { params });
+    }
+
+    updateHistory(id,payload): Observable<any>{
+        return this._httpClient.put(`${this.API_URL}/housekeeping/history/update?id=${id}`, payload);
     }
 
 }

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface RoomRepository extends JpaRepository<Room, Long> {
     boolean existsByCode(String code);
@@ -27,4 +28,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             GROUP BY r.roomType.type
     """)
     List<Object[]> countRoomsByTypeByPavillonId(@Param("pavillonId") Long pavillonId);
+
+    @Query("FROM Room r where r.archived is false and r.id = ?1")
+    Optional<Room> findRoomById(Long roomId);
 }

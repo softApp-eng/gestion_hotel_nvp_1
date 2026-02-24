@@ -36,6 +36,7 @@ export const APP_PERMISSIONS = {
     ROOM_CREATE:'rooms:room:create',
     ROOM_UPDATE:'rooms:room:update',
     ROOM_LIST:'rooms:room:list',
+    ROOM_GRANTED:'rooms:room:granted',
     ROOM_SELECT_ONE:'rooms:room:one',
 
     // ROOM TYPES
@@ -65,5 +66,11 @@ export const APP_PERMISSIONS = {
     HOUSE_KEEPING_AGENT_UPDATE:'housekeepings:agent:update',
     HOUSE_KEEPING_AGENT_LIST:'housekeepings:agent:list',
     HOUSE_KEEPING_AGENT_DELETE:'housekeepings:agent:delete',
+
+    HOUSE_KEEPING_ROOM_DISPONIBILITY:'housekeepings:room:disponibility',
+    HOUSE_KEEPING_ROOM_CLEAN_STATUS:'housekeepings:room:clean:status',
+    HOUSE_KEEPING_HISTORY_SEARCH:'housekeepings:history:search',
+    HOUSE_KEEPING_HISTORY_UPDATE:'housekeepings:history:update',
+    HOUSE_KEEPING_HISTORY_DELETE:'housekeepings:history:delete',
 
 }

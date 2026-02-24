@@ -130,6 +130,13 @@ public class WebSecurityConfig {
 						.requestMatchers(POST,"/v1/house-keeping/agents/create").hasAuthority(EPermissions.HOUSE_KEEPING_AGENT_CREATE.getAuthority())
 						.requestMatchers(PUT,"/v1/house-keeping/agents/update").hasAuthority(EPermissions.HOUSE_KEEPING_AGENT_UPDATE.getAuthority())
 						.requestMatchers(DELETE,"/v1/house-keeping/agents/delete").hasAuthority(EPermissions.HOUSE_KEEPING_AGENT_DELETE.getAuthority())
+						.requestMatchers(GET,"/v1/house-keeping/history/search").hasAuthority(EPermissions.HOUSE_KEEPING_HISTORY_SEARCH.getAuthority())
+						.requestMatchers(PUT,"/v1/house-keeping/housekeeping/room/availability").hasAuthority(EPermissions.HOUSE_KEEPING_ROOM_DISPONIBILITY.getAuthority())
+						.requestMatchers(PUT,"/v1/house-keeping/housekeeping/room/clean").hasAuthority(EPermissions.HOUSE_KEEPING_ROOM_CLEAN_STATUS.getAuthority())
+						.requestMatchers(PUT,"/v1/house-keeping/housekeeping/history/update").hasAuthority(EPermissions.HOUSE_KEEPING_HISTORY_UPDATE.getAuthority())
+						.requestMatchers(DELETE,"/v1/house-keeping/housekeeping/history/delete").hasAuthority(EPermissions.HOUSE_KEEPING_HISTORY_DELETE.getAuthority())
+
+
 						//.anyRequest().authenticated()
 						.anyRequest().hasAuthority(EPermissions.DEFAULT.getAuthority())
 				)
