@@ -172,6 +172,12 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type: 'basic',
                 icon: 'mat_outline:history',
                 link: '/admin/audit/logs',
+            },{
+                id: 'settings.plateforme',
+                title: 'Paramétres',
+                type: 'basic',
+                icon: 'mat_outline:settings',
+                link: '/admin/configurations/manage',
             }
         ],
     },

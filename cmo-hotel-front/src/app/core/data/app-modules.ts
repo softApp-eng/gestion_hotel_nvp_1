@@ -8,6 +8,7 @@ export const APP_MODULES = {
     AUDIT:'audits',
     HOUSEKEEPING:'housekeepings',
     RESERVATION:'reservations',
+    CONFIGURATION:'configurations',
 
 }
 

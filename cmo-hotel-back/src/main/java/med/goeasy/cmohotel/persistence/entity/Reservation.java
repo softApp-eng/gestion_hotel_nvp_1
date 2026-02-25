@@ -33,7 +33,7 @@ public class Reservation {
     @ManyToOne
     private ReservationDetails details;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private Person person;
 
     @Column(nullable = false)

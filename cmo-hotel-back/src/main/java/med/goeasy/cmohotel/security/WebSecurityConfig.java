@@ -136,6 +136,10 @@ public class WebSecurityConfig {
 						.requestMatchers(PUT,"/v1/house-keeping/housekeeping/history/update").hasAuthority(EPermissions.HOUSE_KEEPING_HISTORY_UPDATE.getAuthority())
 						.requestMatchers(DELETE,"/v1/house-keeping/housekeeping/history/delete").hasAuthority(EPermissions.HOUSE_KEEPING_HISTORY_DELETE.getAuthority())
 
+						//Configuration
+						.requestMatchers(DELETE,"/v1/administration/room/clean/cron").hasAuthority(EPermissions.ADMIN_CONFIG_ROOM_CLEAN_PLANIFICATION.getAuthority())
+						.requestMatchers(DELETE,"/v1/administration/load-config").hasAuthority(EPermissions.ADMIN_CONFIG_LOAD.getAuthority())
+
 
 						//.anyRequest().authenticated()
 						.anyRequest().hasAuthority(EPermissions.DEFAULT.getAuthority())

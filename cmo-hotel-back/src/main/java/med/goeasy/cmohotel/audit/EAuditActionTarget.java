@@ -19,6 +19,8 @@ public enum EAuditActionTarget{
     USER("USER","Utilisateur"),
     AUTH("AUTH","Authentication"),
     HOUSEKEEPING("HOUSEKEEPING","House keeping"),
+    JOB_SYSTEM("JOB_SYSTEM","Tâches de système"),
+    CONFIGURATION("CONFIGURATION","Configuration"),
     ;
 
     private final String code;

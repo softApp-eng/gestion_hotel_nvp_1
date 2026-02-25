@@ -66,6 +66,12 @@ export const appRoutes: Route[] = [
                 data: {
                     module:[APP_MODULES.AUDIT]
                 },
+            },{
+                path: 'configurations',
+                loadChildren: () => import('app/modules/configuration/configuration.routes'),
+                data: {
+                    module:[APP_MODULES.CONFIGURATION]
+                },
             }
         ]
     },

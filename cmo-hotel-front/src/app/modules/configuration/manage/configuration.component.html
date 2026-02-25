@@ -1,0 +1,76 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+        <div class="min-w-0 flex-1">
+            <!-- Breadcrumbs -->
+            <div class="flex flex-wrap items-center font-medium">
+                <div>
+                    <a class="whitespace-nowrap text-primary-500">Configuration</a>
+                </div>
+            </div>
+            <!-- Title -->
+            <div class="mt-2">
+                <div class="flex items-center">
+                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'mat_solid:settings'"></mat-icon>
+                    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+                        Paramétres de la plateforme
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-6">
+        <div class="flex min-w-0 flex-auto flex-col">
+
+            <div class="flex-auto p-6 sm:p-10">
+                <div class="w-full">
+
+                    <div class="bg-card shadow rounded-2xl overflow-hidden border">
+                        <div class="flex flex-col p-8">
+                            <div class="flex items-center">
+                                <mat-icon class="icon-size-6 text-primary mr-3" [svgIcon]="'heroicons_outline:clock'"></mat-icon>
+                                <h3 class="text-xl font-bold tracking-tight">Nettoyage Automatique</h3>
+                            </div>
+                            <p class="text-secondary mt-1">Définissez l'heure quotidienne à laquelle le système doit réinitialiser l'état de ménage des chambres.</p>
+
+                            <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+                                <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript">
+                                    <mat-label>Heure d'exécution</mat-label>
+                                    <mat-icon matPrefix class="icon-size-5" [svgIcon]="'heroicons_outline:calendar-days'"></mat-icon>
+                                    <input matInput type="time" [(ngModel)]="scheduledTime">
+                                </mat-form-field>
+
+                                <div class="flex items-center space-x-4">
+                                    <button mat-flat-button
+                                            [color]="'primary'"
+                                            class="h-12 px-8 rounded-lg"
+                                            (click)="saveCronSettings()"
+                                            [disabled]="isLoading">
+                                        Enregistrer
+                                    </button>
+
+                                    @if (cronSaved) {
+                                        <div class="flex items-center text-green-600 font-medium whitespace-nowrap animate-fade-in">
+                                            <mat-icon class="icon-size-5 mr-1 text-green-600" [svgIcon]="'heroicons_solid:check-circle'"></mat-icon>
+                                            Enregistré
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="mt-6 flex items-center p-4 bg-primary-50 dark:bg-primary-900/10 rounded-xl border border-primary-100">
+                                <mat-icon class="icon-size-5 text-primary-600 mr-2" [svgIcon]="'heroicons_solid:information-circle'"></mat-icon>
+                                <span class="text-sm text-primary-700 dark:text-primary-300 font-medium">
+                            Prochaine exécution prévue à : <strong>{{ scheduledTime || '--:--' }}</strong> (Quotidien)
+                        </span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

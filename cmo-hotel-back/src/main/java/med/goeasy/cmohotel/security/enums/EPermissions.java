@@ -25,6 +25,10 @@ public enum EPermissions {
     ADMIN_USERS_RESOURCES_MANAGE(USERS, "user:resources:manage", "Gérer les ressources des utilisateurs", MANAGE,false,""),
     ADMIN_AUDIT_ACTIVITY_LOGS(AUDIT, "logs:filter", "filtrer les activités des utilisateurs", MANAGE,false,""),
 
+    // CONFIGURATION,
+    ADMIN_CONFIG_LOAD(CONFIGURATION, "config:load", "Charger la configuration actuelle", READ,false,""),
+    ADMIN_CONFIG_ROOM_CLEAN_PLANIFICATION(CONFIGURATION, "room:clean:planif", "Planifier l'heure de auto ménage des chambres", MANAGE,false,""),
+
     //ROLES
     ADMIN_ROLES_LIST(ROLES, "role:list", "list roles", READ,false,""),
     ADMIN_ROLES_PERMISSIONS_LIST(ROLES, "permission:list", "list les permissions", READ,false,""),

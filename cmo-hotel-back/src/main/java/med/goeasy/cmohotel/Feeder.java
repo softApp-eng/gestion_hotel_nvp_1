@@ -3,10 +3,7 @@ package med.goeasy.cmohotel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import med.goeasy.cmohotel.exception.BadRequestException;
-import med.goeasy.cmohotel.persistence.entity.Person;
-import med.goeasy.cmohotel.persistence.entity.Reservation;
-import med.goeasy.cmohotel.persistence.entity.ReservationDetails;
-import med.goeasy.cmohotel.persistence.entity.Room;
+import med.goeasy.cmohotel.persistence.entity.*;
 import med.goeasy.cmohotel.persistence.entity.auth.AppPermission;
 import med.goeasy.cmohotel.persistence.entity.auth.AppRole;
 import med.goeasy.cmohotel.persistence.entity.auth.AppUser;
@@ -25,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,6 +41,15 @@ public class Feeder {
     private final PersonRepository personRepository;
     private final RoomRepository roomRepository;
     private final AppUserResourceRepository appUserResourceRepository;
+    private final AppConfigurationRepository appConfigurationRepository;
+
+    private void initInitialConfiguration(){
+        AppConfiguration appConfiguration = new AppConfiguration();
+        appConfiguration.setAutoCleaningRoomTimeCronExpression("0 1 1 * * ?"); // at 01:01
+        appConfiguration.setCheckin(LocalTime.of(12,0));
+        appConfigurationRepository.save(appConfiguration);
+        log.info("Init initial configuration");
+    }
 
     @Transactional
     public void grantPermissionToRole(EPermissions permission,ERoleSystem role){
@@ -252,6 +259,7 @@ public class Feeder {
                         new ClassPathResource("data.sql")
                 );
         resourceDatabasePopulator.execute(dataSource);
+        initInitialConfiguration();
         log.info("--> data.sql file loaded");
         roles();
         seedMassiveReservations(100);

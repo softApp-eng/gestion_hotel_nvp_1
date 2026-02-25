@@ -14,6 +14,7 @@ public enum EAuditActionOperation{
     DELETE("DELETE","Suppression"),
     SELECT("SELECT","Selection"),
     LOGIN("LOGIN","Authentication"),
+    SYSTEM("LOGIN","Authentication"),
     ;
 
     private final String code;

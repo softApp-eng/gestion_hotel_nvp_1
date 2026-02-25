@@ -18,6 +18,7 @@ public enum EPermissionsModule {
     ROOM("rooms","Gestion des chambres"),
     RESERVATION("reservations","Gestion des réservation"),
     HOUSE_KEEPING("housekeepings","Gestion des ménage"),
+    CONFIGURATION("configurations","Configuration de la plateforme"),
     ;
 
     private final String name;

@@ -3,6 +3,7 @@ package med.goeasy.cmohotel.persistence.repository;
 import med.goeasy.cmohotel.persistence.entity.Room;
 import med.goeasy.cmohotel.persistence.entity.RoomType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -31,4 +32,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     @Query("FROM Room r where r.archived is false and r.id = ?1")
     Optional<Room> findRoomById(Long roomId);
+
+    @Modifying
+    @Query("update Room r set r.clean = false")
+    void makeAllRoomsDirty();
 }
