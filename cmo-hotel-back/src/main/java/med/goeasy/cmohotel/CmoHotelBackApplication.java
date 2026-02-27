@@ -42,7 +42,7 @@ public class CmoHotelBackApplication {
             //feeder.grantPermissionToRole(EPermissions.ADMIN_CONFIG_LOAD,ERoleSystem.ADMIN);
             //feeder.grantPermissionToRole(EPermissions.ROOM_LIST_GRANTED,ERoleSystem.GOVERNANCE);
             //feeder.grantPermissionToRole(EPermissions.ROOM_TYPE_DELETE,ERoleSystem.ADMIN);
-            feeder.resetRolePermissions(ERoleSystem.ADMIN);
+            //feeder.resetRolePermissions(ERoleSystem.ADMIN);
             //Feed database0
             if (shouldFeed)
                 feeder.feed();
