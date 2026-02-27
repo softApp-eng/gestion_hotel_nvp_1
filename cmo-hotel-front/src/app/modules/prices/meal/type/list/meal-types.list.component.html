@@ -1,0 +1,138 @@
+<div class="flex min-w-0 flex-auto flex-col">
+
+    <!-- HEADER -->
+    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+        <div class="min-w-0 flex-1">
+            <!-- Breadcrumbs -->
+            <div class="flex flex-wrap items-center font-medium">
+                <div>
+                    <a class="whitespace-nowrap text-primary-500">Paramétres</a>
+                </div>
+            </div>
+            <!-- Title -->
+            <div class="mt-2">
+                <div class="flex items-center">
+                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'mat_solid:restaurant'"></mat-icon>
+                    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
+                        Types de repas
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="flex-auto p-4 sm:p-6">
+        <div class="w-full bg-card border rounded-2xl p-8 shadow">
+
+            <div class="flex items-end justify-end">
+                <button class="ml-4" mat-flat-button [color]="'primary'" (click)="raiseSaveType()" >
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-2 mr-1">Ajouter</span>
+                </button>
+            </div>
+
+
+            <table mat-table [dataSource]="dataSource" class="w-full">
+
+                <!-- TYPE -->
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef>TYPE</th>
+                    <td mat-cell *matCellDef="let row">
+                        <span class="font-semibold">{{ row.mealType.name }}</span>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="description">
+                    <th mat-header-cell *matHeaderCellDef>Description</th>
+                    <td mat-cell *matCellDef="let row">
+                        <span class="font-semibold">{{ row.description }}</span>
+                    </td>
+                </ng-container>
+
+                <!-- PRIX -->
+                <ng-container matColumnDef="prices">
+                    <th mat-header-cell *matHeaderCellDef class="w-[35%]">PRIX (DH)</th>
+
+                    <td mat-cell *matCellDef="let row">
+                        <div class="flex flex-col py-2">
+                            @if (row.showAllPrices ? row.prices : (row.prices | slice:0:3); as displayList) {
+                                <ul class="space-y-1">
+                                    @for (p of displayList; track p.id) {
+                                        <li class="list-disc list-inside text-secondary">
+                                            {{p?.category?.name + ' : ' + p?.price}}
+                                        </li>
+                                    }
+                                </ul>
+                            }
+
+                            @if (row?.prices?.length > 3) {
+                                <button
+                                    mat-button
+                                    color="primary"
+                                    class="mt-1 h-8 min-h-8 px-2 text-xs w-fit"
+                                    (click)="row.showAllPrices = !row.showAllPrices">
+                                    <div class="flex items-center">
+                                        <mat-icon class="icon-size-4 mr-1"
+                                                  [svgIcon]="row.showAllPrices ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'">
+                                        </mat-icon>
+                                        <span>
+                                                {{ row.showAllPrices ? 'Voir moins' : 'Voir ' + (row.prices.length - 3) + ' de plus' }}
+                                            </span>
+                                    </div>
+                                </button>
+                            }
+                        </div>
+                    </td>
+                </ng-container>
+
+
+                <ng-container matColumnDef="action">
+                    <th mat-header-cell *matHeaderCellDef class="w-[5%]"></th>
+
+                    <td mat-cell *matCellDef="let row" class="text-right">
+
+                        <button mat-icon-button
+                                [matMenuTriggerFor]="menuAction"
+                                class="hover:bg-gray-100 rounded-full">
+                            <mat-icon class="icon-size-5 text-gray-600"
+                                      svgIcon="heroicons_mini:ellipsis-vertical">
+                            </mat-icon>
+                        </button>
+
+                        <mat-menu #menuAction="matMenu" class="min-w-[220px]">
+
+                            <button mat-menu-item (click)="raiseSaveType(row)" >
+                                <mat-icon svgIcon="edit" ></mat-icon>
+                                <span>Modifier</span>
+                            </button>
+                            <button mat-menu-item (click)="raisePricesManagement(row)" >
+                                <mat-icon svgIcon="edit" ></mat-icon>
+                                <span>Gérer prix</span>
+                            </button>
+                            <button mat-menu-item class="text-red-800 dark:text-red-50" (click)="deleteType(row)">
+                                <mat-icon class="text-red-800 dark:text-red-50" svgIcon="mat_solid:delete_forever" ></mat-icon>
+                                <span class="font-semibold">Supprimer</span>
+                            </button>
+
+                        </mat-menu>
+
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+                <tr *matNoDataRow>
+                    <td colspan="3" class="text-center p-8">
+                        Aucun type trouvé
+                    </td>
+                </tr>
+
+            </table>
+
+
+
+        </div>
+    </div>
+</div>

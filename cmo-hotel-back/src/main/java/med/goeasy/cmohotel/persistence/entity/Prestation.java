@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 @Builder
 @EntityListeners(AuditingEntityListener.class)
 @Entity
-//@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Prestation {
 
     @Id
@@ -29,7 +29,7 @@ public class Prestation {
     private String id;
 
     @ManyToOne(optional = false)
-    //@JsonIgnoreProperties({"prestations"})
+    @JsonIgnoreProperties({"prestations"})
     private Person person;
 
     @Column(nullable = false)

@@ -21,6 +21,7 @@ public enum EAuditActionTarget{
     HOUSEKEEPING("HOUSEKEEPING","House keeping"),
     JOB_SYSTEM("JOB_SYSTEM","Tâches de système"),
     CONFIGURATION("CONFIGURATION","Configuration"),
+    MEAL("MEAL","Repas"),
     ;
 
     private final String code;

@@ -39,9 +39,20 @@
                             <div class="flex flex-col p-6">
                                 <div class="flex items-center justify-between">
                                     <!-- Course category -->
-                                        <div class="rounded-full px-3 py-0.5 text-sm font-semibold bg-blue-100 text-blue-800 dark:bg-blue-500 dark:text-blue-50">
-                                            {{p.starsNumber + ' ETOILES'}}
-                                        </div>
+                                    <div class="flex items-center space-x-0.5" [matTooltip]="p.starsNumber + ' ETOILES'">
+                                        @for (star of [].constructor(p.starsNumber); track $index) {
+                                            <mat-icon
+                                                class="icon-size-5 text-amber-400"
+                                                [svgIcon]="'heroicons_solid:star'">
+                                            </mat-icon>
+                                        }
+                                        @for (emptyStar of [].constructor(5 - p.starsNumber); track $index) {
+                                            <mat-icon
+                                                class="icon-size-5 text-gray-300 dark:text-gray-600"
+                                                [svgIcon]="'heroicons_solid:star'">
+                                            </mat-icon>
+                                        }
+                                    </div>
                                     <!-- Completed at least once -->
                                     <div class="flex items-center">
                                         <button mat-icon-button [matMenuTriggerFor]="menuAction">

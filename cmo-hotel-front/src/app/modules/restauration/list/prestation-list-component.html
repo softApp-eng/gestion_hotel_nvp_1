@@ -1,0 +1,178 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-hidden">
+    <mat-drawer-container class="bg-card h-full flex-auto dark:bg-transparent">
+        <!-- Drawer -->
+        <mat-drawer
+            class="w-full dark:bg-gray-900 sm:w-100"
+            [mode]="drawerMode"
+            [opened]="false"
+            [position]="'end'"
+            #matDrawer
+        >
+            <div class="flex flex-auto flex-col p-6 md:p-8">
+                <!-- Close button -->
+                <div class="flex items-center justify-end">
+                    <a mat-icon-button (click)="closeDrawer()">
+                        <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+                    </a>
+                </div>
+
+
+                <div class="flex items-center mt-4">
+                    <mat-icon class="icon-size-6 mr-3" [svgIcon]="'heroicons_outline:clipboard-document'"></mat-icon>
+                    <div class="text-lg font-medium leading-6">
+                        Détails de la prestation
+                    </div>
+                </div>
+
+                <!-- Détails -->
+                <div class="mt-4 flex flex-col font-medium space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="text-secondary">Type de repas</div>
+                        <div>{{ selectedItem?.mealType }}</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="text-secondary">Personne</div>
+                        <div>{{ selectedItem?.person?.firstName }} {{ selectedItem?.person?.lastName }}</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="text-secondary">Quantité</div>
+                        <div>{{ selectedItem?.quantity }}</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="text-secondary">Prix unitaire</div>
+                        <div>{{ selectedItem?.price | number:'1.2-2' }} MAD</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="text-secondary">Prix total</div>
+                        <div>{{ selectedItem?.totalPrice | number:'1.2-2' }} MAD</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="text-secondary">Observation</div>
+                        <div>{{ selectedItem?.observation }}</div>
+                    </div>
+                </div>
+            </div>
+        </mat-drawer>
+
+        <!-- Main Content -->
+        <mat-drawer-content class="flex flex-col bg-gray-100 dark:bg-transparent">
+            <div class="flex flex-auto flex-col">
+                <!-- Header -->
+                <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
+                    <div class="min-w-0 flex-1">
+                        <div class="mt-2 flex items-center">
+                            <mat-icon class="icon-size-25 mr-4" [svgIcon]="'mat_solid:restaurant'"></mat-icon>
+                            <h2 class="text-3xl font-extrabold">Prestations</h2>
+                        </div>
+                    </div>
+                    <div class="flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                        <button mat-flat-button [color]="'primary'" [routerLink]="'./create'">
+                            <mat-icon class="icon-size-4" [svgIcon]="'heroicons_mini:plus'"></mat-icon>
+                            <span class="ml-2">Nouvelle</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-8 p-6 md:p-8">
+                    <div class="bg-card border flex flex-col overflow-hidden rounded-2xl shadow p-6">
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-4">
+                            <div class="flex-1 min-w-0">
+                                <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded w-full sm:max-w-xs">
+                                    <mat-icon class="icon-size-5" matPrefix [svgIcon]="'search'"></mat-icon>
+                                    <input matInput
+                                           #inputKey
+                                           matTooltip="Recherche : Repas ou Personne"
+                                           [autocomplete]="'off'"
+                                           (keyup.enter)="applyFilter(inputKey.value)"
+                                           placeholder="Chercher...">
+                                </mat-form-field>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table mat-table [dataSource]="dataSource" class="w-full">
+
+                                 <ng-container matColumnDef="mealType">
+                                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center">Repas</th>
+                                    <td mat-cell *matCellDef="let row" class="text-center">{{ row.mealType }}</td>
+                                </ng-container>
+
+                                 <ng-container matColumnDef="person">
+                                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center">Personne</th>
+                                    <td mat-cell *matCellDef="let row" class="text-center">{{ row.person.firstName }} {{ row.person.lastName }}</td>
+                                </ng-container>
+
+                                 <ng-container matColumnDef="quantity">
+                                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center">Quantité</th>
+                                    <td mat-cell *matCellDef="let row" class="text-center">{{ row.quantity }}</td>
+                                </ng-container>
+
+                                 <ng-container matColumnDef="price">
+                                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center">Prix</th>
+                                    <td mat-cell *matCellDef="let row" class="text-center">{{ row.price | number:'1.2-2' }} MAD</td>
+                                </ng-container>
+
+                                 <ng-container matColumnDef="totalPrice">
+                                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center">Total</th>
+                                    <td mat-cell *matCellDef="let row" class="text-center">{{ row.totalPrice | number:'1.2-2' }} MAD</td>
+                                </ng-container>
+
+                                 <ng-container matColumnDef="observation">
+                                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center">Observation</th>
+                                    <td mat-cell *matCellDef="let row" class="text-center">{{ row.observation }}</td>
+                                </ng-container>
+                                <ng-container matColumnDef="createdAt">
+                                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center">Date</th>
+                                    <td mat-cell *matCellDef="let row" class="text-center">{{ row.createdAt[2] | number:'2.0' }}/{{ row.createdAt[1] | number:'2.0' }}/{{ row.createdAt[0] }}
+                                    </td>
+                                </ng-container>
+                                <ng-container matColumnDef="action">
+                                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center"></th>
+                                    <td mat-cell *matCellDef="let row" class="text-center">
+                                        <!-- Info Drawer -->
+                                        <button mat-icon-button (click)="openDrawer(row)">
+                                            <mat-icon>info</mat-icon>
+                                        </button>
+
+                                        <!-- Menu actions -->
+                                        <button mat-icon-button [matMenuTriggerFor]="menuAction" class="hover:bg-gray-100 rounded-full">
+                                            <mat-icon class="icon-size-5 text-gray-600" svgIcon="heroicons_mini:ellipsis-vertical"></mat-icon>
+                                        </button>
+                                        <mat-menu #menuAction="matMenu" class="min-w-[220px]">
+                                            <button mat-menu-item (click)="raiseSavePrestation(row)">
+                                                <mat-icon svgIcon="edit"></mat-icon>
+                                                <span>Modifier</span>
+                                            </button>
+                                            <button mat-menu-item class="text-red-800 dark:text-red-50" (click)="deletePrestation(row)">
+                                                <mat-icon class="text-red-800 dark:text-red-50" svgIcon="mat_solid:delete_forever"></mat-icon>
+                                                <span class="font-semibold">Supprimer</span>
+                                            </button>
+                                        </mat-menu>
+                                    </td>
+                                </ng-container>
+
+                                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                                    [ngClass]="{ 'bg-gray-100': selectedItem?.id === row.id && matDrawer.opened }"></tr>
+
+                                <tr class="mat-row" *matNoDataRow>
+                                    <td class="mat-cell text-center p-8" [attr.colspan]="displayedColumns.length">
+                                        Aucune prestation trouvée
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Paginator -->
+                        <mat-paginator
+                            [length]="totalRows"
+                            [pageSize]="pageSize"
+                            [pageSizeOptions]="pageSizeOptions"
+                            (page)="pageChanged($event)"
+                            showFirstLastButtons>
+                        </mat-paginator>
+                    </div>
+                </div>
+            </div>
+        </mat-drawer-content>
+    </mat-drawer-container>
+</div>

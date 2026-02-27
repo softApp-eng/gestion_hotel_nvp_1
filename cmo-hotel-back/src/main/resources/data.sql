@@ -93,6 +93,29 @@ insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean
 
 SELECT setval('public."seq-room"', (SELECT MAX(id) FROM room));
 
+INSERT INTO meal_type (id,  meal_type, description) VALUES (1, 'PETIT_DEJEUNER', 'Repas servi avant midi.');
+INSERT INTO meal_type (id,  meal_type, description) VALUES (2, 'DEJEUNER', 'Repas servi à midi.');
+INSERT INTO meal_type (id,  meal_type, description) VALUES (3, 'DINER', 'Repas servi le soir.');
+SELECT setval('meal_type_seq', (SELECT MAX(id) FROM meal_type));
+
+
+INSERT INTO meal_price (id, meal_type_id, category, price) VALUES (1, 1, 'OFFICIERS_GENERAUX', 40);
+INSERT INTO meal_price (id, meal_type_id, category, price) VALUES (2, 1, 'OFFICIER_SUPERIEUR', 30);
+INSERT INTO meal_price (id, meal_type_id, category, price) VALUES (3, 1, 'CIVIL', 20);
+
+
+INSERT INTO meal_price (id, meal_type_id, category, price) VALUES (4, 2, 'OFFICIERS_GENERAUX', 80);
+INSERT INTO meal_price (id, meal_type_id, category, price) VALUES (5, 2, 'OFFICIER_SUPERIEUR', 60);
+INSERT INTO meal_price (id, meal_type_id, category, price) VALUES (6, 2, 'CIVIL', 50);
+
+
+
+INSERT INTO meal_price (id, meal_type_id, category, price) VALUES (7, 3, 'OFFICIERS_GENERAUX', 80);
+INSERT INTO meal_price (id, meal_type_id, category, price) VALUES (8, 3, 'OFFICIER_SUPERIEUR', 60);
+INSERT INTO meal_price (id, meal_type_id, category, price) VALUES (9, 3, 'CIVIL', 50);
+
+SELECT setval('meal_price_seq', (SELECT MAX(id) FROM meal_price));
+
 -- =========================================
 -- PERSON : 20 PRINCIPAUX + 40 FAMILLES
 -- UUID FIXES (valide PostgreSQL)

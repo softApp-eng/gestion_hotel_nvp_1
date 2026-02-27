@@ -137,9 +137,19 @@ public class WebSecurityConfig {
 						.requestMatchers(DELETE,"/v1/house-keeping/housekeeping/history/delete").hasAuthority(EPermissions.HOUSE_KEEPING_HISTORY_DELETE.getAuthority())
 
 						//Configuration
-						.requestMatchers(DELETE,"/v1/administration/room/clean/cron").hasAuthority(EPermissions.ADMIN_CONFIG_ROOM_CLEAN_PLANIFICATION.getAuthority())
-						.requestMatchers(DELETE,"/v1/administration/load-config").hasAuthority(EPermissions.ADMIN_CONFIG_LOAD.getAuthority())
+						.requestMatchers(POST,"/v1/administration/room/clean/cron").hasAuthority(EPermissions.ADMIN_CONFIG_ROOM_CLEAN_PLANIFICATION.getAuthority())
+						.requestMatchers(GET,"/v1/administration/load-config").hasAuthority(EPermissions.ADMIN_CONFIG_LOAD.getAuthority())
+						.requestMatchers(POST,"/v1/administration/checkout").hasAuthority(EPermissions.ADMIN_CONFIG_CHECKOUT.getAuthority())
 
+						// meals
+						.requestMatchers(GET,"/v1/meals/type/all").hasAuthority(EPermissions.MEAL_TYPES_LIST.getAuthority())
+						.requestMatchers(POST,"/v1/meals/type/create").hasAuthority(EPermissions.MEAL_TYPES_CREATE.getAuthority())
+						.requestMatchers(PUT,"/v1/meals/type/update").hasAuthority(EPermissions.MEAL_TYPES_UPDATE.getAuthority())
+
+						.requestMatchers(GET,"/v1/meals/price/byType","/v1/meals/price/one").hasAuthority(EPermissions.MEAL_PRICE_LIST.getAuthority())
+						.requestMatchers(POST,"/v1/meals/price/create").hasAuthority(EPermissions.MEAL_PRICE_CREATE.getAuthority())
+						.requestMatchers(PUT,"/v1/meals/price/update").hasAuthority(EPermissions.MEAL_PRICE_UPDATE.getAuthority())
+						.requestMatchers(DELETE,"/v1/meals/price/delete").hasAuthority(EPermissions.MEAL_PRICE_DELETE.getAuthority())
 
 						//.anyRequest().authenticated()
 						.anyRequest().hasAuthority(EPermissions.DEFAULT.getAuthority())

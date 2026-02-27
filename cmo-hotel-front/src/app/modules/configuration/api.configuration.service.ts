@@ -22,6 +22,11 @@ export class ApiConfigurationService
         return this._httpClient.post(`${this.API_URL}/room/clean/cron`, {}, { params });
     }
 
+    updateCheckout(time): Observable<any>{
+        let params = new HttpParams().set('time', time);
+        return this._httpClient.post(`${this.API_URL}/checkout`, {}, { params });
+    }
+
     loadCurrentConfigs(): Observable<any>{
         return this._httpClient.get(`${this.API_URL}/load-config`);
     }

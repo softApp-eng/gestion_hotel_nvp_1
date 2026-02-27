@@ -1,6 +1,5 @@
 package med.goeasy.cmohotel.persistence.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import med.goeasy.cmohotel.persistence.entity.enums.EGradeCategory;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import java.math.BigDecimal;
 
 @Entity
@@ -34,6 +32,6 @@ public class MealPrice {
     @Enumerated(EnumType.STRING)
     private EGradeCategory category;
 
-    private Double price;
+    private BigDecimal price;
 
 }

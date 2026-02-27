@@ -46,7 +46,7 @@ public class Feeder {
     private void initInitialConfiguration(){
         AppConfiguration appConfiguration = new AppConfiguration();
         appConfiguration.setAutoCleaningRoomTimeCronExpression("0 1 1 * * ?"); // at 01:01
-        appConfiguration.setCheckin(LocalTime.of(12,0));
+        appConfiguration.setCheckoutTime(LocalTime.of(12,0));
         appConfigurationRepository.save(appConfiguration);
         log.info("Init initial configuration");
     }

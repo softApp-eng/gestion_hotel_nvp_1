@@ -9,4 +9,8 @@ export default [
             module:[APP_MODULES.ROOM]
         },
     },
+    {
+        path: 'meals',
+        loadChildren: () => import('./meal/meal-prices.routes')
+    }
 ] as Routes;

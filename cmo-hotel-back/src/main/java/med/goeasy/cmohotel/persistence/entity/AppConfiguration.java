@@ -1,5 +1,6 @@
 package med.goeasy.cmohotel.persistence.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +22,9 @@ public class AppConfiguration {
     private Long id;
 
     private String autoCleaningRoomTimeCronExpression;
-    private LocalTime checkin;
+
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime checkoutTime;
 
 
 }

@@ -64,6 +64,17 @@ public class PersonService {
         );
     }
 
+    public PageDto<PersonResponseDto> searchWithReservation(Authentication authentication,String key,Integer page,Integer size) {
+        Page<Person> persons = personRepository.searchWithReservation(key.toUpperCase(), PageRequest.of(page, size));
+        List<PersonResponseDto> list = persons.stream().map(PersonResponseDto::mapToDto).toList();
+        log.info("{} get persons", authentication.getName());
+        return PageDto.of(
+                list,
+                persons.getTotalElements(),
+                persons.getTotalPages()
+        );
+    }
+
     @Transactional
     public PersonResponseDto update(Authentication authentication, PersonRequestDto dto,String personId) {
         Person personDb = getPersonById(personId);

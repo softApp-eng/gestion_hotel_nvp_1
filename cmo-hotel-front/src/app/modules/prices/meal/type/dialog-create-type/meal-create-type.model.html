@@ -1,0 +1,71 @@
+<div class="-m-6 flex flex-col max-h-[95vh] md:w-300 md:min-w-300 overflow-hidden">
+
+    <!-- HEADER -->
+    <mat-toolbar class="mat-accent h-14 min-h-14 px-2 m-0 flex-none">
+        <div class="flex items-center w-full justify-between">
+            <div class="flex items-center">
+                <mat-icon class="icon-size-5 mr-3 text-white" svgIcon="heroicons_solid:filter"></mat-icon>
+                <span class="text-xl text-white">{{ title }}</span>
+            </div>
+
+            <button mat-icon-button (click)="matDialogRef.close()" class="text-white">
+                <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
+            </button>
+        </div>
+    </mat-toolbar>
+
+    <!-- BODY -->
+    <div class="flex-auto overflow-y-auto p-6">
+        <form [formGroup]="form">
+
+            <!-- TYPE DE REPAS -->
+            <mat-form-field class="w-full p-2" appearance="outline">
+                <mat-label>Type de repas</mat-label>
+
+                <mat-select formControlName="mealType">
+
+                    @for (t of mealTypes; track t) {
+                        <mat-option [value]="t?.code">
+                            {{ t?.name }}
+                        </mat-option>
+                    }
+
+                </mat-select>
+
+                @if (form.get('mealType')?.hasError('required')) {
+                    <mat-error>Champ obligatoire</mat-error>
+                }
+            </mat-form-field>
+
+            <!-- DESCRIPTION -->
+            <mat-form-field class="w-full p-2" appearance="outline">
+                <mat-label>Description</mat-label>
+                <textarea
+                    matInput
+                    formControlName="description"
+                    cdkTextareaAutosize
+                    cdkAutosizeMinRows="2"
+                    cdkAutosizeMaxRows="5">
+                </textarea>
+
+                <mat-error *ngIf="form.get('description')?.hasError('required')">
+                    Champ obligatoire
+                </mat-error>
+            </mat-form-field>
+
+            <!-- BUTTONS -->
+            <div class="flex items-start justify-between mx-3 mt-8">
+                <button mat-stroked-button (click)="matDialogRef.close()">
+                    Annuler
+                </button>
+
+                <button mat-flat-button color="primary"
+                        [disabled]="form.invalid"
+                        (click)="save()">
+                    Enregistrer
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>

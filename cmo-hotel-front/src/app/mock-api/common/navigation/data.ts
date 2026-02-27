@@ -105,6 +105,25 @@ export const defaultNavigation: FuseNavigationItem[] = [
         ],
     },
     {
+        id: 'restauration',
+        title: 'Restauration',
+        subtitle: 'gestion de restauration',
+        type: 'group',
+        icon: 'heroicons_outline:home',
+        children: [
+            {
+                id: 'managements.restaurationList',
+                title: 'Restauration',
+                type: 'basic',
+                icon: 'mat_outline:fastfood',
+                link: '/managements/restauration',
+            },
+
+        ],
+
+    },
+
+    {
         id: 'paramètres',
         title: 'Paramètres',
         subtitle: 'paramètres de la plateforme',
@@ -138,6 +157,12 @@ export const defaultNavigation: FuseNavigationItem[] = [
                         title: 'Chambres',
                         type: 'basic',
                         link: '/settings/prices/room/types',
+                    },
+                    {
+                        id: 'settings.prices.meals',
+                        title: 'Repas',
+                        type: 'basic',
+                        link: '/settings/prices/meals/types',
                     },
                 ],
             },

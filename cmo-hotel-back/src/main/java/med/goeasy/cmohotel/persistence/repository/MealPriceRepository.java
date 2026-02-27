@@ -23,6 +23,7 @@ public interface MealPriceRepository extends JpaRepository<MealPrice, Long> {
                     @Param("category") EGradeCategory category);
     List<MealPrice> findByMealTypeId(Long id);
 
+
     List<MealPrice> findAllByMealType_Id(Long typeId);
 
     boolean existsByMealType_IdAndCategory(Long typeId, EGradeCategory category);

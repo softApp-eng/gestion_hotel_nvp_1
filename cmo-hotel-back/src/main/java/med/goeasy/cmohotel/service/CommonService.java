@@ -57,6 +57,10 @@ public class CommonService {
                     .name(e.getName())
                     .description(e.getDescription())
                     .build()).toList();
+            case "meal-types" -> Arrays.stream(EMealType.values()).map(e -> EnumsDto.builder()
+                    .code(e.name())
+                    .name(e.getName())
+                    .build()).toList();
             default -> enumsDtos;
         };
     }

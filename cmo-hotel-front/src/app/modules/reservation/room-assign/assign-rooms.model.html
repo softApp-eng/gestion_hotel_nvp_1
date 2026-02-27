@@ -31,7 +31,11 @@
                             <mat-option [value]="r" [disabled]="r?.isReserved">
                                 <div class="flex items-center justify-between w-full">
                                     <span>{{r.roomType?.type + ' (' + r.code + ')'}}</span>
-                                    @if (r?.isReserved) {
+                                    @if (!r?.available) {
+                                        <span class="text-warn text-xs font-bold border border-warn px-2 rounded">
+                                            HORS SERVICE
+                                        </span>
+                                    } @else if (r?.isReserved) {
                                         <span class="text-warn text-xs font-bold border border-warn px-2 rounded">
                                             OCCUPÉE
                                         </span>

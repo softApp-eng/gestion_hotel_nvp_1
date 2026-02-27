@@ -45,7 +45,15 @@ public enum ERoleSystem {
     RESTAURATION_MANAGER("restauration_manager",
             "Profil d'accès pour la gestion des restauration.",
             EnumSet.of(
-                    EPermissions.DEFAULT
+                    EPermissions.DEFAULT,
+                    EPermissions.MEAL_TYPES_LIST,
+                    EPermissions.MEAL_TYPES_CREATE,
+                    EPermissions.MEAL_TYPES_UPDATE,
+                    EPermissions.MEAL_TYPES_DELETE,
+                    EPermissions.MEAL_PRICE_LIST,
+                    EPermissions.MEAL_PRICE_CREATE,
+                    EPermissions.MEAL_PRICE_UPDATE,
+                    EPermissions.MEAL_PRICE_DELETE
             )),
 
     CHEF_CMO("chef_cmo",

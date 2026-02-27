@@ -267,6 +267,17 @@ public class ReservationService {
         return generateReservationInvoice(details);
     }
 
+
+    // TO CHECK
+    public ReservationResponseDto getActiveReservationByPerson(String personId){
+
+        return reservationRepository
+                .findActiveReservationByPersonId(personId)
+                .stream().findFirst()
+                .map(ReservationResponseDto::mapToDto)
+                .orElse(null);
+    }
+
     /// /////////////////////////////////////////////////////////////////////////////
     ///                              EXTRAS FUNCTIONS                             ///
     /// /////////////////////////////////////////////////////////////////////////////

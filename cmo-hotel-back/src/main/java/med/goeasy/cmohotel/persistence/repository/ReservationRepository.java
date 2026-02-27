@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface ReservationRepository extends JpaRepository<Reservation, String> {
     @Query("""
@@ -36,5 +37,33 @@ public interface ReservationRepository extends JpaRepository<Reservation, String
         AND :targetDate <= COALESCE(rd.checkout, rd.plannedEnd)
     """)
     boolean isRoomOccupiedAt(@Param("roomId") Long roomId, @Param("targetDate") LocalDateTime targetDate);
+
+
+
+    // TO CHECK
+/*    @Query("""
+SELECT r FROM Reservation r
+JOIN FETCH r.room rm
+JOIN FETCH rm.roomType
+JOIN FETCH r.person p
+WHERE p.id = :personId
+AND (
+    r.exceptionPersonStatus IS NULL
+    OR r.exceptionPersonStatus <> 'CHECK_OUT'
+)
+""")
+    Optional<Reservation> findActiveReservationByPersonId(
+            @Param("personId") String personId
+    );*/
+
+    @Query("""
+        SELECT r FROM Reservation r 
+        JOIN r.details rd 
+        WHERE r.person.id = :personId 
+        AND rd.status = 'CONFIRMED'
+        AND CURRENT_TIMESTAMP <= COALESCE(rd.checkout, rd.plannedEnd)
+        ORDER BY COALESCE(rd.checkin, rd.plannedStart) DESC
+    """)
+    List<Reservation> findActiveReservationByPersonId(@Param("personId") String personId);
 
 }

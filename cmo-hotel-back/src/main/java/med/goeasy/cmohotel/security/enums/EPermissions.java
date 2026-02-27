@@ -28,6 +28,7 @@ public enum EPermissions {
     // CONFIGURATION,
     ADMIN_CONFIG_LOAD(CONFIGURATION, "config:load", "Charger la configuration actuelle", READ,false,""),
     ADMIN_CONFIG_ROOM_CLEAN_PLANIFICATION(CONFIGURATION, "room:clean:planif", "Planifier l'heure de auto ménage des chambres", MANAGE,false,""),
+    ADMIN_CONFIG_CHECKOUT(CONFIGURATION, "checkout:hour", "changer l'heure de checkout", MANAGE,false,""),
 
     //ROLES
     ADMIN_ROLES_LIST(ROLES, "role:list", "list roles", READ,false,""),
@@ -90,6 +91,16 @@ public enum EPermissions {
     HOUSE_KEEPING_HISTORY_UPDATE(HOUSE_KEEPING, "history:update", "modifier l'historiquer de menage", UPDATE,true,""),
     HOUSE_KEEPING_HISTORY_DELETE(HOUSE_KEEPING, "history:delete", "supprimer l'historiquer de menage", DELETE,true,""),
 
+    // MEALS,
+    MEAL_TYPES_LIST(MEAL, "types:list", "Lister les type de repas", READ,true,""),
+    MEAL_TYPES_CREATE(MEAL, "types:create", "Créer un type de repas", CREATE,true,""),
+    MEAL_TYPES_UPDATE(MEAL, "types:update", "modifier un type de repas", UPDATE,true,""),
+    MEAL_TYPES_DELETE(MEAL, "types:delete", "Supprimer un type de repas", DELETE,true,""),
+
+    MEAL_PRICE_LIST(MEAL, "price:list", "Lister les prix de repas", READ,true,""),
+    MEAL_PRICE_CREATE(MEAL, "price:create", "Créer un prix de repas", CREATE,true,""),
+    MEAL_PRICE_UPDATE(MEAL, "price:update", "modifier un prix de repas", UPDATE,true,""),
+    MEAL_PRICE_DELETE(MEAL, "price:delete", "Supprimer un prix de repas", DELETE,true,""),
 
 
     ;

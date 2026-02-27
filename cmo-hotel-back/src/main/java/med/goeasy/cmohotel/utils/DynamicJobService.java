@@ -104,4 +104,17 @@ public class DynamicJobService {
         LocalTime time = LocalTime.parse(timeStr);
         return convertToDailyCron(time);
     }
+
+    public void updateCheckoutValue(Authentication authentication, String time){
+        AppConfiguration config = configRepo.findById(1L).orElse(new AppConfiguration());
+        config.setCheckoutTime(LocalTime.parse(time));
+        configRepo.save(config);
+        activityLogService.logActivity(
+                EAuditActionTarget.CONFIGURATION,
+                EAuditActionOperation.UPDATE,
+                "Modifier l'heure de check out'",
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+    }
 }

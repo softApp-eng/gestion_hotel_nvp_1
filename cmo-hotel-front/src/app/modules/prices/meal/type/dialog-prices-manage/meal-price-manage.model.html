@@ -1,0 +1,106 @@
+<div class="-m-6 flex flex-auto flex-col md:w-500 md:min-w-500 overflow-hidden">
+
+    <!-- HEADER -->
+    <mat-toolbar class="mat-accent h-14 min-h-14 px-2 m-0 flex-none">
+        <div class="flex items-center w-full justify-between">
+            <div class="flex items-center">
+                <mat-icon class="icon-size-5 mr-3 text-white"
+                          [svgIcon]="'heroicons_solid:currency-dollar'">
+                </mat-icon>
+                <span class="text-xl text-white">
+                    Prix — {{ data.type.mealType }}
+                </span>
+            </div>
+
+            <button mat-icon-button (click)="matDialogRef.close()" class="text-white">
+                <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
+            </button>
+        </div>
+    </mat-toolbar>
+
+    <!-- CONTENT -->
+    <div class="m-6">
+
+        <div class="flex items-end justify-end mb-3">
+            <button mat-flat-button color="primary" (click)="raisePriceCreate()">
+                Nouveau
+            </button>
+        </div>
+
+        <div class="h-100 overflow-y-auto border-gray-300 leading-none dark:border-gray-500">
+
+            <table mat-table [dataSource]="dataSource" matSort>
+
+                <!-- CATEGORY -->
+                <ng-container matColumnDef="category">
+                    <th mat-header-cell mat-sort-header *matHeaderCellDef
+                        class="bg-gray-50 dark:bg-transparent w-[40%]">
+                        CATEGORIE
+                    </th>
+                    <td mat-cell *matCellDef="let row">
+                        <p class="font-semibold">{{ row.category.name }}</p>
+                    </td>
+                </ng-container>
+
+                <!-- PRICE -->
+                <ng-container matColumnDef="price">
+                    <th mat-header-cell mat-sort-header *matHeaderCellDef
+                        class="bg-gray-50 dark:bg-transparent w-[30%]">
+                        PRIX (DH)
+                    </th>
+                    <td mat-cell *matCellDef="let row">
+                        <p>{{ row.price }}</p>
+                    </td>
+                </ng-container>
+
+                <!-- ACTION -->
+                <ng-container matColumnDef="action">
+                    <th mat-header-cell *matHeaderCellDef
+                        class="bg-gray-50 dark:bg-transparent w-[10%]">
+                    </th>
+                    <td mat-cell *matCellDef="let row">
+                        <div class="flex items-center justify-end space-x-1">
+
+                            <button mat-icon-button
+                                    matTooltip="Modifier"
+                                    (click)="raisePriceCreate(row)">
+                                <mat-icon class="icon-size-4"
+                                          [svgIcon]="'heroicons_outline:pencil-square'">
+                                </mat-icon>
+                            </button>
+
+                            <button mat-icon-button
+                                    matTooltip="Supprimer"
+                                    (click)="deletePrice(row)">
+                                <mat-icon class="icon-size-4 text-red-600"
+                                          [svgIcon]="'heroicons_outline:trash'">
+                                </mat-icon>
+                            </button>
+
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- ROWS -->
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                <!-- NO DATA -->
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+                        <div class="border-t p-8 text-center text-2xl font-semibold">
+                            @if (!isLoading) {
+                                Aucune donnée trouvée
+                            } @else {
+                                Chargement...
+                            }
+                        </div>
+                    </td>
+                </tr>
+
+            </table>
+
+            <hr class="my-2 border-t border-gray-200" />
+        </div>
+    </div>
+</div>

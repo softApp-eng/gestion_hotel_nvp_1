@@ -1,0 +1,70 @@
+
+<div class="-m-6 flex flex-col max-h-[95vh] md:w-300 md:min-w-300 overflow-hidden">
+
+    <!-- HEADER -->
+    <mat-toolbar class="mat-accent h-14 min-h-14 px-2 m-0 flex-none">
+        <div class="flex items-center w-full justify-between">
+            <div class="flex items-center">
+                <mat-icon class="icon-size-5 mr-3 text-white" svgIcon="heroicons_solid:filter"></mat-icon>
+                <span class="text-xl text-white">{{ title }}</span>
+            </div>
+
+            <button mat-icon-button (click)="matDialogRef.close()" class="text-white">
+                <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
+            </button>
+        </div>
+    </mat-toolbar>
+
+    <!-- BODY -->
+    <div class="flex-auto overflow-y-auto p-6">
+        <form [formGroup]="form">
+
+             <mat-form-field class="w-full p-2" appearance="outline">
+                <mat-label>Type de repas</mat-label>
+                <mat-select formControlName="mealType" (selectionChange)="updatePrice()">
+                    <mat-option *ngFor="let t of mealTypes" [value]="t">
+                        {{ t }}
+                    </mat-option>
+                </mat-select>
+                <mat-error *ngIf="form.get('mealType')?.hasError('required')">
+                    Champ obligatoire
+                </mat-error>
+            </mat-form-field>
+
+             <mat-form-field class="w-full p-2" appearance="outline">
+                <mat-label>Quantité</mat-label>
+                <input type="number" matInput formControlName="quantity" (input)="updateTotalPrice()" min="1">
+                <mat-error *ngIf="form.get('quantity')?.hasError('required')">
+                    Champ obligatoire
+                </mat-error>
+            </mat-form-field>
+
+             <mat-form-field class="w-full p-2" appearance="outline">
+                <mat-label>Tarrif</mat-label>
+                <input matInput [value]="price" readonly>
+            </mat-form-field>
+
+             <mat-form-field class="w-full p-2" appearance="outline">
+                <mat-label>Prix total</mat-label>
+                <input matInput [value]="totalPrice" readonly>
+            </mat-form-field>
+
+             <mat-form-field class="w-full p-2" appearance="outline">
+                <mat-label>Observation</mat-label>
+                <textarea
+                    matInput
+                    formControlName="observation"
+                    cdkTextareaAutosize
+                    cdkAutosizeMinRows="2"
+                    cdkAutosizeMaxRows="5">
+              </textarea>
+            </mat-form-field>
+
+             <div class="flex items-start justify-between mx-3 mt-8">
+                <button mat-stroked-button (click)="matDialogRef.close()">Annuler</button>
+                <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="save()">Enregistrer</button>
+            </div>
+
+        </form>
+    </div>
+</div>

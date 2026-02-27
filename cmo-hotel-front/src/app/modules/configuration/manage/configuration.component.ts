@@ -39,8 +39,10 @@ import { ApiConfigurationService } from '../api.configuration.service';
 export class ConfigurationComponent implements OnInit {
 
     cronSaved: boolean = false;
+    checkoutSaved: boolean = false;
 
     scheduledTime;
+    checkout;
     isLoading: boolean = false;
     initialConfigs;
 
@@ -60,6 +62,8 @@ export class ConfigurationComponent implements OnInit {
             next: (data) => {
                 this.initialConfigs = data;
                 this.scheduledTime = this.convertCronToTimeSafe(data.autoCleaningRoomTimeCronExpression);
+                this.checkout = data.checkoutTime;
+                console.log(data);
             },
         });
     }
@@ -85,6 +89,23 @@ export class ConfigurationComponent implements OnInit {
                 this.isLoading = false;
                 this.cronSaved = true;
                 this._toastr.success('Planification mise à jour avec succès');
+            },
+            error: (err) => {
+                this.isLoading = false;
+                this._toastr.error('Erreur lors de la mise à jour');
+            }
+        });
+    }
+
+    saveCheckoutSettings(): void {
+        if (!this.checkout) return;
+
+        this.isLoading = true;
+        this._apiConfigurationService.updateCheckout(this.checkout).subscribe({
+            next: () => {
+                this.isLoading = false;
+                this.checkoutSaved = true;
+                this._toastr.success('Mise à jour avec succès');
             },
             error: (err) => {
                 this.isLoading = false;
