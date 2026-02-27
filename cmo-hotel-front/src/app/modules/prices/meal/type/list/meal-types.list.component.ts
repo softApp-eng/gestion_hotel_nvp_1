@@ -23,6 +23,7 @@ import {
 } from '@fuse/services/confirmation';
 
 import { ToastrService } from 'ngx-toastr';
+import { APP_PERMISSIONS } from '../../../../../core/data/app-permissions';
 
 @Component({
     selector: 'app-meal-types-list',
@@ -167,4 +168,6 @@ export class MealTypesListComponent implements OnInit, AfterViewInit {
             }
         });
     }
+
+    protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
 }

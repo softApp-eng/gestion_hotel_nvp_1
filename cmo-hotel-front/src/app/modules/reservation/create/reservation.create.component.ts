@@ -29,6 +29,7 @@ import { AssignRoomsModel } from '../room-assign/assign-rooms.model';
 import {finalize} from "rxjs";
 import { ApiCommonService } from '../../../core/service/api.common.service';
 import { DecimalPipe } from '@angular/common';
+import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
 
 interface RoomGroup {
     room: any;
@@ -432,4 +433,6 @@ export class ReservationCreateComponent implements OnInit {
             this.selectedGroupedPersons = this.persons.map((p) => p);
         } else this.selectedGroupedPersons = [];
     }
+
+    protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
 }
