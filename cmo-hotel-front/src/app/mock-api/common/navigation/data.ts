@@ -3,8 +3,189 @@ import { FuseNavigationItem } from '@fuse/components/navigation';
 import { APP_MODULES } from '../../../core/data/app-modules';
 import { APP_ROLES } from '../../../core/data/app-roles';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
-
 export const defaultNavigation: FuseNavigationItem[] = [
+    {
+        id: 'dashboards',
+        title: 'Tableaux de bord',
+        subtitle: 'Statistiques et État des lieux',
+        type: 'group',
+        icon: 'heroicons_outline:home',
+        children: [
+            {
+                id: 'dashboards.accueil',
+                title: 'Vue d\'ensemble',
+                type: 'basic',
+                icon: 'heroicons_outline:chart-bar',
+                link: '/accueil',
+            },
+        ],
+    },
+    {
+        id: 'reservations',
+        title: 'Opérations',
+        subtitle: 'Front-desk & Séjours',
+        type: 'group',
+        icon: 'heroicons_outline:calendar',
+        data: { modules: [APP_MODULES.RESERVATION] },
+        children: [
+            {
+                id: 'reservations.list',
+                title: 'Réservations',
+                type: 'basic',
+                icon: 'heroicons_outline:clipboard-document-list',
+                link: '/managements/reservations',
+                data: { permissions: [APP_PERMISSIONS.RESERVATION_LIST] },
+            },
+            {
+                id: 'reservations.sejours',
+                title: 'Séjours en cours',
+                type: 'basic',
+                icon: 'heroicons_outline:user-group',
+                link: '/managements/sejours',
+                data: { permissions: [APP_PERMISSIONS.RESERVATION_LIST] },
+            },
+            {
+                id: 'reservations.calender',
+                title: 'Planning d\'occupation',
+                type: 'basic',
+                icon: 'heroicons_outline:calendar-days',
+                link: '/managements/calender',
+                data: { permissions: [APP_PERMISSIONS.RESERVATION_LIST] },
+            },
+        ],
+    },
+    {
+        id: 'housekeeping',
+        title: 'Gouvernance',
+        subtitle: 'Hygiène & Maintenance',
+        type: 'group',
+        icon: 'heroicons_outline:sparkles',
+        data: { modules: [APP_MODULES.HOUSEKEEPING] },
+        children: [
+            {
+                id: 'housekeeping.manage',
+                title: 'État des Chambres',
+                type: 'basic',
+                icon: 'heroicons_outline:check-badge',
+                link: '/managements/housekeeping/manage',
+            },
+            {
+                id: 'housekeeping.history',
+                title: 'Historique d\'entretien',
+                type: 'basic',
+                icon: 'heroicons_outline:clock',
+                link: '/managements/housekeeping/history'
+            },
+            {
+                id: 'housekeeping.agents',
+                title: 'Équipe de ménage',
+                type: 'basic',
+                icon: 'heroicons_outline:identification',
+                link: '/managements/housekeeping/agents',
+                data: { permissions: [APP_PERMISSIONS.HOUSE_KEEPING_AGENT_LIST] },
+            },
+        ],
+    },
+    {
+        id: 'restauration',
+        title: 'Services',
+        subtitle: 'Restauration & Extras',
+        type: 'group',
+        icon: 'mat_outline:fastfood',
+        children: [
+            {
+                id: 'managements.restaurationList',
+                title: 'Prestations Repas',
+                type: 'basic',
+                icon: 'mat_outline:fastfood',
+                link: '/managements/restauration',
+            },
+        ],
+    },
+    {
+        id: 'configuration',
+        title: 'Configuration',
+        subtitle: 'Référentiels & Tarifs',
+        type: 'group',
+        icon: 'heroicons_outline:cog-6-tooth',
+        data: { roles: [APP_ROLES.ADMIN] },
+        children: [
+            {
+                id: 'settings.persons',
+                title: 'Annuaire Clients',
+                type: 'basic',
+                icon: 'heroicons_outline:users',
+                link: '/settings/guests',
+            },
+            {
+                id: 'settings.Hébergement',
+                title: 'Parc Hôtelier',
+                type: 'basic',
+                icon: 'heroicons_outline:building-office',
+                link: '/settings/pavillon',
+            },
+            {
+                id: 'settings.prices',
+                title: 'Grilles Tarifaires',
+                type: 'collapsable',
+                icon: 'heroicons_outline:currency-dollar',
+                children: [
+                    {
+                        id: 'settings.prices.rooms',
+                        title: 'Tarifs Chambres',
+                        type: 'basic',
+                        link: '/settings/prices/room/types',
+                    },
+                    {
+                        id: 'settings.prices.meals',
+                        title: 'Tarifs Repas',
+                        type: 'basic',
+                        link: '/settings/prices/meals/types',
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        id: 'Administration',
+        title: 'Système',
+        subtitle: 'Sécurité & Contrôle',
+        type: 'group',
+        icon: 'heroicons_outline:shield-check',
+        data: { roles: [APP_ROLES.ADMIN] },
+        children: [
+            {
+                id: 'user.list',
+                title: 'Comptes Utilisateurs',
+                type: 'basic',
+                icon: 'heroicons_outline:user-circle',
+                link: '/admin/users',
+            },
+            {
+                id: 'role.list',
+                title: 'Rôles & Permissions',
+                type: 'basic',
+                icon: 'heroicons_outline:key',
+                link: '/admin/roles',
+            },
+            {
+                id: 'audit.logs',
+                title: 'Journal d\'Audit',
+                type: 'basic',
+                icon: 'heroicons_outline:eye',
+                link: '/admin/audit/logs',
+            },
+            {
+                id: 'settings.plateforme',
+                title: 'Paramètres Plateforme',
+                type: 'basic',
+                icon: 'heroicons_outline:adjustments-vertical',
+                link: '/admin/configurations/manage',
+            }
+        ],
+    },
+];
+export const defaultNavigation2: FuseNavigationItem[] = [
     {
         id: 'dashboards',
         title: 'Dashboards',

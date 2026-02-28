@@ -7,9 +7,12 @@ import med.goeasy.cmohotel.audit.ActivityLogService;
 import med.goeasy.cmohotel.audit.EAuditActionOperation;
 import med.goeasy.cmohotel.audit.EAuditActionTarget;
 import med.goeasy.cmohotel.exception.BadRequestException;
+import med.goeasy.cmohotel.exception.OperationNotPermittedException;
 import med.goeasy.cmohotel.persistence.entity.Person;
 import med.goeasy.cmohotel.persistence.entity.enums.ERelationshipType;
 import med.goeasy.cmohotel.persistence.repository.PersonRepository;
+import med.goeasy.cmohotel.persistence.repository.ReservationDetailsRepository;
+import med.goeasy.cmohotel.persistence.repository.ReservationRepository;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
 import med.goeasy.cmohotel.presentation.dto.person.PersonRequestDto;
 import med.goeasy.cmohotel.presentation.dto.person.PersonResponseDto;
@@ -30,6 +33,7 @@ public class PersonService {
     private final CommonService commonService;
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
+    private final ReservationRepository reservationRepository;
 
     @Transactional
     public PersonResponseDto create(Authentication authentication, PersonRequestDto dto) {
@@ -122,9 +126,17 @@ public class PersonService {
     @Transactional
     public void delete(Authentication authentication,String personId) {
         Person person = getPersonById(personId);
-        // TODO if person has reservation history archive it otherwise delete it
-        person.setArchived(true);
-        personRepository.save(person);
+        // is person has active reservation
+        if (reservationRepository.isPersonHasReservation(person.getId()))
+            throw new OperationNotPermittedException("Client a déja planifié pour une reservation");
+        if (reservationRepository.countPersonReservations(person.getId()) == 0)
+            personRepository.delete(person);
+        else {
+            person.setArchived(true);
+            personRepository.save(person);
+        }
+
+        // audit
         activityLogService.logActivity(
                 EAuditActionTarget.PERSON,
                 EAuditActionOperation.DELETE,

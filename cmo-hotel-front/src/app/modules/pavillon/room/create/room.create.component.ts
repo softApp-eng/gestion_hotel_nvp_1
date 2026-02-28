@@ -21,6 +21,7 @@ import { FuseAlertComponent, FuseAlertType } from '../../../../../@fuse/componen
 import { fuseAnimations } from '../../../../../@fuse/animations';
 import { ApiRoomTypeService } from '../../../prices/room/type/api.room-type.service';
 import { MatCheckbox } from '@angular/material/checkbox';
+import { APP_PERMISSIONS } from '../../../../core/data/app-permissions';
 
 @Component({
     selector: 'room-add',
@@ -205,4 +206,6 @@ export class RoomCreateComponent implements OnInit {
             },
         });
     }
+
+    protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
 }

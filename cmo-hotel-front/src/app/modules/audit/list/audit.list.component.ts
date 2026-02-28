@@ -21,6 +21,7 @@ import { ExtractGuestDataPipe } from '../../reservation/list/extract-guest-data-
 import { MatOption } from '@angular/material/core';
 import { DisableIfNoPermissionDirective } from '../../../core/auth/DisableIfNoPermissionDirective';
 import { UtilsService } from '../../../core/service/utils.service';
+import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
 
 @Component({
     selector: 'audit',
@@ -234,4 +235,6 @@ export class AuditListComponent implements OnInit {
         this.currentPage = event.pageIndex;
         this.search();
     }
+
+    protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
 }

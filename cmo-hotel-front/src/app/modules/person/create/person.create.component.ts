@@ -21,6 +21,7 @@ import { fuseAnimations } from '../../../../@fuse/animations';
 import { ApiCommonService } from '../../../core/service/api.common.service';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { UtilsService } from '../../../core/service/utils.service';
+import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
 
 @Component({
     selector: 'person-add',
@@ -209,4 +210,6 @@ export class PersonCreateComponent implements OnInit {
             },
         });
     }
+
+    protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
 }

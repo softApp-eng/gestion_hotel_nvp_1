@@ -16,6 +16,7 @@ import { ApiUsersService } from '../api.users.service';
 import { finalize } from 'rxjs';
 import { FuseAlertComponent, FuseAlertType } from '../../../../@fuse/components/alert';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
 
 @Component({
     selector: 'users-add',
@@ -104,4 +105,6 @@ export class UserAddComponent implements OnInit {
                 },
             });
     }
+
+    protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
 }

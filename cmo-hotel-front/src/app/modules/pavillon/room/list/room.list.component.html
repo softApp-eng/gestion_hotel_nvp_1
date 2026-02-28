@@ -1,22 +1,37 @@
 <div class="flex min-w-0 flex-auto flex-col">
     <!-- Header -->
-    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
-        <div class="min-w-0 flex-1">
-            <!-- Breadcrumbs -->
-            <div class="flex flex-wrap items-center font-medium">
-                <div>
-                    <a class="whitespace-nowrap text-primary-500">Paramétres</a>
-                </div>
+    <div class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between px-6 py-6 md:px-10 border-b bg-card dark:bg-transparent transition-all duration-200">
+        <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary-500/20 via-transparent to-transparent"></div>
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center space-x-2 text-secondary font-medium text-sm mb-2">
+                <a class="hover:text-primary transition-colors cursor-pointer">Gestion</a>
+                <mat-icon class="icon-size-4" [svgIcon]="'heroicons_mini:chevron-right'"></mat-icon>
+                <span class="text-primary-600 dark:text-primary-400">Gestion des chambres</span>
             </div>
-            <!-- Title -->
-            <div class="mt-2">
-                <div class="flex items-center">
-                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'mat_solid:local_hotel'"></mat-icon>
-                    <h2 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-4xl">
-                        Chambres {{pavillon ? '('+pavillon?.name + ')':''}}
+            <div class="flex items-center">
+                <div class="flex items-center justify-center p-3 mr-4 rounded-xl bg-primary-50 dark:bg-primary-500/10 text-primary shadow-sm">
+                    <mat-icon class="icon-size-10" [svgIcon]="'mat_solid:local_hotel'"></mat-icon>
+                </div>
+                <div class="flex flex-col">
+                    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-none text-slate-900 dark:text-white">
+                        Parc de Chambres {{pavillon ? '('+pavillon?.name + ')':''}}
                     </h2>
+                    <p class="text-secondary font-medium mt-1 text-md hidden sm:block">
+                        Référentiel des unités de logement : gérez les caractéristiques techniques et les équipements de chaque chambre du cercle.
+                    </p>
                 </div>
             </div>
+        </div>
+        <div class="flex items-center mt-6 sm:mt-0 sm:ml-4 space-x-3">
+            <button
+                [disableIfNoPermission]="[APP_PERMISSIONS.ROOM_CREATE]"
+                mat-flat-button
+                [color]="'primary'"
+                class="rounded-lg px-6 h-11 shadow-md hover:shadow-lg transition-all"
+                [routerLink]="'./create'">
+                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                <span class="ml-2 font-semibold">Ajouter une chambre</span>
+            </button>
         </div>
     </div>
 
@@ -35,10 +50,6 @@
                         (input)="search(input.value)"
                         [placeholder]="'Search'">
                 </mat-form-field>
-                <button [disableIfNoPermission]="[APP_PERMISSIONS.ROOM_CREATE]" class="ml-4" mat-flat-button [color]="'primary'" [routerLink]="'./create'" >
-                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
-                    <span class="ml-2 mr-1">Ajouter</span>
-                </button>
             </div>
 
             <div class="w-full bg-primary-50 dark:bg-transparent border rounded-xl overflow-hidden shadow-sm">

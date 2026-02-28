@@ -66,4 +66,22 @@ AND (
     """)
     List<Reservation> findActiveReservationByPersonId(@Param("personId") String personId);
 
+    @Query("""
+        SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END
+            FROM Reservation r
+            JOIN r.details rd
+            WHERE r.person.id = :personId
+            AND rd.status IN ('CONFIRMED', 'PENDING')
+            AND CURRENT_TIMESTAMP <= COALESCE(rd.checkout, rd.plannedEnd)
+    """)
+    boolean isPersonHasReservation(@Param("personId") String personId);
+
+    @Query("""
+        SELECT COUNT(r)
+        FROM Reservation r
+        JOIN r.details rd 
+        WHERE r.person.id = :personId
+    """)
+    long countPersonReservations(@Param("personId") String personId);
+
 }

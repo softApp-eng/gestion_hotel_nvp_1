@@ -31,6 +31,8 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DisableIfNoPermissionDirective } from '../../../core/auth/DisableIfNoPermissionDirective';
+import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../@fuse/services/confirmation';
+import { Toastr } from '../../../core/service/toastr.service';
 
 @Component({
     selector: 'person-list',
@@ -81,15 +83,38 @@ export class PersonListComponent implements OnInit, OnDestroy {
     pageSize = 20;
     currentPage = 0;
     pageSizeOptions: number[] = [20, 50, 70, 100];
+    actionConfigDialogue: FuseConfirmationConfig = {
+        title: '',
+        message: '',
+        icon: {
+            show: true,
+            name: 'heroicons_outline:exclamation-triangle',
+            color: 'warn',
+        },
+        actions: {
+            confirm: {
+                show: true,
+                label: 'Confirmer',
+                color: 'warn',
+            },
+            cancel: {
+                show: true,
+                label: 'Annuler',
+            },
+        },
+        dismissible: true,
+    };
 
     /**
      * Constructor
      */
     constructor(
-        private _apiSitesService: ApiPersonService,
+        private _apiPersonService: ApiPersonService,
         private _matDialog: MatDialog,
         private _changeDetectorRef: ChangeDetectorRef,
-        private _fuseMediaWatcherService: FuseMediaWatcherService
+        private _fuseMediaWatcherService: FuseMediaWatcherService,
+        private _fuseConfirmationService: FuseConfirmationService,
+        private _toast: Toastr,
     ) {}
 
     ngOnDestroy(): void {
@@ -124,7 +149,7 @@ export class PersonListComponent implements OnInit, OnDestroy {
     search() {
         this.isLoading = true;
         this.dataSource.data = [];
-        this._apiSitesService
+        this._apiPersonService
             .search(this.key, this.currentPage, this.pageSize)
             .pipe(
                 finalize(() => {
@@ -154,4 +179,31 @@ export class PersonListComponent implements OnInit, OnDestroy {
     closeDrawer() {
         this.matDrawer.close();
     }
+
+    deletePerson() {
+        if (!this.selectedItem?.id)
+            return;
+        this.actionConfigDialogue.title = `Confirmer la suppression du client "${this.selectedItem.firstName + ' '+ this.selectedItem.lastName}".`;
+        this.actionConfigDialogue.message = `Êtes-vous sûr de vouloir supprimer le client "${this.selectedItem.firstName + ' '+ this.selectedItem.lastName}" ?<br> Cette action est irréversible.`;
+        const dialogRef = this._fuseConfirmationService.open(
+            this.actionConfigDialogue
+        );
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result === 'confirmed')
+                this._apiPersonService.delete(this.selectedItem?.id).subscribe({
+                    next: (value) => {
+                        this._toast.success('Client supprimé');
+                        this.dataSource.data = this.dataSource.data.filter(
+                            (s) => s.id !== this.selectedItem?.id
+                        );
+                    },
+                    error: (err) =>
+                        this._toast.error(
+                            err?.error?.description ||
+                            "Une erreur s'est produit"
+                        ),
+                });
+        });
+    }
+
 }

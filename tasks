@@ -1,4 +1,11 @@
 améliorer l'ajout des famille person
 find by one not inculded in sec
 
+suppression ;
+    - person OK
+    - pavillon : si donnée sup à 0 alors archivé pavillon plus ses chambres
+    - tarif
+    - reservation en attente alors supp sinon archive
+
+
 
