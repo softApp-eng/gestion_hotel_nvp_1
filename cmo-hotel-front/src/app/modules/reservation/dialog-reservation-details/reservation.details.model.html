@@ -47,10 +47,6 @@
                         <span class="text-secondary">Pavillon</span>
                         <span class="font-medium">{{reservation?.guests[0]?.room?.pavillon?.name}}</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-secondary">Chambre</span>
-                        <span class="font-medium text-primary">{{reservation?.guests[0]?.room?.name}} ({{reservation?.guests[0]?.room?.roomType?.type}})</span>
-                    </div>
                     <div class="flex justify-between border-t pt-2">
                         <div class="flex flex-col">
                             <span class="text-xs text-secondary uppercase">Arrivée</span>
@@ -85,28 +81,49 @@
                 <mat-icon class="mr-2 icon-size-5 text-primary" [svgIcon]="'heroicons_outline:users'"></mat-icon>
                 Occupants ({{reservation?.guests?.length}})
             </div>
-            <table class="w-full text-left border-collapse">
+            <table class="w-full border-collapse">
                 <thead>
                 <tr class="text-xs uppercase text-secondary bg-gray-50 dark:bg-transparent border-b">
-                    <th class="px-6 py-3">Grade & Nom</th>
-                    <th class="px-6 py-3">Identité / Matricule</th>
-                    <th class="px-6 py-3">Rôle</th>
+                    <th class="px-6 py-4 text-center">Grade & Nom</th>
+                    <th class="px-6 py-4 text-center">Identité / Matricule</th>
+                    <th class="px-6 py-4 text-center">Hébergement</th>
+                    <th class="px-6 py-4 text-center">Rôle</th>
                 </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     @for (guest of reservation?.guests; track guest.id) {
-                        <tr class="border-b last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800">
-                            <td class="px-6 py-4">
-                                <div class="font-bold">{{guest?.person?.grade?.name}}</div>
-                                <div class="text-sm">{{guest?.person?.firstName}} {{guest?.person?.lastName}}</div>
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+
+                            <td class="px-6 py-4 text-center">
+                                <div class="font-bold text-slate-900 dark:text-white">{{guest?.person?.firstName}} {{guest?.person?.lastName}}</div>
+                                <div class="text-sm text-secondary">{{guest?.person?.grade?.name}}</div>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm font-medium">{{guest?.person?.identity}}</div>
-                                <div class="text-xs text-secondary">{{guest?.person?.matricule}}</div>
+
+                            <td class="px-6 py-4 text-center">
+                                <div class="flex flex-col items-center justify-center w-full">
+                                    <div class="text-sm font-semibold text-slate-700 dark:text-slate-300 leading-tight">
+                                        {{guest?.person?.identity}}
+                                    </div>
+                                    <div class="text-xs text-secondary mt-0.5">
+                                        {{guest?.person?.matricule}}
+                                    </div>
+                                </div>
                             </td>
-                            <td class="px-6 py-4">
-                                <span class="text-xs font-semibold px-2 py-1 rounded"
-                                      [ngClass]="guest?.role?.code === 'PRINCIPAL' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'">
+
+                            <td class="px-6 py-4 text-center">
+                                <div class="font-bold text-primary">
+                                    {{guest?.room?.code}}
+                                </div>
+                                <div class="text-sm text-secondary">
+                                    {{guest?.room?.roomType?.type}}
+                                </div>
+                            </td>
+
+                            <td class="px-6 py-4 text-center">
+                                <span class="inline-flex items-center justify-center text-xs font-semibold px-3 py-1 rounded-full shadow-sm"
+                                      [ngClass]="guest?.role?.code === 'PRINCIPAL'
+                                                 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
+                                                 : 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400'">
                                     {{guest?.role?.name}}
                                 </span>
                             </td>

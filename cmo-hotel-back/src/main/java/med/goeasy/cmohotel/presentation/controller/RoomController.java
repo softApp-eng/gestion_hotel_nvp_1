@@ -64,6 +64,15 @@ public class RoomController {
         return ResponseEntity.ok(roomService.findById(authentication, id));
     }
 
+    @DeleteMapping("/delete")
+    ResponseEntity<ApiResponse> deleteRoom(
+            Authentication authentication,
+            @Valid @NotNull(message = "id chambre requis") @RequestParam() Long id
+    ){
+        roomService.deleteRoom(authentication,id);
+        return ResponseEntity.ok(ApiResponse.builder().message("Chambre supprimée").build());
+    }
+
     /// /////////////////////////////////////////////////////////////////////////////
     ///                                  ROOM TYPES                               ///
     /// /////////////////////////////////////////////////////////////////////////////

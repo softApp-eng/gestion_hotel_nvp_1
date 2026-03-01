@@ -1,6 +1,7 @@
 package med.goeasy.cmohotel;
 
 import med.goeasy.cmohotel.config.ConfigProperties;
+import med.goeasy.cmohotel.persistence.repository.AppRoleRepository;
 import med.goeasy.cmohotel.persistence.repository.ReservationRepository;
 import med.goeasy.cmohotel.presentation.dto.prices.PriceEstimationResponse;
 import med.goeasy.cmohotel.presentation.dto.reservation.ReservedRoomResponseDto;
@@ -39,10 +40,13 @@ public class CmoHotelBackApplication {
             //PriceEstimationResponse price = reservationPricingService.calculateEstimationByCode(501L);
             //System.err.println(price);
             //feeder.seedMassiveReservations(500);
-            //feeder.grantPermissionToRole(EPermissions.ADMIN_CONFIG_LOAD,ERoleSystem.ADMIN);
+            //feeder.grantPermissionToRole(EPermissions.PRESTATION_DELETE,ERoleSystem.ADMIN);
             //feeder.grantPermissionToRole(EPermissions.ROOM_LIST_GRANTED,ERoleSystem.GOVERNANCE);
             //feeder.grantPermissionToRole(EPermissions.ROOM_TYPE_DELETE,ERoleSystem.ADMIN);
-            //feeder.resetRolePermissions(ERoleSystem.ADMIN);
+            //feeder.resetRolePermissions(ERoleSystem.PRESTATION_MANAGER);
+            /*feeder.createPrestationsAccounts(
+                    r.findByName(ERoleSystem.RESERVATIONS_MANAGER.getRoleName()).get()
+            );*/
             //Feed database0
             if (shouldFeed)
                 feeder.feed();

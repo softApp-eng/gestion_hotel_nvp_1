@@ -14,7 +14,9 @@ import { ApiRoomService } from '../../api.room.service';
 import { ApiPavillonService } from '../../api.pavillon.service';
 import { APP_PERMISSIONS } from '../../../../core/data/app-permissions';
 import { DisableIfNoPermissionDirective } from '../../../../core/auth/DisableIfNoPermissionDirective';
-import { DatePipe } from '@angular/common';
+import { FuseConfirmationService } from '../../../../../@fuse/services/confirmation';
+import { Toastr } from '../../../../core/service/toastr.service';
+import { DIALOG_CONFIGS } from '../../../../core/data/dialogConfig';
 
 @Component({
     selector: 'room-list',
@@ -33,7 +35,6 @@ import { DatePipe } from '@angular/common';
         MatPaginator,
         MatSortModule,
         DisableIfNoPermissionDirective,
-        DatePipe,
     ],
 })
 export class RoomListComponent implements OnInit, AfterViewInit {
@@ -63,7 +64,9 @@ export class RoomListComponent implements OnInit, AfterViewInit {
     constructor(
         private _apiRoomService: ApiRoomService,
         private _apiPavillonService: ApiPavillonService,
-        private _activeRoute: ActivatedRoute
+        private _activeRoute: ActivatedRoute,
+        private _fuseConfirmationService: FuseConfirmationService,
+        private _toast: Toastr,
     ) {}
 
     ngAfterViewInit(): void {
@@ -113,6 +116,35 @@ export class RoomListComponent implements OnInit, AfterViewInit {
                 s?.category?.toLowerCase()?.includes(key?.toLowerCase()) ||
                 s?.type?.toLowerCase()?.includes(key?.toLowerCase())
         );
+    }
+
+    deleteRoom(room) {
+        if (!room?.id)
+            return;
+        const dialogRef = this._fuseConfirmationService.open(
+            {
+                ...DIALOG_CONFIGS,
+                title: `Confirmer la suppression de la chambre "${room.code}".`,
+                message: `Êtes-vous sûr de vouloir supprimer la chambre "${room.code}" ?<br> Cette action est irréversible.`
+            }
+        );
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result === 'confirmed')
+                this._apiRoomService.delete(room?.id).subscribe({
+                    next: (value) => {
+                        this._toast.success('Chambre supprimée');
+                        this.dataSource.data = this.dataSource.data.filter(
+                            (s) => s.id !== room?.id
+                        );
+                    },
+                    error: (err) =>
+                        this._toast.error(
+                            err?.error?.description ||
+                            "Une erreur s'est produit"
+                        ),
+                });
+        });
     }
 
     protected readonly APP_PERMISSIONS = APP_PERMISSIONS;

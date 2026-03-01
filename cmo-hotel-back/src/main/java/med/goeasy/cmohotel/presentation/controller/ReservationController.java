@@ -9,10 +9,7 @@ import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 import med.goeasy.cmohotel.presentation.dto.ApiResponse;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
-import med.goeasy.cmohotel.presentation.dto.reservation.ReservationCalenderResponseDto;
-import med.goeasy.cmohotel.presentation.dto.reservation.ReservationDetailsResponseDto;
-import med.goeasy.cmohotel.presentation.dto.reservation.ReservationRequestDto;
-import med.goeasy.cmohotel.presentation.dto.reservation.ReservedRoomResponseDto;
+import med.goeasy.cmohotel.presentation.dto.reservation.*;
 import med.goeasy.cmohotel.service.ReservationService;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -93,6 +90,13 @@ public class ReservationController {
             Authentication authentication
     ){
         return ResponseEntity.ok(reservationService.getUpcomingReservations(authentication));
+    }
+
+    @GetMapping("/residents")
+    ResponseEntity<List<ReservationResponseDto>> getResidentReservations(
+            Authentication authentication
+    ){
+        return ResponseEntity.ok(reservationService.getResidentReservations(authentication));
     }
 
     @GetMapping("/search")

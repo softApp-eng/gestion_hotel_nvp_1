@@ -1,37 +1,52 @@
 package med.goeasy.cmohotel.presentation.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import med.goeasy.cmohotel.persistence.entity.Prestation;
-import med.goeasy.cmohotel.persistence.entity.enums.EMealType;
-import med.goeasy.cmohotel.presentation.dto.reservation.ReservationResponseDto;
-import med.goeasy.cmohotel.presentation.dto.restauration.PrestationRequestDto;
-import med.goeasy.cmohotel.service.MealService;
+import med.goeasy.cmohotel.presentation.dto.ApiResponse;
+import med.goeasy.cmohotel.presentation.dto.prestation.PrestationRequestDto;
+import med.goeasy.cmohotel.presentation.dto.prestation.PrestationResponseDto;
 import med.goeasy.cmohotel.service.PrestationService;
-import med.goeasy.cmohotel.service.ReservationService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/restauration")
+@RequestMapping("/v1/prestations")
 @RequiredArgsConstructor
-public class RestaurationController {
-    private final MealService service;
+public class PrestationController {
     private final PrestationService prestationService;
-    private final ReservationService reservationService;
 
+    @PostMapping("/create")
+    ResponseEntity<ApiResponse> create(Authentication authentication, @Valid @RequestBody PrestationRequestDto dto) {
+        prestationService.createPrestation(authentication, dto);
+        return ResponseEntity.ok(ApiResponse.builder().message("Préstation créée").build());
+    }
+
+    @GetMapping("/residents")
+    ResponseEntity<List<PrestationResponseDto>> getPrestationsForResidents(Authentication authentication) {
+        return ResponseEntity.ok(prestationService.getResidentPrestations(authentication));
+    }
+
+    @DeleteMapping("/delete")
+    ResponseEntity<ApiResponse> delete(
+            Authentication authentication,
+            @Valid @NotBlank(message = "prestation id requis") @RequestParam() String id) {
+        prestationService.deletePrestation(authentication, id);
+        return ResponseEntity.ok(ApiResponse.builder().message("Préstation supprimée").build());
+    }
+
+    /*
     @GetMapping("/meal-price")
-    public BigDecimal getMealPrice(@RequestParam EMealType mealType,
+    public BigDecimal getMealPrice(@RequestParam String mealType,
                                    @RequestParam String personId) {
 
         return service.getMealPriceForPerson(mealType, personId);
     }
-    @PostMapping("/create")
-    public Prestation create(@RequestBody PrestationRequestDto request) {
-        return prestationService.createPrestation(request);
-    }
+
     @GetMapping("/all")
     public ResponseEntity<List<Prestation>> getAllPrestations() {
         List<Prestation> prestations = prestationService.getAllPrestations();
@@ -63,6 +78,6 @@ public class RestaurationController {
     ){
         return reservationService.getActiveReservationByPerson(personId);
     }
-
+*/
 
 }

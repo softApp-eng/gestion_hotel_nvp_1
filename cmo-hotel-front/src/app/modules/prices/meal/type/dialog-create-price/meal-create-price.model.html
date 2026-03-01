@@ -5,7 +5,7 @@
 <form [formGroup]="form" class="p-4 space-y-4">
 
     <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
-        <mat-label>Categorie</mat-label>
+        <mat-label>Catégorie</mat-label>
         <mat-select [formControlName]="'category'">
             @for (c of categories; track c?.code) {
                 <mat-option [value]="c?.code">{{c?.name}}</mat-option>

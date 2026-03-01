@@ -1,12 +1,10 @@
 package med.goeasy.cmohotel.persistence.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import med.goeasy.cmohotel.persistence.entity.enums.EMealType;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -28,14 +26,13 @@ public class MealType {
     @GeneratedValue
     private Long id;
 
-    @Column(name = "meal_type", unique = true, nullable = false)
-    @Enumerated(EnumType.STRING)
-    private EMealType mealType;
+    @Column(unique = true, nullable = false)
+    private String name;
 
+    @Column(length = 500)
     private String description;
 
     @OneToMany(mappedBy = "mealType", cascade = CascadeType.ALL, orphanRemoval = true)
-    //@JsonManagedReference
     private List<MealPrice> prices = new ArrayList<>();
 
     // audit

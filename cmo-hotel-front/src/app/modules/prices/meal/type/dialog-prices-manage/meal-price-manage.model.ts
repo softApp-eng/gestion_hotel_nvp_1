@@ -31,6 +31,7 @@ import { MatToolbar } from '@angular/material/toolbar';
 import { MealPriceCreateDialogComponent } from '../dialog-create-price/meal-create-price.model';
 import { RoomPriceCreateModel } from '../../../room/type/dialog-create-price/room-price-create.model';
 import { APP_PERMISSIONS } from '../../../../../core/data/app-permissions';
+import { DisableIfNoPermissionDirective } from '../../../../../core/auth/DisableIfNoPermissionDirective';
 
 @Component({
     selector: 'meal-price-manage-model',
@@ -47,11 +48,10 @@ import { APP_PERMISSIONS } from '../../../../../core/data/app-permissions';
         MatTableModule,
         MatTooltip,
         MatToolbar,
+        DisableIfNoPermissionDirective,
     ],
 })
 export class MealPriceManageModel implements OnInit, AfterViewInit {
-
-
     isLoading = false;
     displayedColumns: string[] = ['category', 'price', 'action'];
     dataSource = new MatTableDataSource<any>([]);
@@ -64,20 +64,20 @@ export class MealPriceManageModel implements OnInit, AfterViewInit {
         icon: {
             show: true,
             name: 'heroicons_outline:exclamation-triangle',
-            color: 'warn'
+            color: 'warn',
         },
         actions: {
             confirm: {
                 show: true,
                 label: 'Confirmer',
-                color: 'warn'
+                color: 'warn',
             },
             cancel: {
                 show: true,
-                label: 'Annuler'
-            }
+                label: 'Annuler',
+            },
         },
-        dismissible: true
+        dismissible: true,
     };
 
     constructor(
@@ -103,62 +103,59 @@ export class MealPriceManageModel implements OnInit, AfterViewInit {
         this.isLoading = true;
         this._apiMealPriceService
             .findByType(typeId)
-            .pipe(finalize(() => this.isLoading = false))
+            .pipe(finalize(() => (this.isLoading = false)))
             .subscribe({
                 next: (value: any[]) => {
                     this.dataSource.data = value;
                     this.dataSource.sort = this.sort;
-                }
+                },
             });
     }
 
     // ================= CREATE / EDIT =================
 
     raisePriceCreate(price?) {
-
         this._matDialog
             .open(MealPriceCreateDialogComponent, {
                 data: { type: this.data.type, price },
-                disableClose: true
+                disableClose: true,
             })
             .afterClosed()
-            .subscribe(res => {
+            .subscribe((res) => {
                 if (res?.reload) {
                     this.loadPrices(this.data.type.id);
-
                 }
             });
     }
-
 
     // ================= DELETE =================
 
     deletePrice(price: any) {
         this.isLoading = true;
 
-        this.actionConfigDialogue.title =
-            `Confirmer la suppression du prix "${price.category} (${price.price})".`;
+        this.actionConfigDialogue.title = `Confirmer la suppression du prix "${price.category} (${price.price})".`;
 
-        this.actionConfigDialogue.message =
-            `Êtes-vous sûr de vouloir supprimer le prix
+        this.actionConfigDialogue.message = `Êtes-vous sûr de vouloir supprimer le prix
             "<b>${price.category} (${price.price})</b>" ?<br>
             Cette action est irréversible.`;
 
-        const dialogRef =
-            this._fuseConfirmationService.open(this.actionConfigDialogue);
+        const dialogRef = this._fuseConfirmationService.open(
+            this.actionConfigDialogue
+        );
 
-        dialogRef.afterClosed().subscribe(result => {
+        dialogRef.afterClosed().subscribe((result) => {
             if (result === 'confirmed') {
                 this._apiMealPriceService.delete(price.id).subscribe({
                     next: () => {
                         this._toast.success('Prix supprimé');
-                        this.dataSource.data =
-                            this.dataSource.data.filter(p => p.id !== price.id);
+                        this.dataSource.data = this.dataSource.data.filter(
+                            (p) => p.id !== price.id
+                        );
                     },
                     error: (err) =>
                         this._toast.error(
                             err?.error?.message || "Une erreur s'est produite"
-                        )
+                        ),
                 });
             }
         });

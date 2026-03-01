@@ -33,39 +33,32 @@ import { ApiCommonService } from '../../../../../core/service/api.common.service
 export class MealTypeSaveDialogComponent implements OnInit {
 
     form!: FormGroup;
-    mealTypes = [];
     title = 'Type de repas';
     isLoading = false;
     constructor(
         private fb: FormBuilder,
         private api: ApiMealTypeService,
-        private _apiCommonService: ApiCommonService,
         private toast: ToastrService,
         public matDialogRef: MatDialogRef<MealTypeSaveDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any
-    ) {}
+    ) {
+
+    }
 
     ngOnInit(): void {
 
         this.form = this.fb.group({
             id: [null],
-            mealType: ['', Validators.required],
-            description: ['', Validators.required]
+            name: ['', Validators.required],
+            description: ['']
         });
-
-
-        this._apiCommonService.getEnumsData('meal-types').subscribe(res => {
-            this.mealTypes = res;   // ["DINER","DEJEUNER",...]
-
-
-            if (this.data) {
-                this.form.patchValue({
-                    id: this.data.id,
-                    mealType: this.data.mealType.code,
-                    description: this.data.description
-                });
-            }
-        });
+        if (this.data && this.data.id) {
+            this.form.patchValue({
+                id: this.data.id,
+                name: this.data.name,
+                description: this.data.description,
+            })
+        }
     }
 
     save() {
@@ -74,7 +67,7 @@ export class MealTypeSaveDialogComponent implements OnInit {
         this.isLoading = true;
 
         const payload = {
-            mealType: this.form.value.mealType,
+            name: this.form.value.name,
             description: this.form.value.description
         };
 
@@ -86,10 +79,11 @@ export class MealTypeSaveDialogComponent implements OnInit {
             .pipe(finalize(() => this.isLoading = false))
             .subscribe({
                 next: () => {
+                    this.toast.success('type enregistré');
                     this.matDialogRef.close(true);
                 },
                 error: err => {
-                    this.toast.error('Categorie déjas existe');
+                    this.toast.error(err?.error?.description || 'Problème de creation');
                 }
             });
     }

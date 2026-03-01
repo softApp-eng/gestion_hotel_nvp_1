@@ -150,7 +150,11 @@ export const appRoutes: Route[] = [
                     module:[APP_MODULES.RESERVATION]
                 },
             },
-            {path: 'restauration', loadChildren: () => import('app/modules/restauration/restauration.routes')},
+            {path: 'restauration', loadChildren: () => import('app/modules/restauration/restauration.routes'),
+                data: {
+                    module:[APP_MODULES.PRESTATION]
+                },
+            },
         ]
     },
 

@@ -6,19 +6,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import java.util.List;
+import java.util.Optional;
 
 public interface PersonRepository extends JpaRepository<Person, String> {
 
+    @Query("FROM Person p WHERE p.id = ?1 AND p.archived IS FALSE")
+    Optional<Person> findPersonById(String id);
+
     @Query("""
         SELECT p FROM Person p JOIN p.grade g
-            WHERE (
-            upper(p.email) like %:key%
-            OR upper(p.firstName) like %:key%
-            OR upper(p.lastName) like %:key%
-            OR upper(p.identity) like %:key%
-        )
+            WHERE p.archived is false and 
+                (
+                    upper(p.email) like %:key%
+                    OR upper(p.firstName) like %:key%
+                    OR upper(p.lastName) like %:key%
+                    OR upper(p.identity) like %:key%
+                )
         ORDER BY g.rating
     """)
     Page<Person> search(
@@ -41,19 +44,5 @@ public interface PersonRepository extends JpaRepository<Person, String> {
     ORDER BY g.rating
 """)*/
 
-    @Query("""
-        SELECT DISTINCT p FROM Reservation r
-        JOIN r.person p
-        JOIN r.details rd
-        WHERE rd.status = 'CONFIRMED'
-        AND CURRENT_DATE >= CAST(COALESCE(rd.checkin, rd.plannedStart) AS date)
-        AND CURRENT_DATE <= CAST(COALESCE(rd.checkout, rd.plannedEnd) AS date)
-        AND    (
-        upper(p.email) LIKE %:key%
-        OR upper(p.firstName) LIKE %:key%
-        OR upper(p.lastName) LIKE %:key%
-        OR upper(p.identity) LIKE %:key%
-    )
-    """)
-    Page<Person> searchWithReservation(@Param("key") String key, Pageable pageable);
+
 }

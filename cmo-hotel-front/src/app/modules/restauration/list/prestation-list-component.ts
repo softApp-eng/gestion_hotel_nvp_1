@@ -19,6 +19,7 @@ import { PrestationManageModel } from '../dialog-manage-prestation/prestation-ma
 import { MatDialog } from '@angular/material/dialog';
 import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../@fuse/services/confirmation';
 import { Toastr } from '../../../core/service/toastr.service';
+import { HighlightPipe } from '../../../../@fuse/pipes/HighlightPipe';
 
 @Component({
     selector: 'app-restauration-list',
@@ -47,11 +48,11 @@ import { Toastr } from '../../../core/service/toastr.service';
         MatMenuItem,
         MatMenuTrigger,
         CommonModule,
+        HighlightPipe,
     ],
     standalone: true,
 })
 export class PrestationListComponent implements OnInit {
-
     @ViewChild('matDrawer') matDrawer: MatDrawer;
     @ViewChild(MatPaginator) paginator: MatPaginator;
     actionConfigDialogue: FuseConfirmationConfig = {
@@ -76,7 +77,7 @@ export class PrestationListComponent implements OnInit {
         dismissible: true,
     };
 
-    displayedColumns: string[] = ['mealType', 'person', 'quantity', 'price', 'totalPrice', 'observation','createdAt', 'action'];
+    displayedColumns: string[] = ['grade', 'name','identity','totalPrice', 'action'];
     dataSource = new MatTableDataSource<any>([]);
     selectedItem: any;
 
@@ -86,47 +87,81 @@ export class PrestationListComponent implements OnInit {
     currentPage = 0;
     drawerMode: MatDrawerMode;
 
+    prestations = [];
+    key = '';
+
     constructor(
         private apiService: ApiRestaurationService,
-                private snackBar: MatSnackBar,
-                private dialog: MatDialog,
-                private _fuseConfirmationService: FuseConfirmationService,
-                private _toast: Toastr,
-                private _matDialog: MatDialog
+        private snackBar: MatSnackBar,
+        private dialog: MatDialog,
+        private _fuseConfirmationService: FuseConfirmationService,
+        private _toast: Toastr,
+        private _matDialog: MatDialog
     ) {}
 
     ngOnInit(): void {
         this.loadPrestations();
     }
     loadPrestations() {
-        this.apiService.getAllPrestation().subscribe({
+        this.apiService.getPrestationsForResidents().subscribe({
             next: (res) => {
-                this.dataSource.data = res;
+                this.prestations = this.dataSource.data = this.dataSource.data = res;
                 this.totalRows = res.length;
                 if (this.paginator) {
                     this.dataSource.paginator = this.paginator;
                 }
                 console.log('Prestations chargées:', res);
             },
-            error: (err) => console.error(err)
+            error: (err) => console.error(err),
         });
     }
 
-    applyFilter(filterValue: string) {
-        this.dataSource.filterPredicate = (data: any, filter: string) => {
-            const mealType = data.mealType?.toLowerCase() || '';
-            const personName = `${data.person?.firstName} ${data.person?.lastName}`.toLowerCase();
-            return mealType.includes(filter) || personName.includes(filter);
-        };
-        this.dataSource.filter = filterValue.trim().toLowerCase();
+    search(key: string): void {
+        this.key = key?.trim().toLowerCase();
 
-        // Reset pagination after filtering
-        if (this.paginator) {
-            this.paginator.firstPage();
+        // Si la clé est vide, on réinitialise avec toutes les données originales
+        if (!this.key) {
+            this.dataSource.data = this.prestations;
+            return;
         }
+
+        this.dataSource.data = this.prestations?.filter((item) => {
+            const person = item?.person;
+
+            // On crée un tableau des champs dans lesquels on veut chercher
+            const searchFields = [
+                person?.identity,
+                person?.matricule,
+                person?.firstName,
+                person?.lastName,
+                person?.grade?.name
+            ];
+
+            // On vérifie si au moins un des champs contient la clé
+            return searchFields.some(field =>
+                field?.toLowerCase().includes(this.key)
+            );
+        });
     }
 
+    totalAmount(p): number {
+        if (!p || !p.prestations) {
+            return 0;
+        }
+        return p.prestations.reduce((acc, p) => {
+            return acc + (p.price * p.quantity);
+        }, 0);
+    }
 
+    totalQuantities(p): number {
+        if (!p || !p.prestations) {
+            return 0;
+        }
+
+        return p.prestations.reduce((acc, p) => {
+            return acc + (p.quantity || 0);
+        }, 0);
+    }
 
     openDrawer(item: any) {
         this.selectedItem = item;
@@ -142,27 +177,27 @@ export class PrestationListComponent implements OnInit {
         this.currentPage = event.pageIndex;
     }
 
-
     raiseSavePrestation(row: any) {
         const dialogRef = this.dialog.open(PrestationManageModel, {
             width: '400px',
-            data: row
+            data: row,
         });
 
-        dialogRef.afterClosed().subscribe(updated => {
+        dialogRef.afterClosed().subscribe((updated) => {
             if (updated) {
-                this.snackBar.open('Prestation modifiée avec succès', 'Fermer', { duration: 2000 });
+                this.snackBar.open(
+                    'Prestation modifiée avec succès',
+                    'Fermer',
+                    { duration: 2000 }
+                );
                 this.loadPrestations();
             }
         });
     }
     deletePrestation(row: any): void {
+        this.actionConfigDialogue.title = `Confirmer la suppression de la prestation`;
 
-        this.actionConfigDialogue.title =
-            `Confirmer la suppression de la prestation`;
-
-        this.actionConfigDialogue.message =
-            `Êtes-vous sûr de vouloir supprimer la prestation de
+        this.actionConfigDialogue.message = `Êtes-vous sûr de vouloir supprimer la prestation de
         "<strong>${row.person.firstName} ${row.person.lastName}</strong>" ?
         <br> Cette action est irréversible.`;
 
@@ -171,9 +206,7 @@ export class PrestationListComponent implements OnInit {
         );
 
         dialogRef.afterClosed().subscribe((result) => {
-
             if (result === 'confirmed') {
-
                 this.apiService.deletePrestation(row.id).subscribe({
                     next: () => {
                         this._toast.success('Prestation supprimée avec succès');
@@ -182,7 +215,7 @@ export class PrestationListComponent implements OnInit {
                     error: (err) =>
                         this._toast.error(
                             err?.error?.description ||
-                            "Une erreur s'est produite"
+                                "Une erreur s'est produite"
                         ),
                 });
             }

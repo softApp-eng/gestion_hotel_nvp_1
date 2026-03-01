@@ -80,7 +80,7 @@
                         </mat-date-range-picker-actions>
                     </mat-date-range-picker>
                     @if (durationInDays) {
-                        <mat-hint>{{durationInDays}} jour(s)</mat-hint>
+                        <mat-hint>{{durationInDays}} Jour(s)</mat-hint>
                     }
 
                     @if (form.get('dateRange').hasError('required')) {
@@ -90,7 +90,7 @@
                     }
                 </mat-form-field>
 
-                <mat-form-field class="w-full text-2xl" [appearance]="'outline'">
+                <mat-form-field class="w-full text-2xl mt-2" [appearance]="'outline'">
                     <mat-label>Categorie</mat-label>
                     <mat-select formControlName="category">
                         @for (c of categories; track c.code) {

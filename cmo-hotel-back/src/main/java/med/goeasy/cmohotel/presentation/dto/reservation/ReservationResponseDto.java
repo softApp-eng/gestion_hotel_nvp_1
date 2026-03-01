@@ -19,10 +19,7 @@ public record ReservationResponseDto(
         LocalDateTime exceptionalCheckin,
         LocalDateTime exceptionalCheckout,
         EReservationStatus exceptionPersonStatus,
-        String createdBy,
-        String lastModifiedBy,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime createdAt
 ) {
     public static ReservationResponseDto mapToDto(Reservation entity){
         if (entity == null)
@@ -35,24 +32,7 @@ public record ReservationResponseDto(
                 .exceptionalCheckin(entity.getExceptionalCheckin())
                 .exceptionalCheckout(entity.getExceptionalCheckout())
                 .exceptionPersonStatus(entity.getExceptionPersonStatus())
-                .createdBy(entity.getCreatedBy())
-                .lastModifiedBy(entity.getLastModifiedBy())
                 .createdAt(entity.getCreatedAt())
-                .updatedAt(entity.getUpdatedAt())
-                .build();
-    }
-
-    public static ReservationResponseDto mapToShortDto(Reservation entity){
-        if (entity == null)
-            return null;
-        return ReservationResponseDto.builder()
-                .id(entity.getId())
-                .person(PersonResponseDto.mapToDto(entity.getPerson()))
-                .role(entity.getRole())
-                .room(RoomResponseDto.mapToDto(entity.getRoom()))
-                .exceptionalCheckin(entity.getExceptionalCheckin())
-                .exceptionalCheckout(entity.getExceptionalCheckout())
-                .exceptionPersonStatus(entity.getExceptionPersonStatus())
                 .build();
     }
 }

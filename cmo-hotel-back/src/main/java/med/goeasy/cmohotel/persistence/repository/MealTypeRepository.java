@@ -8,9 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface MealTypeRepository extends JpaRepository<MealType, Long> {
-    boolean existsByMealType(EMealType type);
-    boolean existsByMealTypeAndIdNot(EMealType type,Long id);
-    @Query("FROM MealType m order by m.mealType desc") // p d d
+    boolean existsByName(String name);
+    boolean existsByNameAndIdNot(String name,Long id);
+    @Query("FROM MealType m order by m.name")
     List<MealType> findAllMeals();
 
 

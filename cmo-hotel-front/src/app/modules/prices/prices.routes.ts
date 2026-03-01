@@ -11,6 +11,9 @@ export default [
     },
     {
         path: 'meals',
-        loadChildren: () => import('./meal/meal-prices.routes')
+        loadChildren: () => import('./meal/meal-prices.routes'),
+        data: {
+            module:[APP_MODULES.MEALS]
+        },
     }
 ] as Routes;

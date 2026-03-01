@@ -2,8 +2,6 @@ package med.goeasy.cmohotel.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import med.goeasy.cmohotel.presentation.dto.room.RoomPriceResponseDto;
-import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import med.goeasy.cmohotel.audit.ActivityLogService;
@@ -13,20 +11,16 @@ import med.goeasy.cmohotel.exception.BadRequestException;
 import med.goeasy.cmohotel.persistence.entity.MealPrice;
 import med.goeasy.cmohotel.persistence.entity.MealType;
 import med.goeasy.cmohotel.persistence.entity.Person;
-import med.goeasy.cmohotel.persistence.entity.RoomType;
 import med.goeasy.cmohotel.persistence.entity.enums.EGradeCategory;
-import med.goeasy.cmohotel.persistence.entity.enums.EMealType;
 import med.goeasy.cmohotel.persistence.repository.MealPriceRepository;
 import med.goeasy.cmohotel.persistence.repository.MealTypeRepository;
 import med.goeasy.cmohotel.persistence.repository.PersonRepository;
-import med.goeasy.cmohotel.presentation.dto.restauration.meal.MealPriceRequestDto;
-import med.goeasy.cmohotel.presentation.dto.restauration.meal.MealPriceResponseDto;
-import med.goeasy.cmohotel.presentation.dto.restauration.meal.MealTypeRequestDto;
-import med.goeasy.cmohotel.presentation.dto.restauration.meal.MealTypeResponseDto;
-import org.springframework.http.HttpStatus;
+import med.goeasy.cmohotel.presentation.dto.meal.MealPriceRequestDto;
+import med.goeasy.cmohotel.presentation.dto.meal.MealPriceResponseDto;
+import med.goeasy.cmohotel.presentation.dto.meal.MealTypeRequestDto;
+import med.goeasy.cmohotel.presentation.dto.meal.MealTypeResponseDto;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -54,19 +48,19 @@ public class MealService {
 
     @Transactional
     public void createMealType(Authentication authentication, MealTypeRequestDto dto) {
-        if (mealTypeRepo.existsByMealType(dto.getMealType())) {
+        if (mealTypeRepo.existsByName(dto.getName())) {
             throw new BadRequestException("Type de repas déja existe");
         }
         mealTypeRepo.save(
                 MealType.builder()
-                        .mealType(dto.getMealType())
+                        .name(dto.getName())
                         .description(dto.getDescription())
                         .build()
         );
         activityLogService.logActivity(
                 EAuditActionTarget.MEAL,
                 EAuditActionOperation.CREATE,
-                String.format("Définition d'un nouveau type de repas : '%s'.", dto.getMealType()),
+                String.format("Définition d'un nouveau type de repas : '%s'.", dto.getName()),
                 activityLogService.getClientIp(request),
                 authentication.getName()
         );
@@ -75,17 +69,17 @@ public class MealService {
     @Transactional
     public void updateType(Authentication authentication, Long id, MealTypeRequestDto dto) {
         // check if the name already exist
-        if (mealTypeRepo.existsByMealTypeAndIdNot(dto.getMealType(),id)) {
+        if (mealTypeRepo.existsByNameAndIdNot(dto.getName(),id)) {
             throw new BadRequestException("Type de repas déja existe");
         }
         MealType mealTypeDb = getMealTypeById(id);
-        mealTypeDb.setMealType(dto.getMealType());
+        mealTypeDb.setName(dto.getName());
         mealTypeDb.setDescription(dto.getDescription());
         mealTypeRepo.save(mealTypeDb);
         activityLogService.logActivity(
                 EAuditActionTarget.MEAL,
                 EAuditActionOperation.UPDATE,
-                String.format("Mise à jour du type du repas : '%s' (id: *%d).", mealTypeDb.getMealType(),mealTypeDb.getId()),
+                String.format("Mise à jour du type du repas : '%s' (id: *%d).", mealTypeDb.getName(),mealTypeDb.getId()),
                 activityLogService.getClientIp(request),
                 authentication.getName()
         );
@@ -132,13 +126,11 @@ public class MealService {
                 EAuditActionTarget.MEAL,
                 EAuditActionOperation.CREATE,
                 String.format("Nouveau tarif configuré : %.2f MAD pour le type '%s' (Catégorie: %s).",
-                        price.getPrice(), type.getMealType(), price.getCategory()),
+                        price.getPrice(), type.getName(), price.getCategory()),
                 activityLogService.getClientIp(request),
                 authentication.getName()
         );
     }
-
-    // ================= UPDATE =================
 
     @Transactional
     public void updatePrice(Authentication authentication, MealPriceRequestDto dto, Long id) {
@@ -160,13 +152,11 @@ public class MealService {
                 EAuditActionTarget.ROOM_PRICE,
                 EAuditActionOperation.UPDATE,
                 String.format("Changement de tarif pour '%s' (%s) : %.2f MAD -> %.2f MAD.",
-                        type.getMealType(), db.getCategory(), oldPrice, dto.price()),
+                        type.getName(), db.getCategory(), oldPrice, dto.price()),
                 activityLogService.getClientIp(request),
                 authentication.getName()
         );
     }
-
-    // ================= DELETE =================
 
     @Transactional
     public void delete(Authentication authentication, Long id) {
@@ -182,7 +172,7 @@ public class MealService {
         );
     }
 
-    public BigDecimal  getMealPriceForPerson(EMealType mealType, String personId) { // TODO check
+    public BigDecimal  getMealPriceForPerson(String mealType, String personId) { // TODO check
 
         Person person = personRepository.findById(personId)
                 .orElseThrow(() -> new RuntimeException("Personne introuvable"));

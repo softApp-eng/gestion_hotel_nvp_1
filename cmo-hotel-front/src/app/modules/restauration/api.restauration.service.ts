@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 })
 export class ApiRestaurationService {
 
-    private readonly API_URL = `${environment.solidarityApi}/v1/restauration`;
+    private readonly API_URL = `${environment.solidarityApi}/v1/prestations`;
 
   /**
    * Constructor
@@ -17,23 +17,22 @@ export class ApiRestaurationService {
   {
   }
 
+    createPrestation(data: any) {
+        return this._httpClient.post(`${this.API_URL}/create`, data);
+    }
+
+    getPrestationsForResidents(): Observable<any[]> {
+        return this._httpClient.get<any[]>(`${this.API_URL}/residents`);
+    }
 
     getMealPrice(mealType: string, personId: string) {
         return this._httpClient.get<number>(
             `${this.API_URL}/meal-price?mealType=${mealType}&personId=${personId}`
         );
     }
-    createPrestation(data: any) {
-        return this._httpClient.post(`${this.API_URL}/create`, data);
-    }
 
-    getAllPrestation(personId?: string): Observable<any[]> {
-        let params = personId ? new HttpParams().set('personId', personId) : undefined;
-        return this._httpClient.get<any[]>(`${this.API_URL}/all`, { params });
-    }
-
-    deletePrestation(id: number): Observable<void> {
-        return this._httpClient.delete<void>(`${this.API_URL}/delete/${id}`);
+    deletePrestation(id): Observable<void> {
+        return this._httpClient.delete<void>(`${this.API_URL}/delete?id=${id}`);
 
     }
 
@@ -44,14 +43,5 @@ export class ApiRestaurationService {
             prestation
         );
     }
-
-    getActiveReservationByPerson(personId: string): Observable<any> {
-        return this._httpClient.get<any>(
-            `${this.API_URL}/persons/${personId}/active-reservation`
-        );
-    }
-
-
-
 
 }

@@ -1,4 +1,4 @@
-package med.goeasy.cmohotel.presentation.dto.restauration.meal;
+package med.goeasy.cmohotel.presentation.dto.meal;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

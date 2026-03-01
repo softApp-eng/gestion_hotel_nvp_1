@@ -93,9 +93,9 @@ insert into room (id ,pavillon_id,room_type_id,code,description,name,floor,clean
 
 SELECT setval('public."seq-room"', (SELECT MAX(id) FROM room));
 
-INSERT INTO meal_type (id,  meal_type, description) VALUES (1, 'PETIT_DEJEUNER', 'Repas servi avant midi.');
-INSERT INTO meal_type (id,  meal_type, description) VALUES (2, 'DEJEUNER', 'Repas servi à midi.');
-INSERT INTO meal_type (id,  meal_type, description) VALUES (3, 'DINER', 'Repas servi le soir.');
+INSERT INTO meal_type (id,  name, description) VALUES (1, 'Petit déjeuner', 'Repas servi avant midi.');
+INSERT INTO meal_type (id,  name, description) VALUES (2, 'Déjeuner', 'Repas servi à midi.');
+INSERT INTO meal_type (id,  name, description) VALUES (3, 'Dîner', 'Repas servi le soir.');
 SELECT setval('meal_type_seq', (SELECT MAX(id) FROM meal_type));
 
 

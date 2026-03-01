@@ -11,7 +11,6 @@ import med.goeasy.cmohotel.exception.OperationNotPermittedException;
 import med.goeasy.cmohotel.persistence.entity.Person;
 import med.goeasy.cmohotel.persistence.entity.enums.ERelationshipType;
 import med.goeasy.cmohotel.persistence.repository.PersonRepository;
-import med.goeasy.cmohotel.persistence.repository.ReservationDetailsRepository;
 import med.goeasy.cmohotel.persistence.repository.ReservationRepository;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
 import med.goeasy.cmohotel.presentation.dto.person.PersonRequestDto;
@@ -68,16 +67,7 @@ public class PersonService {
         );
     }
 
-    public PageDto<PersonResponseDto> searchWithReservation(Authentication authentication,String key,Integer page,Integer size) {
-        Page<Person> persons = personRepository.searchWithReservation(key.toUpperCase(), PageRequest.of(page, size));
-        List<PersonResponseDto> list = persons.stream().map(PersonResponseDto::mapToDto).toList();
-        log.info("{} get persons", authentication.getName());
-        return PageDto.of(
-                list,
-                persons.getTotalElements(),
-                persons.getTotalPages()
-        );
-    }
+
 
     @Transactional
     public PersonResponseDto update(Authentication authentication, PersonRequestDto dto,String personId) {
@@ -129,6 +119,7 @@ public class PersonService {
         // is person has active reservation
         if (reservationRepository.isPersonHasReservation(person.getId()))
             throw new OperationNotPermittedException("Client a déja planifié pour une reservation");
+
         if (reservationRepository.countPersonReservations(person.getId()) == 0)
             personRepository.delete(person);
         else {
@@ -152,7 +143,7 @@ public class PersonService {
     /// /////////////////////////////////////////////////////////////////////////////
 
     protected Person getPersonById(String id){
-        return personRepository.findById(id)
+        return personRepository.findPersonById(id)
                 .orElseThrow(()-> new BadRequestException("Person n'existe pas"));
     }
 }

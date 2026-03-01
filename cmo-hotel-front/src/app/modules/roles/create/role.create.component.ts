@@ -101,24 +101,6 @@ export class RoleCreateComponent implements OnInit {
         });
     }
 
-    loadPermissions2(){
-        this._apiRolesService.getPermissions().subscribe({
-            next: data => {
-                this.permissions = data;
-                // group by module
-                const grouped = this.permissions.reduce((acc, curr) => {
-                    const moduleName = curr.module;
-                    if (!acc[moduleName]) {
-                        acc[moduleName] = { name: moduleName,expandedName: curr.moduleExpandedName, completed: false, subtasks: [] };
-                    }
-                    acc[moduleName].subtasks.push({ ...curr, completed: false });
-                    return acc;
-                }, {} as Record<string, any>);
-
-                this.modules.set(Object.values(grouped));
-            }
-        })
-    }
     isIndeterminate(module): boolean {
         const anyChecked = module.subtasks.some(s => s.completed);
         const allChecked = module.subtasks.every(s => s.completed);

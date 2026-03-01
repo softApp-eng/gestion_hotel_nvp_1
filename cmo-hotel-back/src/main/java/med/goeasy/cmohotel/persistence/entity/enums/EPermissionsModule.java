@@ -20,6 +20,7 @@ public enum EPermissionsModule {
     HOUSE_KEEPING("housekeepings","Gestion des ménage"),
     CONFIGURATION("configurations","Configuration de la plateforme"),
     MEAL("meals","Gérer les repas"),
+    PRESTATION("prestations","Gérer les préstations"),
     ;
 
     private final String name;

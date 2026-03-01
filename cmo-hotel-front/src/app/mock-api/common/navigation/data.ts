@@ -99,6 +99,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type: 'basic',
                 icon: 'mat_outline:fastfood',
                 link: '/managements/restauration',
+                data: { permissions: [APP_PERMISSIONS.PRESTATION_FOR_RESIDENTS] },
             },
         ],
     },

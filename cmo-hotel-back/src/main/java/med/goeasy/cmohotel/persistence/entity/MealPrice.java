@@ -9,15 +9,15 @@ import med.goeasy.cmohotel.persistence.entity.enums.EGradeCategory;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
 
-@Entity
-@Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"meal_type_id", "category"})
-})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @EntityListeners(AuditingEntityListener.class)
+@Entity
+@Table(uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"meal_type_id", "category"})
+})
 public class MealPrice {
 
     @Id
@@ -26,7 +26,6 @@ public class MealPrice {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "meal_type_id")
-    //@JsonIgnoreProperties("prices")
     private MealType mealType;
 
     @Enumerated(EnumType.STRING)

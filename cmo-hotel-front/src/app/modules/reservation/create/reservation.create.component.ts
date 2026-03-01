@@ -132,6 +132,7 @@ export class ReservationCreateComponent implements OnInit {
                     this.startAt,
                     this.endAt
                 );
+                if (this.durationInDays > 0) this.durationInDays--;
                 this.calculateRoomPrices();
             }
         });

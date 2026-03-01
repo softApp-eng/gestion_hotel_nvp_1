@@ -16,6 +16,7 @@ import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 import med.goeasy.cmohotel.persistence.repository.ReservationDetailsRepository;
 import med.goeasy.cmohotel.persistence.repository.ReservationRepository;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
+import med.goeasy.cmohotel.presentation.dto.person.PersonResponseDto;
 import med.goeasy.cmohotel.presentation.dto.prices.PriceEstimationResponse;
 import med.goeasy.cmohotel.presentation.dto.prices.RoomPriceDetail;
 import med.goeasy.cmohotel.presentation.dto.reservation.*;
@@ -251,6 +252,11 @@ public class ReservationService {
         return reservationRepository.findFutureReservedRooms(today);
     }
 
+    public List<ReservationResponseDto> getResidentReservations(Authentication authentication) {
+        log.info("{} get resident reservations", authentication.getName());
+        return reservationRepository.findResidentReservations().stream().map(ReservationResponseDto::mapToDto).toList();
+    }
+
     public byte[] generateInvoice(Authentication authentication, Long code) throws Exception {
         ReservationDetails details = reservationDetailsRepository.findById(code)
                 .orElseThrow(() -> new EntityNotFoundException("Réservation non trouvée pour le code: " + code));
@@ -285,6 +291,11 @@ public class ReservationService {
     protected ReservationDetails getReservationDetailsByCode(Long code){
         return reservationDetailsRepository.findById(code)
                 .orElseThrow(()-> new BadRequestException("code de reservation n'existe pas"));
+    }
+
+    protected Reservation getReservationById(String id){
+        return reservationRepository.findById(id)
+                .orElseThrow(()-> new BadRequestException("reservation n'existe pas"));
     }
     protected PriceEstimationResponse calculateEstimationByCode(ReservationDetails details) {
 

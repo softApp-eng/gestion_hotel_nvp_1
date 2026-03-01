@@ -4,7 +4,6 @@ import {
     Inject, OnDestroy,
     OnInit,
     ViewChild,
-    ViewEncapsulation,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,21 +12,20 @@ import { MatInputModule } from '@angular/material/input';
 import {
     ReactiveFormsModule,
 } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { finalize, Subject, takeUntil } from 'rxjs';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { finalize, Subject } from 'rxjs';
 import { MatSelectModule } from '@angular/material/select';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { ToastrService } from 'ngx-toastr';
-import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltip } from '@angular/material/tooltip';
-import { ApiPersonService } from '../../person/api.person.service';
-import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatPaginator } from '@angular/material/paginator';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
 import { HighlightPipe } from '../../../../@fuse/pipes/HighlightPipe';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { NgClass } from '@angular/common';
-import { MatMenu, MatMenuModule } from '@angular/material/menu';
+import { MatMenuModule } from '@angular/material/menu';
+import { ApiReservationService } from '../../reservation/api.reservation.service';
 
 @Component({
     selector: 'person-manage-model',
@@ -48,7 +46,6 @@ import { MatMenu, MatMenuModule } from '@angular/material/menu';
         MatPaginator,
         NgClass,
         MatTooltip,
-        MatMenu,
         MatMenuModule
     ],
 })
@@ -60,9 +57,6 @@ export class PersonManageModel implements OnInit, OnDestroy {
         'grade',
         'name',
         'identity',
-        'unite',
-        'matricule',
-        //'action',
     ];
     key = '';
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -73,17 +67,16 @@ export class PersonManageModel implements OnInit, OnDestroy {
     currentPage = 0;
     pageSizeOptions: number[] = [20, 50, 70, 100];
 
-    selectedPersons: any[] = [];
+    selectedReservations: any[] = [];
+    reservations: any[] = [];
 
     /**
      * Constructor
      */
     constructor(
         public matDialogRef: MatDialogRef<PersonManageModel>,
-        private _apiPersonService: ApiPersonService,
-        private _toast: ToastrService,
+        private _apiReservationService: ApiReservationService,
         private _changeDetectorRef: ChangeDetectorRef,
-        private _matDialog: MatDialog,
         @Inject(MAT_DIALOG_DATA)
         public data: { selectedPersons: any }
     ) {
@@ -98,38 +91,27 @@ export class PersonManageModel implements OnInit, OnDestroy {
     ngOnInit(): void {
         //this.searchPersons();
         console.log('xxx',this.data);
-        this.selectedPersons = this.data.selectedPersons ? [...this.data.selectedPersons] : [];
+        this.selectedReservations = this.data.selectedPersons ? [...this.data.selectedPersons] : [];
         this._changeDetectorRef.markForCheck()
 
         this.dataSource.paginator = this._paginator;
-        this.searchWithReservation();
+        this.loadResidents();
     }
 
-    pageChanged(event: PageEvent) {
-        this.pageSize = event.pageSize;
-        this.currentPage = event.pageIndex;
-        this.searchWithReservation();
-    }
-
-    searchWithReservation() {
+    loadResidents() {
         this.isLoading = true;
 
-        this._apiPersonService
-            .searchWithReservation(this.key, this.currentPage, this.pageSize)
+        this._apiReservationService
+            .getResidentReservations()
             .pipe(finalize(() => this.isLoading = false))
             .subscribe({
                 next: (value: any) => {
                     console.log('Response from backend:', value);
-
-                    // Assurez-vous que value est bien { content: [...], totalElements: ... }
-                    const data = value?.content || value || [];
-                    this.dataSource = new MatTableDataSource<any>(data);
+                    this.reservations = value || [];
+                    this.dataSource = new MatTableDataSource<any>(this.reservations);
 
                     // Re-attacher le paginator
                     this.dataSource.paginator = this._paginator;
-
-                    // Mettre à jour le totalRows pour le paginator
-                    this.totalRows = value?.totalElements || data.length;
                 },
                 error: err => {
                     console.error('Error fetching persons:', err);
@@ -137,21 +119,34 @@ export class PersonManageModel implements OnInit, OnDestroy {
             });
     }
 
-    toggleModule(person: any, checked: boolean): void {
+    toggleModule(reservation: any, checked: boolean): void {
 
         if (checked) {
-            this.selectedPersons = [person];
+            if (!this.selectedReservations.some(p => p.id === reservation.id)) {
+                this.selectedReservations.push(reservation);
+            }
         } else {
-            this.selectedPersons = [];
+            this.selectedReservations = this.selectedReservations.filter((p) => p.id !== reservation.id);
         }
     }
 
-    isModuleSelected(personId: any): boolean {
-        return this.selectedPersons.some(p => p.id === personId);
+    isModuleSelected(reservationId: any): boolean {
+        return this.selectedReservations.some(p => p.id === reservationId);
     }
 
 
     saveAndClose() {
-        this.matDialogRef.close(this.selectedPersons);
+        this.matDialogRef.close(this.selectedReservations);
+    }
+
+    search(key: string) {
+        this.key = key;
+        this.dataSource.data = this.reservations?.filter(
+            (r) =>
+                r?.person?.identity?.toLowerCase()?.includes(key?.toLowerCase()) ||
+                r?.person?.matricule?.toLowerCase()?.includes(key?.toLowerCase()) ||
+                r?.person?.firstName?.toLowerCase()?.includes(key?.toLowerCase()) ||
+                r?.person?.lastName?.toLowerCase()?.includes(key?.toLowerCase())
+        );
     }
 }

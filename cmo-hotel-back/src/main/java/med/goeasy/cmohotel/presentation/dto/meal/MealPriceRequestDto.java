@@ -1,4 +1,4 @@
-package med.goeasy.cmohotel.presentation.dto.restauration.meal;
+package med.goeasy.cmohotel.presentation.dto.meal;
 
 import med.goeasy.cmohotel.persistence.entity.enums.EGradeCategory;
 

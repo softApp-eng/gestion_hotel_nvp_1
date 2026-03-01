@@ -10,6 +10,7 @@ import lombok.Getter;
 public enum EAuditActionTarget{
 
     RESERVATION("RESERVATION","Réservation"),
+    PRESTATION("PRESTATION","Préstation"),
     PAVILLON("PAVILLON","Pavillon"),
     PERSON("PERSON","Personne"),
     ROLE("ROLE","Role"),

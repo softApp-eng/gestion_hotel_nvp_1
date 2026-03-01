@@ -13,8 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/v1/persons")
@@ -64,17 +62,6 @@ public class PersonController {
         personService.delete(authentication, personId);
         return ResponseEntity.ok(ApiResponse.builder().message("personne supprimée").build());
     }
-
-    @GetMapping("/searchWithReservation")
-    ResponseEntity<PageDto<PersonResponseDto>> searchWithReservation(
-            Authentication authentication,
-            @RequestParam(defaultValue = "") String key,
-            @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "20") Integer size
-    ){
-        return ResponseEntity.ok(personService.searchWithReservation(authentication,key, page, size));
-    }
-
 
 
 }

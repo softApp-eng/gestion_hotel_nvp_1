@@ -1,27 +1,29 @@
 <div class="flex min-w-0 flex-auto flex-col">
 
     <!-- Header -->
-    <div class="bg-card flex flex-0 flex-col border-b p-6 dark:bg-transparent sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-8">
-        <div class="min-w-0 flex-1">
-
-            <div class="flex flex-wrap items-center font-medium">
-                <div>
-                    <a class="whitespace-nowrap text-primary-500">Restauration</a>
+    <div class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between px-6 py-6 md:px-10 border-b bg-card dark:bg-transparent transition-all duration-200">
+        <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary-500/20 via-transparent to-transparent"></div>
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center space-x-2 text-secondary font-medium text-sm mb-2">
+                <a class="hover:text-primary transition-colors cursor-pointer">Gestion</a>
+                <mat-icon class="icon-size-4" [svgIcon]="'heroicons_mini:chevron-right'"></mat-icon>
+                <span class="text-primary-600 dark:text-primary-400">Préstation</span>
+            </div>
+            <div class="flex items-center">
+                <div class="flex items-center justify-center p-3 mr-4 rounded-xl bg-primary-50 dark:bg-primary-500/10 text-primary shadow-sm">
+                    <mat-icon class="icon-size-10" [svgIcon]="'mat_outline:restaurant'"></mat-icon>
+                </div>
+                <div class="flex flex-col">
+                    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-none text-slate-900 dark:text-white">
+                        Services & Restauration
+                    </h2>
+                    <p class="text-secondary font-medium mt-1 text-md hidden sm:block">
+                        Enregistrez une nouvelle prestation de bouche ou un service complémentaire pour les résidents.
+                    </p>
                 </div>
             </div>
-
-            <div class="mt-2">
-                <div class="flex items-center">
-                    <mat-icon class="icon-size-25 mr-4" [svgIcon]="'heroicons_mini:plus'"></mat-icon>
-                    <h6 class="truncate text-3xl font-extrabold leading-7 tracking-tight sm:leading-10 md:text-xl">
-                        Nouvelle Prestation
-                    </h6>
-                </div>
-            </div>
-
         </div>
-
-        <div class="flex">
+        <div class="flex items-center mt-6 sm:mt-0 sm:ml-4 space-x-3">
             <a class="text-secondary -ml-1.5 inline-flex items-center font-medium" [routerLink]="'../'">
                 <mat-icon class="text-secondary icon-size-5" [svgIcon]="'heroicons_solid:chevron-left'"></mat-icon>
                 <span class="ml-1">Retour</span>
@@ -57,131 +59,79 @@
                     </fuse-alert>
                 }
 
-                <div class="mb-6">
-                    <p class="text-lg font-medium">Nouvelle prestation</p>
-                    <p class="text-secondary">Ajouter une nouvelle prestation.</p>
-                </div>
-
                 <!-- Person selection -->
                 <div class="flex items-center space-x-4 my-4 w-full">
-                    <h2 class="font-semibold">Sélectionner client</h2>
-
+                    <h2 class="font-semibold">Sélectionner les résidents</h2>
                     <a mat-stroked-button class="h-8 min-h-8" (click)="raisePersonAddDialog()">
                         <span class="inline-flex items-center text-sm">
                             <span>Choisir</span>
                             <mat-icon class="ml-1 icon-size-4" [svgIcon]="'mat_solid:person_add_alt_1'"></mat-icon>
                         </span>
                     </a>
-
-                    <div class="flex-auto"></div>
                 </div>
+
 
                 <!-- Selected Person -->
                 <div class="mt-4 flex flex-col divide-y border-b border-t">
 
-                    @if (selectedPerson){
-                        <div class="flex flex-col py-6 sm:flex-row sm:items-center">
+                    @for (p of selectedPersons;track p?.id){
+                        <div class="flex items-center py-3 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
 
-                            <div class="flex items-center w-full">
+                            <div class="flex h-10 w-10 flex-0 items-center justify-center overflow-hidden rounded-full bg-primary-50 text-primary dark:bg-primary-500/10">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:user'"></mat-icon>
+                            </div>
 
-                                <div class="flex h-10 w-10 flex-0 items-center justify-center overflow-hidden rounded-full">
-                                    <mat-icon class="h-full w-full object-cover" [svgIcon]="'heroicons_outline:user-group'"></mat-icon>
+                            <div class="ml-4 flex-auto min-w-0">
+                                <div class="font-semibold truncate text-slate-900 dark:text-white">
+                                    {{ p?.person?.firstName + ' ' + p?.person?.lastName }}
+                                </div>
+                                <div class="text-xs font-medium text-secondary truncate">
+                                    {{ p?.person?.grade?.name }}
+                                </div>
+                            </div>
+
+                            <div class="flex items-center ml-4 space-x-4">
+
+                                <div class="w-24">
+                                    <mat-form-field class="fuse-mat-dense w-full" appearance="outline" [subscriptSizing]="'dynamic'">
+                                        <mat-label>Qté</mat-label>
+                                        <input matInput
+                                               type="number"
+                                               min="1"
+                                               [(ngModel)]="p.qte"
+                                               [ngModelOptions]="{standalone: true}"
+                                               class="text-center font-semibold">
+                                    </mat-form-field>
                                 </div>
 
-                                <div class="ml-4 flex-auto">
-                                    <div class="font-medium">
-                                        {{ (((selectedPerson?.gender == 'F')?'Mme ':(selectedPerson?.gender == 'M')?'Mr ':'') + selectedPerson?.firstName + ' ' + selectedPerson?.lastName) }}
-                                    </div>
-                                    <div class="text-secondary">
-                                        {{ selectedPerson?.grade?.name }}
-                                    </div>
-                                </div>
-
-                                <button mat-icon-button (click)="removeSelectedPerson()">
+                                <button
+                                    mat-icon-button
+                                    (click)="removeSelectedPerson(p)"
+                                    class="transition-colors">
                                     <mat-icon class="text-red-800 dark:text-red-50" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
                                 </button>
-
                             </div>
                         </div>
-                    } @else {
+                    } @empty {
                         <div class="py-6 text-secondary text-center">
                             Aucun client sélectionné
                         </div>
                     }
 
                 </div>
-                <!-- Reservation Active -->
-                <div class="mt-4 flex flex-col divide-y border-b border-t">
-
-                    @if (selectedReservation){
-
-                        <div class="flex flex-col py-6">
-
-                            <div class="font-semibold text-lg mb-4">
-                                Détails de la réservation active
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-secondary">
-                                <div>
-                                    <div class="text-sm font-medium text-gray-500">pavillon</div>
-                                    <div class="font-semibold">
-                                        {{ selectedReservation.room?.pavillon?.name || '-' }}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div class="text-sm font-medium text-gray-500">Chambre</div>
-                                    <div class="font-semibold">
-                                        {{ selectedReservation.room?.code || '-' }}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div class="text-sm font-medium text-gray-500">Type</div>
-                                    <div class="font-semibold">
-                                        {{ selectedReservation.room?.roomType?.type || '-' }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    } @else {
-
-                        <div class="py-6 text-secondary text-center">
-                            Aucune réservation active pour ce client
-                        </div>
-
-                    }
-                </div>
 
                 <mat-form-field class="w-full p-2" appearance="outline">
-                    <mat-label>Type de repas</mat-label>
-
-                    <mat-select formControlName="mealType">
-                        @for (t of mealTypes; track t) {
-                            <mat-option [value]="t">
-                                {{ t }}
+                    <mat-label>Repas</mat-label>
+                    <mat-select formControlName="mealId">
+                        @for (m of meals; track m?.id) {
+                            <mat-option [value]="m.id">
+                                {{ m.name }}
                             </mat-option>
                         }
                     </mat-select>
-
-                    @if (form.get('mealType')?.hasError('required')) {
-                        <mat-error>Champ obligatoire</mat-error>
+                    @if (form.get('mealId').hasError('required') && form.get('mealId').touched) {
+                        <mat-error>Repas est obligatoire</mat-error>
                     }
-                </mat-form-field>
-
-                <mat-form-field class="w-full p-2" appearance="outline">
-                    <mat-label>Tarif</mat-label>
-                    <input matInput formControlName="price" readonly>
-                </mat-form-field>
-
-                <mat-form-field class="w-full p-2" appearance="outline">
-                    <mat-label>Quantité</mat-label>
-                    <input matInput type="number" min="1" formControlName="quantity">
-                </mat-form-field>
-
-                <mat-form-field class="w-full p-2" appearance="outline">
-                    <mat-label>Prix total</mat-label>
-                    <input matInput formControlName="totalPrice" readonly>
                 </mat-form-field>
 
                 <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
@@ -199,7 +149,7 @@
                  <div class="flex items-end justify-end mx-3 mt-8">
                     <button mat-flat-button
                             [color]="'primary'"
-                            [disabled]="form.disabled || form.invalid || !selectedPerson || isSaving"
+                            [disabled]="form.disabled || form.invalid || selectedPersons.length == 0 || isSaving"
                             (click)="save()">
                         Enregistrer
                     </button>

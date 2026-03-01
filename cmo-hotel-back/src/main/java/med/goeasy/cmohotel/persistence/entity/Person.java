@@ -53,5 +53,14 @@ public class Person {
 
     private boolean archived; // true : person archived or deleted, false : person active
 
+    public String getFullName() {
+        String gradeName = (grade != null) ? grade.getName() : "";
 
+        // Retourne "GRADE Prénom NOM" (ex: CAPITAINE Anas Bouguerra)
+        return String.format("%s %s %s",
+                gradeName,
+                this.firstName != null ? this.firstName : "",
+                this.lastName != null ? this.lastName : ""
+        ).trim().replaceAll("\\s{2,}", " ");
+    }
 }

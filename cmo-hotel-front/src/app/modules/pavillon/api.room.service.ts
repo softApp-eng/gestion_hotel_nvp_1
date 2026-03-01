@@ -42,4 +42,9 @@ export class ApiRoomService {
         return this._httpClient.get(`${this.API_URL}/one`, { params });
     }
 
+    delete(id): Observable<any>{
+        let params = new HttpParams().set('id', id);
+        return this._httpClient.delete(`${this.API_URL}/delete`, { params });
+    }
+
 }

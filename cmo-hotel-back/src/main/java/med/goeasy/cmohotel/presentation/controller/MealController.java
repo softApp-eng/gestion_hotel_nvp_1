@@ -3,19 +3,16 @@ package med.goeasy.cmohotel.presentation.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import med.goeasy.cmohotel.persistence.entity.enums.EGradeCategory;
-import med.goeasy.cmohotel.persistence.entity.enums.EMealType;
 import med.goeasy.cmohotel.presentation.dto.ApiResponse;
-import med.goeasy.cmohotel.presentation.dto.restauration.meal.MealPriceRequestDto;
-import med.goeasy.cmohotel.presentation.dto.restauration.meal.MealPriceResponseDto;
-import med.goeasy.cmohotel.presentation.dto.restauration.meal.MealTypeRequestDto;
-import med.goeasy.cmohotel.presentation.dto.restauration.meal.MealTypeResponseDto;
+import med.goeasy.cmohotel.presentation.dto.meal.MealPriceRequestDto;
+import med.goeasy.cmohotel.presentation.dto.meal.MealPriceResponseDto;
+import med.goeasy.cmohotel.presentation.dto.meal.MealTypeRequestDto;
+import med.goeasy.cmohotel.presentation.dto.meal.MealTypeResponseDto;
 import med.goeasy.cmohotel.service.MealService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
 
 @RestController

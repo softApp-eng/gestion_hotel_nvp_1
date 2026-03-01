@@ -41,9 +41,4 @@ export class ApiPersonService {
         return this._httpClient.delete(`${this.API_URL}/delete`, { params });
     }
 
-    searchWithReservation(key='',page=0,size=20): Observable<any>{
-        let params = new HttpParams().set('key', key).set('page', page).set('size', size);
-        return this._httpClient.get(`${this.API_URL}/searchWithReservation`, { params });
-    }
-
 }

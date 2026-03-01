@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface MealPriceRepository extends JpaRepository<MealPrice, Long> {
 
-    List<MealPrice> findByMealType_Id(Long mealTypeId);
+    /*List<MealPrice> findByMealType_Id(Long mealTypeId);
 
     @Query("""
        SELECT p.price FROM MealPrice p
@@ -21,7 +21,7 @@ public interface MealPriceRepository extends JpaRepository<MealPrice, Long> {
     """)
     Double getPrice(@Param("meal") EMealType meal,
                     @Param("category") EGradeCategory category);
-    List<MealPrice> findByMealTypeId(Long id);
+    List<MealPrice> findByMealTypeId(Long id);*/
 
 
     List<MealPrice> findAllByMealType_Id(Long typeId);
@@ -33,8 +33,9 @@ public interface MealPriceRepository extends JpaRepository<MealPrice, Long> {
 
 
 
-    @Query("SELECT mp FROM MealPrice mp WHERE mp.mealType.mealType = :mealType AND mp.category = :category")
-    Optional<MealPrice> findByMealTypeAndCategory(@Param("mealType") EMealType mealType,
+    // TODO CHECK
+    @Query("SELECT mp FROM MealPrice mp WHERE mp.mealType.name = :mealType AND mp.category = :category")
+    Optional<MealPrice> findByMealTypeAndCategory(@Param("mealType") String mealType,
                                                   @Param("category") EGradeCategory category);
 
 

@@ -25,6 +25,7 @@
         </div>
         <div class="flex items-center mt-6 sm:mt-0 sm:ml-4 space-x-3">
             <button
+                [disableIfNoPermission]="[APP_PERMISSIONS.MEAL_TYPES_CREATE]"
                 mat-flat-button
                 [color]="'primary'"
                 class="rounded-lg px-6 h-11 shadow-md hover:shadow-lg transition-all"
@@ -39,28 +40,20 @@
     <div class="flex-auto p-4 sm:p-6">
         <div class="w-full bg-card border rounded-2xl p-8 shadow">
 
-            <div class="flex items-end justify-end">
-                <button class="ml-4" mat-flat-button [color]="'primary'" (click)="raiseSaveType()" >
-                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
-                    <span class="ml-2 mr-1">Ajouter</span>
-                </button>
-            </div>
-
-
             <table mat-table [dataSource]="dataSource" class="w-full">
 
                 <!-- TYPE -->
                 <ng-container matColumnDef="name">
                     <th mat-header-cell *matHeaderCellDef>TYPE</th>
                     <td mat-cell *matCellDef="let row">
-                        <span class="font-semibold">{{ row.mealType.name }}</span>
+                        <span class="font-semibold">{{ row?.name }}</span>
                     </td>
                 </ng-container>
 
                 <ng-container matColumnDef="description">
                     <th mat-header-cell *matHeaderCellDef>Description</th>
                     <td mat-cell *matCellDef="let row">
-                        <span class="font-semibold">{{ row.description }}</span>
+                        <span class="font-semibold">{{ row?.description }}</span>
                     </td>
                 </ng-container>
 
@@ -116,15 +109,15 @@
 
                         <mat-menu #menuAction="matMenu" class="min-w-[220px]">
 
-                            <button mat-menu-item (click)="raiseSaveType(row)" >
+                            <button mat-menu-item (click)="raiseSaveType(row)" [disableIfNoPermission]="[APP_PERMISSIONS.MEAL_TYPES_UPDATE]">
                                 <mat-icon svgIcon="edit" ></mat-icon>
                                 <span>Modifier</span>
                             </button>
-                            <button mat-menu-item (click)="raisePricesManagement(row)" >
+                            <button mat-menu-item (click)="raisePricesManagement(row)" [disableIfNoPermission]="[APP_PERMISSIONS.MEAL_PRICE_LIST]">
                                 <mat-icon svgIcon="edit" ></mat-icon>
                                 <span>Gérer prix</span>
                             </button>
-                            <button mat-menu-item class="text-red-800 dark:text-red-50" (click)="deleteType(row)">
+                            <button mat-menu-item class="text-red-800 dark:text-red-50" (click)="deleteType(row)" [disableIfNoPermission]="[APP_PERMISSIONS.MEAL_TYPES_DELETE]">
                                 <mat-icon class="text-red-800 dark:text-red-50" svgIcon="mat_solid:delete_forever" ></mat-icon>
                                 <span class="font-semibold">Supprimer</span>
                             </button>

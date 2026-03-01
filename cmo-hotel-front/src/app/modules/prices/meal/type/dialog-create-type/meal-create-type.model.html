@@ -19,20 +19,10 @@
         <form [formGroup]="form">
 
             <!-- TYPE DE REPAS -->
-            <mat-form-field class="w-full p-2" appearance="outline">
-                <mat-label>Type de repas</mat-label>
-
-                <mat-select formControlName="mealType">
-
-                    @for (t of mealTypes; track t) {
-                        <mat-option [value]="t?.code">
-                            {{ t?.name }}
-                        </mat-option>
-                    }
-
-                </mat-select>
-
-                @if (form.get('mealType')?.hasError('required')) {
+            <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                <mat-label>Nom</mat-label>
+                <input matInput [formControlName]="'name'" placeholder="Nom">
+                @if (form.get('name').hasError('required')) {
                     <mat-error>Champ obligatoire</mat-error>
                 }
             </mat-form-field>
@@ -47,10 +37,6 @@
                     cdkAutosizeMinRows="2"
                     cdkAutosizeMaxRows="5">
                 </textarea>
-
-                <mat-error *ngIf="form.get('description')?.hasError('required')">
-                    Champ obligatoire
-                </mat-error>
             </mat-form-field>
 
             <!-- BUTTONS -->

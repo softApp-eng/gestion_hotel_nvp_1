@@ -39,6 +39,7 @@ export const APP_PERMISSIONS = {
     ROOM_LIST:'rooms:room:list',
     ROOM_GRANTED:'rooms:room:granted',
     ROOM_SELECT_ONE:'rooms:room:one',
+    ROOM_DELETE:'rooms:room:delete',
 
     // ROOM TYPES
     ROOM_TYPE_CREATE:'rooms:type:create',
@@ -73,5 +74,21 @@ export const APP_PERMISSIONS = {
     HOUSE_KEEPING_HISTORY_SEARCH:'housekeepings:history:search',
     HOUSE_KEEPING_HISTORY_UPDATE:'housekeepings:history:update',
     HOUSE_KEEPING_HISTORY_DELETE:'housekeepings:history:delete',
+
+    // MEALS
+    MEAL_TYPES_LIST:'meals:types:list',
+    MEAL_TYPES_CREATE:'meals:types:create',
+    MEAL_TYPES_UPDATE:'meals:types:update',
+    MEAL_TYPES_DELETE:'meals:types:delete',
+
+    MEAL_PRICE_LIST:'meals:price:list',
+    MEAL_PRICE_CREATE:'meals:price:create',
+    MEAL_PRICE_UPDATE:'meals:price:update',
+    MEAL_PRICE_DELETE:'meals:price:delete',
+
+    // PRESTATION
+    PRESTATION_CREATE:'prestations:prestation:create',
+    PRESTATION_DELETE:'prestations:prestation:delete',
+    PRESTATION_FOR_RESIDENTS:'prestations:prestation:residents:list',
 
 }

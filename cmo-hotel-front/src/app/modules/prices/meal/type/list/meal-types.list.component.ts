@@ -24,6 +24,7 @@ import {
 
 import { ToastrService } from 'ngx-toastr';
 import { APP_PERMISSIONS } from '../../../../../core/data/app-permissions';
+import { DisableIfNoPermissionDirective } from '../../../../../core/auth/DisableIfNoPermissionDirective';
 
 @Component({
     selector: 'app-meal-types-list',
@@ -36,11 +37,11 @@ import { APP_PERMISSIONS } from '../../../../../core/data/app-permissions';
         MatButtonModule,
         MatMenuModule,
         MatDialogModule,
-        MatSortModule
-    ]
+        MatSortModule,
+        DisableIfNoPermissionDirective,
+    ],
 })
 export class MealTypesListComponent implements OnInit, AfterViewInit {
-
     isLoading = false;
     displayedColumns = ['name', 'description', 'prices', 'action'];
 
@@ -54,20 +55,20 @@ export class MealTypesListComponent implements OnInit, AfterViewInit {
         icon: {
             show: true,
             name: 'heroicons_outline:exclamation-triangle',
-            color: 'warn'
+            color: 'warn',
         },
         actions: {
             confirm: {
                 show: true,
                 label: 'Supprimer',
-                color: 'warn'
+                color: 'warn',
             },
             cancel: {
                 show: true,
-                label: 'Annuler'
-            }
+                label: 'Annuler',
+            },
         },
-        dismissible: true
+        dismissible: true,
     };
 
     constructor(
@@ -83,23 +84,21 @@ export class MealTypesListComponent implements OnInit, AfterViewInit {
         this.load();
     }
 
-
     // ================= LOAD =================
 
     load(): void {
         this.isLoading = true;
-        this.api.allWithPrices()
-            .pipe(finalize(() =>
-                this.isLoading = false
-            ))
+        this.api
+            .allWithPrices()
+            .pipe(finalize(() => (this.isLoading = false)))
             .subscribe({
                 next: (res) => {
-                    this.dataSource.data = res.map(r => ({
+                    this.dataSource.data = res.map((r) => ({
                         ...r,
-                        showAllPrices: false
+                        showAllPrices: false,
                     }));
                     this.dataSource.sort = this.sort;
-                }
+                },
             });
     }
 
@@ -110,7 +109,7 @@ export class MealTypesListComponent implements OnInit, AfterViewInit {
             .open(MealTypeSaveDialogComponent, {
                 width: '450px',
                 data: row || null,
-                disableClose: true
+                disableClose: true,
             })
             .afterClosed()
             .subscribe((result) => {
@@ -120,50 +119,49 @@ export class MealTypesListComponent implements OnInit, AfterViewInit {
             });
     }
 
-
-
     raisePricesManagement(type: any) {
         this.dialog
             .open(MealPriceManageModel, {
                 data: { type },
                 width: '700px',
-                disableClose: true
+                disableClose: true,
             })
             .afterClosed()
-            .subscribe(data => {
+            .subscribe((data) => {
                 //if (data?.reload) {
-                    this.load();
-               // }
+                this.load();
+                // }
             });
     }
 
     // ================= DELETE =================
 
     deleteType(row: any) {
-        this.actionConfigDialogue.title =
-            `Confirmer la suppression du type "${row.mealType}"`;
+        this.actionConfigDialogue.title = `Confirmer la suppression du type "${row.mealType}"`;
 
-        this.actionConfigDialogue.message =
-            `Êtes-vous sûr de vouloir supprimer le type
+        this.actionConfigDialogue.message = `Êtes-vous sûr de vouloir supprimer le type
             <b>${row.mealType}</b> ?<br>
             Cette action est <b>irréversible</b>.`;
 
-        const dialogRef =
-            this._fuseConfirmationService.open(this.actionConfigDialogue);
+        const dialogRef = this._fuseConfirmationService.open(
+            this.actionConfigDialogue
+        );
 
-        dialogRef.afterClosed().subscribe(result => {
+        dialogRef.afterClosed().subscribe((result) => {
             if (result === 'confirmed') {
                 this.api.delete(row.id).subscribe({
                     next: () => {
                         this._toast.success('Type de repas supprimé');
-                        this.dataSource.data =
-                            this.dataSource.data.filter(t => t.id !== row.id);
+                        this.dataSource.data = this.dataSource.data.filter(
+                            (t) => t.id !== row.id
+                        );
                     },
                     error: (err) => {
                         this._toast.error(
-                            err?.error?.message || "Erreur lors de la suppression"
+                            err?.error?.message ||
+                                'Erreur lors de la suppression'
                         );
-                    }
+                    },
                 });
             }
         });

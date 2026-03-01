@@ -7,6 +7,7 @@ import med.goeasy.cmohotel.audit.ActivityLogService;
 import med.goeasy.cmohotel.audit.EAuditActionOperation;
 import med.goeasy.cmohotel.audit.EAuditActionTarget;
 import med.goeasy.cmohotel.exception.BadRequestException;
+import med.goeasy.cmohotel.exception.OperationNotPermittedException;
 import med.goeasy.cmohotel.persistence.entity.Pavillon;
 import med.goeasy.cmohotel.persistence.entity.Room;
 import med.goeasy.cmohotel.persistence.entity.RoomPrice;
@@ -119,8 +120,33 @@ public class RoomService {
         );
     }
 
+    @Transactional
+    public void deleteRoom(Authentication authentication,Long id){
+        Room room = getRoomById(id);
+        // is room reserved
+        if (reservationRepository.isRoomHasReservation(id))
+            throw new OperationNotPermittedException("Chambre a déja planifié pour une reservation");
+
+        if (reservationRepository.countRoomReservations(id) == 0)
+            roomRepository.delete(room);
+        else {
+            room.setArchived(true);
+            roomRepository.save(room);
+        }
+
+        // audit
+        activityLogService.logActivity(
+                EAuditActionTarget.ROOM,
+                EAuditActionOperation.DELETE,
+                String.format("Supprission de la chambre '%s'.",room.getCode()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+
+    }
+
     /// /////////////////////////////////////////////////////////////////////////////
-    ///                                  ROOM TYPES                               ///
+    ///                                ROOM TYPES                                 ///
     /// /////////////////////////////////////////////////////////////////////////////
 
     public List<RoomTypeDto> getRoomTypes(Authentication authentication) {

@@ -8,7 +8,7 @@
                           [svgIcon]="'heroicons_solid:currency-dollar'">
                 </mat-icon>
                 <span class="text-xl text-white">
-                    Prix — {{ data.type.mealType }}
+                    Prix — {{ data.type.name }}
                 </span>
             </div>
 
@@ -22,7 +22,7 @@
     <div class="m-6">
 
         <div class="flex items-end justify-end mb-3">
-            <button mat-flat-button color="primary" (click)="raisePriceCreate()">
+            <button mat-flat-button color="primary" (click)="raisePriceCreate()" [disableIfNoPermission]="[APP_PERMISSIONS.MEAL_PRICE_CREATE]">
                 Nouveau
             </button>
         </div>
@@ -62,6 +62,7 @@
                         <div class="flex items-center justify-end space-x-1">
 
                             <button mat-icon-button
+                                    [disableIfNoPermission]="[APP_PERMISSIONS.MEAL_PRICE_UPDATE]"
                                     matTooltip="Modifier"
                                     (click)="raisePriceCreate(row)">
                                 <mat-icon class="icon-size-4"
@@ -70,6 +71,7 @@
                             </button>
 
                             <button mat-icon-button
+                                    [disableIfNoPermission]="[APP_PERMISSIONS.MEAL_PRICE_DELETE]"
                                     matTooltip="Supprimer"
                                     (click)="deletePrice(row)">
                                 <mat-icon class="icon-size-4 text-red-600"

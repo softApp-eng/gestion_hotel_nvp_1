@@ -58,6 +58,7 @@ public enum EPermissions {
     ROOM_LIST(ROOM, "room:list", "lister les chambres", READ,true,""),
     ROOM_LIST_GRANTED(ROOM, "room:granted", "lister les chambres affectées", READ,true,""),
     ROOM_SELECT_ONE(ROOM, "room:one", "charger une chambre", READ,true,""),
+    ROOM_DELETE(ROOM, "room:delete", "Supprimer une chambre", DELETE,true,""),
     // ROOMS TYPES
     ROOM_TYPE_CREATE(ROOM, "type:create", "Créer un type de chambre", CREATE,true,""),
     ROOM_TYPE_UPDATE(ROOM, "type:update", "Modifier type de chambre", UPDATE,true,""),
@@ -79,6 +80,7 @@ public enum EPermissions {
     RESERVATION_CANCEL(RESERVATION, "reservation:cancel", "annuler une réservation", MANAGE,true,""),
     RESERVATION_CLOSE(RESERVATION, "reservation:close", "cloturer une réservation", MANAGE,true,""),
     RESERVATION_DELETE(RESERVATION, "reservation:delete", "supprimer une réservation", DELETE,true,""),
+    RESERVATION_RESIDENTS(RESERVATION, "reservation:residents", "charger réservations des residents", READ,true,""),
 
     //HOUSE KEEPING
     HOUSE_KEEPING_AGENT_CREATE(HOUSE_KEEPING, "agent:create", "Créer un agent", CREATE,true,""),
@@ -101,6 +103,11 @@ public enum EPermissions {
     MEAL_PRICE_CREATE(MEAL, "price:create", "Créer un prix de repas", CREATE,true,""),
     MEAL_PRICE_UPDATE(MEAL, "price:update", "modifier un prix de repas", UPDATE,true,""),
     MEAL_PRICE_DELETE(MEAL, "price:delete", "Supprimer un prix de repas", DELETE,true,""),
+
+    // PRESTATION
+    PRESTATION_CREATE(PRESTATION, "prestation:create", "Créer une préstation", CREATE,true,""),
+    PRESTATION_FOR_RESIDENTS(PRESTATION, "prestation:residents:list", "Lister les préstations des residents", READ,true,""),
+    PRESTATION_DELETE(PRESTATION, "prestation:delete", "Supprimer une préstation", DELETE,true,""),
 
 
     ;

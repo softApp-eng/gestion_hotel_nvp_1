@@ -35,6 +35,7 @@ export class ReservationDetailsModel implements OnInit {
         public data: { reservation: any }
     ) {
         this.reservation = data.reservation;
+        console.log(this.reservation);
     }
 
     ngOnInit(): void {}
