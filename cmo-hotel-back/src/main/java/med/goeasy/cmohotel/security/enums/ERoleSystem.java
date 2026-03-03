@@ -20,10 +20,20 @@ public enum ERoleSystem {
             EnumSet.allOf(EPermissions.class)
     ),
 
-    RESERVATIONS_MANAGER("reservations_manager",
-            "Profil d'accès pour la gestion des résevations.",
+    FRON_DESK("front desk",
+            "Profil d'accès pour la gestion des réservations des clients.",
             EnumSet.of(
-                    EPermissions.DEFAULT
+                    EPermissions.DEFAULT,
+                    EPermissions.RESERVATION_CREATE,
+                    EPermissions.RESERVATION_LIST,
+                    EPermissions.RESERVATION_ONE,
+                    EPermissions.RESERVATION_ACCEPT,
+                    EPermissions.RESERVATION_CANCEL,
+                    EPermissions.RESERVATION_CLOSE,
+                    EPermissions.RESERVATION_DELETE,
+                    EPermissions.RESERVATION_RESIDENTS
+
+
             )),
 
     GOVERNANCE("governance",

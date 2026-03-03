@@ -147,6 +147,12 @@ public class Feeder {
                         .findFirst()
                         .orElseThrow(()-> new BadRequestException("no role found with name " + ERoleSystem.PRESTATION_MANAGER.getRoleName()))
         );
+        createFronDeskAccounts(
+                roleList.stream()
+                        .filter(r -> r.getName().equals(ERoleSystem.FRON_DESK.getRoleName()))
+                        .findFirst()
+                        .orElseThrow(()-> new BadRequestException("no role found with name " + ERoleSystem.FRON_DESK.getRoleName()))
+        );
     }
 
     private void createAdminAccount(AppRole adminRole) {
@@ -171,6 +177,18 @@ public class Feeder {
         resto.setRoles( Set.of(prestationRole));
         appUserRepository.save(resto);
         log.info("prestation accounts created");
+    }
+
+    public void createFronDeskAccounts(AppRole frontDeskRole) {
+        AppUser frontdesk = new AppUser();
+        frontdesk.setUsername("front");
+        frontdesk.setPassword(encoder.encode("123456"));
+        frontdesk.setAccountStatus(true);
+        frontdesk.setFirstName("front");
+        frontdesk.setLastName("front");
+        frontdesk.setRoles( Set.of(frontDeskRole));
+        appUserRepository.save(frontdesk);
+        log.info("Fron desk accounts created");
     }
 
     private void createGovernanceAccounts(AppRole governanceRole) {
