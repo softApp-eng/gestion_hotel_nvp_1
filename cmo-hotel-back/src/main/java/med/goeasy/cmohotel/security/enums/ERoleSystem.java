@@ -24,6 +24,7 @@ public enum ERoleSystem {
             "Profil d'accès pour la gestion des réservations des clients.",
             EnumSet.of(
                     EPermissions.DEFAULT,
+                    //reservation
                     EPermissions.RESERVATION_CREATE,
                     EPermissions.RESERVATION_LIST,
                     EPermissions.RESERVATION_ONE,
@@ -31,8 +32,18 @@ public enum ERoleSystem {
                     EPermissions.RESERVATION_CANCEL,
                     EPermissions.RESERVATION_CLOSE,
                     EPermissions.RESERVATION_DELETE,
-                    EPermissions.RESERVATION_RESIDENTS
-
+                    EPermissions.RESERVATION_RESIDENTS,
+                    // rooms and pavillon
+                    EPermissions.PAVILLON_LIST,
+                    EPermissions.PAVILLON_SELECT_ONE,
+                    EPermissions.ROOM_LIST,
+                    EPermissions.ROOM_SELECT_ONE,
+                    // persons
+                    EPermissions.PERSON_CREATE,
+                    EPermissions.PERSON_UPDATE,
+                    EPermissions.PERSON_LIST,
+                    EPermissions.PERSON_SELECT_ONE,
+                    EPermissions.PERSON_DELETE
 
             )),
 

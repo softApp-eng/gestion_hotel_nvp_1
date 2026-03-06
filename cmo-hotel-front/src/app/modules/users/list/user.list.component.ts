@@ -16,6 +16,7 @@ import { UserUpdateMdpModel } from '../update-mdp-model/user.update-mdp.model';
 import { AssignRolesModel } from '../assign-roles-model/assign-roles-model';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
 import { DisableIfNoPermissionDirective } from '../../../core/auth/DisableIfNoPermissionDirective';
+import { ResourceAssignModel } from '../assign-resource-model/resource.assign.model';
 
 @Component({
     selector: 'users-list',
@@ -125,4 +126,16 @@ export class UserListComponent implements OnInit {
     protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
 
 
+    raiseResourcesManageModel(user) {
+        //ResourceAssignModel
+        //console.log('row',user);
+        this._matDialog
+            .open(ResourceAssignModel, { data: { user: user } })
+            .afterClosed()
+            .subscribe((value) => {
+                if (value?.reload) {
+                    //this.loadUsers();
+                }
+            });
+    }
 }

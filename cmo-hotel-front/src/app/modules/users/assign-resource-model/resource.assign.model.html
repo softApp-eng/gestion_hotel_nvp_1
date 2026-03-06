@@ -1,0 +1,90 @@
+<div class="flex flex-col max-h-[90vh] md:w-240 md:min-w-240 overflow-hidden -m-6">
+    <mat-toolbar class="mat-accent h-14 min-h-14 px-4 m-0 flex-none z-10">
+        <div class="flex items-center w-full justify-between">
+            <div class="flex items-center">
+                <mat-icon class="icon-size-5 mr-3 text-white" [svgIcon]="'heroicons_solid:shield-check'"></mat-icon>
+                <span class="text-xl font-semibold text-white">Assignation des Ressources</span>
+            </div>
+            <button mat-icon-button (click)="matDialogRef.close()" class="text-white">
+                <mat-icon svgIcon="heroicons_outline:x-mark"></mat-icon>
+            </button>
+        </div>
+    </mat-toolbar>
+
+    <div class="flex-auto overflow-y-auto px-6 mt-4">
+        <table mat-table [dataSource]="dataSource" matSort class="w-full bg-transparent">
+
+            <ng-container matColumnDef="selection">
+                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 sticky top-0 z-10">
+                    <mat-checkbox (change)="$event ? masterToggle() : null"
+                                  [checked]="selection.hasValue() && isAllSelected()"
+                                  [indeterminate]="selection.hasValue() && !isAllSelected()"
+                                  [color]="'primary'">
+                    </mat-checkbox>
+                </th>
+                <td mat-cell *matCellDef="let row">
+                    <mat-checkbox (click)="$event.stopPropagation()"
+                                  (change)="$event ? selection.toggle(row) : null"
+                                  [checked]="selection.isSelected(row)"
+                                  [color]="'primary'">
+                    </mat-checkbox>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="pavillon">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header class="bg-gray-50 sticky top-0 z-10 uppercase text-xs font-bold"> Pavillon </th>
+                <td mat-cell *matCellDef="let row">
+                    <span class="font-medium" [innerHTML]="row?.pavillon?.name | highlight:key"></span>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="code">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header class="bg-gray-50 sticky top-0 z-10 uppercase text-xs font-bold"> Code </th>
+                <td mat-cell *matCellDef="let row" class="font-mono text-primary font-semibold">
+                    <span [innerHTML]="row?.code | highlight:key"></span>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header class="bg-gray-50 sticky top-0 z-10 uppercase text-xs font-bold"> Libellé </th>
+                <td mat-cell *matCellDef="let row">
+                    <span [innerHTML]="row?.name | highlight:key"></span>
+                </td>
+            </ng-container>
+            <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header class="bg-gray-50 sticky top-0 z-10 uppercase text-xs font-bold"> Type </th>
+                <td mat-cell *matCellDef="let row">
+                    <span [innerHTML]="row?.roomType?.type | highlight:key"></span>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                (click)="selection.toggle(row)"
+                class="hover:bg-gray-50 cursor-pointer transition-colors">
+            </tr>
+
+            <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell text-center p-8" [attr.colspan]="displayedColumns.length">
+                    Aucune chambre ne correspond à votre recherche.
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="p-6 pt-2 flex-none bg-gray-50 border-t">
+        <mat-paginator [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>
+
+        <div class="flex items-center justify-between mt-4">
+            <div class="text-sm font-medium text-secondary">
+                {{ selection.selected.length }} chambre(s) sélectionnée(s)
+            </div>
+            <div class="flex space-x-3">
+                <button mat-stroked-button (click)="matDialogRef.close()">Annuler</button>
+                <button mat-flat-button [color]="'primary'" (click)="saveAndClose()" [disabled]="isLoading">
+                    <span>Enregistrer les accès</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
