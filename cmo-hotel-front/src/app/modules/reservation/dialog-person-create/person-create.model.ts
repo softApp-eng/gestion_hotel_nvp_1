@@ -10,7 +10,7 @@ import {
     Validators,
 } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { finalize } from 'rxjs';
+import { finalize, map, Observable, startWith } from 'rxjs';
 import { MatSelectModule } from '@angular/material/select';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { ToastrService } from 'ngx-toastr';
@@ -21,6 +21,9 @@ import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker
 import { RouterLink } from '@angular/router';
 import { FuseAlertComponent } from '../../../../@fuse/components/alert';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { AppConstantValues } from '../../../core/data/app-constant-values';
+import { AsyncPipe } from '@angular/common';
+import { MatAutocomplete, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 
 @Component({
     selector: 'person-add-model',
@@ -36,7 +39,10 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
         MatToolbarModule,
         MatSelectModule,
         MatSlideToggleModule,
-        MatDatepickerModule
+        MatDatepickerModule,
+        AsyncPipe,
+        MatAutocomplete,
+        MatAutocompleteTrigger,
     ],
 })
 export class PersonCreateModel implements OnInit {
@@ -44,7 +50,9 @@ export class PersonCreateModel implements OnInit {
     form: UntypedFormGroup;
     person;
     grades;
-    relationTypes = []
+    relationTypes = [];
+    pays: string[] = AppConstantValues.PAYS;
+    filteredPays: Observable<string[]>;
 
     /**
      * Constructor
@@ -57,7 +65,7 @@ export class PersonCreateModel implements OnInit {
         private _apiCommonService: ApiCommonService,
         private _toast: ToastrService,
         @Inject(MAT_DIALOG_DATA)
-        public data: { person: any, isFamille:boolean }
+        public data: { person: any; isFamille: boolean }
     ) {
         this.loadRelationshipsTypes();
         this.form = this._formBuilder.group({
@@ -71,18 +79,22 @@ export class PersonCreateModel implements OnInit {
             email: [''],
             birthDate: [''],
             phoneNumber: [''],
-            nationality: [''],
+            nationality: ['Maroc'],
             language: [''],
             matricule: [''],
             unite: [''],
             observation: [''],
         });
+        this.filteredPays = this.form.get('nationality').valueChanges.pipe(
+            startWith(''),
+            map((value) => this._filter(value || ''))
+        );
         this.person = data.person;
-        console.log('AIT',data);
-        if(data.isFamille){
+        console.log('AIT', data);
+        if (data.isFamille) {
             this.form.patchValue({
-                primaryPersonId: this.person.id
-            })
+                primaryPersonId: this.person.id,
+            });
         }
         if (this.person && !data.isFamille) {
             //initialize
@@ -95,7 +107,9 @@ export class PersonCreateModel implements OnInit {
                 lastName: this.person?.lastName,
                 gender: this.person?.gender,
                 email: this.person?.email,
-                birthDate: this.person?.birthDate ? new Date(this.person?.birthDate) : '',
+                birthDate: this.person?.birthDate
+                    ? new Date(this.person?.birthDate)
+                    : '',
                 phoneNumber: this.person?.phoneNumber,
                 nationality: this.person?.nationality,
                 language: this.person?.language,
@@ -108,6 +122,19 @@ export class PersonCreateModel implements OnInit {
 
     ngOnInit(): void {
         this.loadGrades();
+    }
+    private _filter(value: string): string[] {
+        const filterValue = value.toLowerCase();
+        return this.pays.filter((p) => p.toLowerCase().includes(filterValue));
+    }
+    validateNationality(): void {
+        setTimeout(() => {
+            // Un léger délai permet à l'autocomplete de finir sa sélection
+            const value = this.form.get('nationality').value;
+            if (value && !this.pays.includes(value)) {
+                this.form.get('nationality').setValue('');
+            }
+        }, 200);
     }
 
     loadRelationshipsTypes() {
@@ -159,7 +186,10 @@ export class PersonCreateModel implements OnInit {
                 .subscribe({
                     next: (value) => {
                         this._toast.success('client modifié');
-                        this.matDialogRef.close({status : 'update',data:value});
+                        this.matDialogRef.close({
+                            status: 'update',
+                            data: value,
+                        });
                     },
                     error: (err) => {
                         this._toast.error(
@@ -185,7 +215,10 @@ export class PersonCreateModel implements OnInit {
                 .subscribe({
                     next: (value) => {
                         this._toast.success('client ajouté');
-                        this.matDialogRef.close({status : 'create',data:value});
+                        this.matDialogRef.close({
+                            status: 'create',
+                            data: value,
+                        });
                     },
                     error: (err) => {
                         this._toast.error(

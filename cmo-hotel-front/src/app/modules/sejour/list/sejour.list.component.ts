@@ -74,6 +74,7 @@ export class SejourListComponent implements OnInit, OnDestroy {
         'checkout',
         'room',
         'person',
+        'category',
         'action',
     ];
 

@@ -83,6 +83,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         'checkout',
         'room',
         'person',
+        'category',
         'status',
         'action',
     ];

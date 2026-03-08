@@ -2,6 +2,7 @@ package med.goeasy.cmohotel.persistence.repository;
 
 import med.goeasy.cmohotel.persistence.entity.Person;
 import med.goeasy.cmohotel.persistence.entity.Reservation;
+import med.goeasy.cmohotel.presentation.dto.Range;
 import med.goeasy.cmohotel.presentation.dto.reservation.ReservedRoomResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -95,5 +96,50 @@ public interface ReservationRepository extends JpaRepository<Reservation, String
         AND CURRENT_DATE <= CAST(COALESCE(rd.checkout, rd.plannedEnd) AS date)
     """)
     List<Reservation> findResidentReservations();
+
+    @Query("""
+        SELECT new med.goeasy.cmohotel.presentation.dto.Range(
+            COALESCE(r.details.checkin, r.details.plannedStart),
+            COALESCE(r.details.checkout, r.details.plannedEnd),
+            CAST(COUNT(r.id) AS int)
+        )
+        FROM Reservation r
+        WHERE r.room.id = :roomId
+        AND r.details.status IN ('PENDING','CONFIRMED')
+        AND (COALESCE(r.details.checkout, r.details.plannedEnd) >= :today)
+        GROUP BY
+                COALESCE(r.details.checkin, r.details.plannedStart),
+                COALESCE(r.details.checkout, r.details.plannedEnd)
+    """)
+    List<Range> findOccupiedRangesByRoom(
+            @Param("roomId") Long roomId,
+            @Param("today") LocalDateTime today
+    );
+
+    @Query("""
+        SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END 
+        FROM Reservation r 
+        WHERE r.room.id = :roomId 
+        AND r.details.status IN ('PENDING','CONFIRMED')
+        AND (:start < COALESCE(r.details.checkout, r.details.plannedEnd) AND :end > COALESCE(r.details.checkin, r.details.plannedStart))
+        AND (:rcode IS NULL OR r.details.code != :rcode)
+    """)
+    boolean isRoomOccupied(@Param("roomId") Long roomId,
+                           @Param("start") LocalDateTime start,
+                           @Param("end") LocalDateTime end,
+                           @Param("rcode") Long code);
+
+    // Compte les occupants pour les chambres partagées
+    @Query("""
+        SELECT COUNT(r) FROM Reservation r 
+        WHERE r.room.id = :roomId 
+        AND r.details.status IN ('PENDING','CONFIRMED')
+        AND (:start < COALESCE(r.details.checkout, r.details.plannedEnd) AND :end > COALESCE(r.details.checkin, r.details.plannedStart))
+        AND (:rcode IS NULL OR r.details.code != :rcode)
+    """)
+    long countCurrentOccupants(@Param("roomId") Long roomId,
+                               @Param("start") LocalDateTime start,
+                               @Param("end") LocalDateTime end,
+                               @Param("rcode") Long code);
 
 }

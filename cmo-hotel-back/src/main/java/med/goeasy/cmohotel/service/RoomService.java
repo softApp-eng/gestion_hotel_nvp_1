@@ -15,6 +15,7 @@ import med.goeasy.cmohotel.persistence.entity.RoomType;
 import med.goeasy.cmohotel.persistence.entity.auth.AppUser;
 import med.goeasy.cmohotel.persistence.entity.auth.AppUserResource;
 import med.goeasy.cmohotel.persistence.repository.*;
+import med.goeasy.cmohotel.presentation.dto.Range;
 import med.goeasy.cmohotel.presentation.dto.room.*;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
@@ -91,6 +92,16 @@ public class RoomService {
     public List<RoomResponseDto> getRooms(Authentication authentication, Long pavillonId, Boolean clean) {
         log.info("{} get rooms in pavillon id {}", authentication.getName(),pavillonId);
         return  roomRepository.getRooms(pavillonId,clean).stream().map(RoomResponseDto::mapToDto).toList();
+    }
+
+    public List<RoomResponseDto> getRoomsWithReservationsDetails(Authentication authentication, Long pavillonId) {
+        log.info("{} get rooms in pavillon id {} with Occupied Ranges", authentication.getName(),pavillonId);
+        LocalDateTime now = LocalDateTime.now();
+        return  roomRepository.getRooms(pavillonId,null)
+                .stream().map(room ->{
+                    List<Range> ranges = reservationRepository.findOccupiedRangesByRoom(room.getId(), now);
+                    return RoomResponseDto.mapToDtoWithReservationRanges(room, ranges);
+                }).toList();
     }
 
     public List<RoomResponseDto> getGrantedRooms(Authentication authentication) {

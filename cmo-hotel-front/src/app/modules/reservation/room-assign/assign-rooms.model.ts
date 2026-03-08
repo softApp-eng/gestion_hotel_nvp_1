@@ -14,10 +14,22 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { ToastrService } from 'ngx-toastr';
 import { ApiPavillonService } from '../../pavillon/api.pavillon.service';
 import { ApiRoomService } from '../../pavillon/api.room.service';
+import { NgClass } from '@angular/common';
+
+interface RoomStatus {
+    isDisabled: boolean;
+    reason?: string;
+}
 
 @Component({
     selector: 'rooms-assign-model',
     templateUrl: './assign-rooms.model.html',
+    styles: [`
+        .mat-mdc-option .mdc-list-item__primary-text {
+            width: 100% !important;
+            display: block !important;
+        }
+    `],
     encapsulation: ViewEncapsulation.None,
     standalone: true,
     imports: [
@@ -29,6 +41,7 @@ import { ApiRoomService } from '../../pavillon/api.room.service';
         MatToolbarModule,
         MatSelectModule,
         FormsModule,
+        NgClass,
     ],
 })
 export class AssignRoomsModel implements OnInit {
@@ -48,12 +61,11 @@ export class AssignRoomsModel implements OnInit {
         public _apiRoomService: ApiRoomService,
         private _toast: ToastrService,
         @Inject(MAT_DIALOG_DATA)
-        public data: {upcomingReservations: any,start:any,end:any}
+        public data: {start: any; end: any, existingOccupations: any }
     ) {
-        //this.
-        console.log('upcomingReservations',data.upcomingReservations);
-        console.log('start',data.start);
-        console.log('end',data.end);
+        console.log('start', data.start);
+        console.log('end', data.end);
+        console.log('existingOccupations', data.existingOccupations);
     }
 
     ngOnInit(): void {
@@ -74,7 +86,7 @@ export class AssignRoomsModel implements OnInit {
         this._changeDetectorRef.detectChanges();
 
         this._apiRoomService
-            .all(pavillonId)
+            .getRoomsWithReservationsDetails(pavillonId)
             .pipe(
                 finalize(() => {
                     this.isRoomLoading = false;
@@ -84,42 +96,79 @@ export class AssignRoomsModel implements OnInit {
             .subscribe({
                 next: (data) => {
                     //this.rooms = data;
-                    this.rooms = data.map(room => ({
-                        ...room,
-                        isReserved: this.checkIfRoomIsReserved(room.id)
-                    }));
+                    this.rooms = data.map((room) => {
+                        const localOccupancy = this.data.existingOccupations.find(occ => occ.roomId === room.id);
+                        let updatedRanges = [...(room.reservationsRanges || [])];
+
+                        if (localOccupancy) {
+                            updatedRanges.push({
+                                start: localOccupancy.rangeOccupation.start,
+                                end: localOccupancy.rangeOccupation.end,
+                                personsCount: localOccupancy.numberOfPersons,
+                                isLocal: true
+                            });
+                        }
+                        const mergedRoom = { ...room, reservationsRanges: updatedRanges };
+
+                        const status = this.getRoomAvailability(mergedRoom);
+                        return {
+                            ...mergedRoom,
+                            isDisabled: status.isDisabled,
+                            statusReason: status.reason,
+                        };
+                    });
                     console.log('rooms', this.rooms);
                 },
                 error: (err) => {
-                    this._toast.error("Erreur lors du chargement des chambres");
-                }
+                    this._toast.error('Erreur lors du chargement des chambres');
+                },
             });
     }
-    private checkIfRoomIsReserved(roomId: number): boolean {
-        if (!this.data.upcomingReservations || this.data.upcomingReservations.length === 0) {
-            return false;
+
+
+    private getRoomAvailability(room: any): RoomStatus {
+        if (!room.available) return { isDisabled: true, reason: 'HORS SERVICE' };
+        const getTime = (dateInput: any): number => {
+            if (!dateInput) return 0;
+            // Gestion Luxon/JS Date/String ISO
+            if (dateInput.ts) return dateInput.ts;
+            if (dateInput instanceof Date) return dateInput.getTime();
+            if (typeof dateInput === 'string') return new Date(dateInput.replace(' ', 'T')).getTime();
+            return 0;
+        };
+
+        const newStart = getTime(this.data.start);
+        const newEnd = getTime(this.data.end);
+
+        // DEBUG : Tu devrais maintenant voir de grands nombres ici, pas 0
+        console.log('Vérification des Timestamps:', { newStart, newEnd });
+
+        const overlaps = (room.reservationsRanges || []).filter((res) => {
+            const resStart = getTime(res.start);
+            const resEnd = getTime(res.end);
+
+            // Intersection : (A.start < B.end) && (A.end > B.start)
+            return resStart < newEnd && resEnd > newStart;
+        });
+
+        if (overlaps.length > 0) {
+            if (!room.shared) {
+                return { isDisabled: true, reason: 'OCCUPÉE' };
+            }
+
+            const currentOccupants = overlaps.reduce((sum, r) => sum + (r.personsCount || 0), 0);
+            if (currentOccupants >= room.capacity) {
+                return { isDisabled: true, reason: `COMPLÈTE (${currentOccupants}/${room.capacity})` };
+            }
+
+            return { isDisabled: false, reason: `PARTAGÉE (${currentOccupants}/${room.capacity} OCCUPÉS)` };
         }
 
-        // Dates sélectionnées dans le dialogue (période de la nouvelle assignation)
-        const newStart = new Date(this.data.start).getTime();
-        const newEnd = new Date(this.data.end).getTime();
-        console.log('>',newStart, newEnd);
-
-        return this.data.upcomingReservations.some(res => {
-            // On ne vérifie que pour la même chambre
-            if (res.roomId !== roomId) return false;
-
-            const resStart = new Date(res.start).getTime();
-            const resEnd = new Date(res.end).getTime();
-
-            // Logique d'intersection :
-            // La réservation existante commence avant la fin de la nouvelle
-            // ET finit après le début de la nouvelle.
-            return (resStart < newEnd && resEnd > newStart);
-        });
+        return { isDisabled: false };
     }
+
     saveAndClose() {
         console.log(this.selectedRoom);
-        this.matDialogRef.close({room : this.selectedRoom});
+        this.matDialogRef.close({ room: this.selectedRoom });
     }
 }

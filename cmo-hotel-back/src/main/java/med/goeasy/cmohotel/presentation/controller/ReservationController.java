@@ -39,6 +39,16 @@ public class ReservationController {
         return ResponseEntity.ok(ApiResponse.builder().message("reservation crée").build());
     }
 
+    @PutMapping("/update")
+    ResponseEntity<ApiResponse> update(
+            Authentication authentication,
+            @Valid @RequestBody ReservationRequestDto dto,
+            @Valid @NotNull(message = "code de reservation requis") @RequestParam() Long code
+    ){
+        reservationService.update(authentication,dto,code);
+        return ResponseEntity.ok(ApiResponse.builder().message("reservation modifiée").build());
+    }
+
     @PutMapping("/accept")
     ResponseEntity<ApiResponse> acceptReservation(
             Authentication authentication,

@@ -200,10 +200,49 @@ export class PersonManageModel implements OnInit, OnDestroy {
             });
     }
 
+    get isSelectionInvalid(): boolean {
+        const count = this.selectedPersons.length;
+        const category = this.data.category;
+
+        if (category === 'SINGLE') {
+            return count !== 1; // Doit être exactement 1
+        }
+        if (category === 'FAMILY') {
+            return count < 2; // Au moins 2 personnes (Titulaire + 1 ayant droit)
+        }
+        if (category === 'DELEGATION') {
+            return count < 1; // Au moins 1 personne
+        }
+
+        return count === 0; // Sécurité par défaut
+    }
+
     saveAndClose() {
-        if (this.data.category === 'SINGLE' && this.selectedPersons.length > 1) {
-            this._toast.error('La catégorie Individuel ne doit pas étre dépasser une personne');
-        } else
-            this.matDialogRef.close(this.selectedPersons);
+        const count = this.selectedPersons.length;
+        const category = this.data.category;
+
+
+        // Validation finale avec messages d'erreurs spécifiques
+        if (category === 'SINGLE' && count > 1) {
+            this._toast.error('La catégorie "Individuel" ne permet qu\'un seul résident.');
+            return;
+        }
+
+        if (category === 'FAMILY' && count < 2) {
+            this._toast.error('La catégorie "Famille" nécessite au moins deux personnes (le titulaire et un membre de la famille).');
+            return;
+        }
+
+        if (category === 'DELEGATION' && count < 1) {
+            this._toast.error('Veuillez sélectionner au moins un membre pour la délégation.');
+            return;
+        }
+
+        if (count === 0) {
+            this._toast.error('Veuillez sélectionner au moins un invité.');
+            return;
+        }
+
+        this.matDialogRef.close(this.selectedPersons);
     }
 }

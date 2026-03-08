@@ -103,6 +103,7 @@ public class WebSecurityConfig {
 						.requestMatchers(POST,"/v1/rooms/create").hasAuthority(EPermissions.ROOM_CREATE.getAuthority())
 						.requestMatchers(PUT,"/v1/rooms/update").hasAuthority(EPermissions.ROOM_UPDATE.getAuthority())
 						.requestMatchers(GET,"/v1/rooms/all").hasAuthority(EPermissions.ROOM_LIST.getAuthority())
+						.requestMatchers(GET,"/v1/rooms/all/details").hasAuthority(EPermissions.ROOM_LIST_WITH_RESERVATION_DETAILS.getAuthority())
 						.requestMatchers(GET,"/v1/rooms/granted").hasAuthority(EPermissions.ROOM_LIST_GRANTED.getAuthority())
 						.requestMatchers(GET,"/v1/rooms/one").hasAuthority(EPermissions.ROOM_SELECT_ONE.getAuthority())
 						.requestMatchers(DELETE,"/v1/rooms/delete").hasAuthority(EPermissions.ROOM_DELETE.getAuthority())
@@ -120,6 +121,7 @@ public class WebSecurityConfig {
 						.requestMatchers(DELETE,"/v1/rooms/prices/delete").hasAuthority(EPermissions.ROOM_PRICE_DELETE.getAuthority())
 						// Réservations
 						.requestMatchers(POST,"/v1/reservations/create").hasAuthority(EPermissions.RESERVATION_CREATE.getAuthority())
+						.requestMatchers(PUT,"/v1/reservations/update").hasAuthority(EPermissions.RESERVATION_UPDATE.getAuthority())
 						.requestMatchers(GET,"/v1/reservations/search","/v1/reservations/upcoming","/v1/reservations/planning/**").hasAuthority(EPermissions.RESERVATION_LIST.getAuthority())
 						.requestMatchers(GET,"/v1/reservations/one").hasAuthority(EPermissions.RESERVATION_ONE.getAuthority())
 						.requestMatchers(PUT,"/v1/reservations/accept").hasAuthority(EPermissions.RESERVATION_ACCEPT.getAuthority())

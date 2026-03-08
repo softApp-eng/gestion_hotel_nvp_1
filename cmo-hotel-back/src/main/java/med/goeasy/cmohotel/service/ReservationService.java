@@ -8,6 +8,7 @@ import med.goeasy.cmohotel.audit.ActivityLogService;
 import med.goeasy.cmohotel.audit.EAuditActionOperation;
 import med.goeasy.cmohotel.audit.EAuditActionTarget;
 import med.goeasy.cmohotel.exception.BadRequestException;
+import med.goeasy.cmohotel.exception.OperationNotPermittedException;
 import med.goeasy.cmohotel.persistence.entity.*;
 import med.goeasy.cmohotel.persistence.entity.enums.EGradeCategory;
 import med.goeasy.cmohotel.persistence.entity.enums.EGuestRole;
@@ -58,16 +59,52 @@ public class ReservationService {
     public void create(Authentication authentication, ReservationRequestDto dto) {
 
         if (!EnumUtils.isValidEnum(EReservationCategory.class, dto.category())) {
-            throw new BadRequestException("categorie invalide : " + dto.category());
+            throw new BadRequestException("catégorie invalide : " + dto.category());
         }
 
         if (dto.persons() == null || dto.persons().isEmpty())
             throw new BadRequestException("Aucun client ajouté");
 
+        LocalDateTime start = dto.startDate().atTime(12, 0, 0);
+        LocalDateTime end = dto.endDate().atTime(12, 0, 0);
+
+        //Grouper les personnes par chambre pour vérifier la charge totale demandée
+        Map<Long, Long> requestedCapacityPerRoom = dto.persons().stream()
+                .collect(Collectors.groupingBy(ReservationPersonsRequestDto::roomId, Collectors.counting()));
+        // Vérification de la disponibilité pour chaque chambre unique
+        requestedCapacityPerRoom.forEach((roomId, countRequested) -> {
+            Room room = roomService.getRoomById(roomId);
+
+            if (!room.isAvailable()) {
+                throw new BadRequestException("Chambre " + room.getCode() + " hors service.");
+            }
+
+            if (!room.isShared()) {
+                // CAS : NON PARTAGÉE
+                // On vérifie simplement si la chambre est déjà prise
+                boolean occupied = reservationRepository.isRoomOccupied(roomId, start, end,null);
+
+                if (occupied) {
+                    throw new BadRequestException("La chambre " + room.getName() + " est individuelle et déjà occupée.");
+                }
+
+            } else {
+                // CAS : PARTAGÉE
+                long currentOccupants = reservationRepository.countCurrentOccupants(roomId, start, end,null);
+
+                if (currentOccupants + countRequested > room.getCapacity()) {
+                    throw new BadRequestException(String.format(
+                            "Capacité dépassée pour la chambre partagée %s (%d/%d occupés).",
+                            room.getName(), currentOccupants, room.getCapacity()
+                    ));
+                }
+            }
+        });
+
         EReservationCategory category = EReservationCategory.valueOf(dto.category());
         ReservationDetails details = ReservationDetails.builder()
-                .plannedStart(dto.startDate().atStartOfDay())
-                .plannedEnd(dto.endDate().atTime(23, 59, 59))
+                .plannedStart(start)
+                .plannedEnd(end)
                 .category(category)
                 .status(EReservationStatus.PENDING)
                 .observation(dto.observation())
@@ -87,7 +124,6 @@ public class ReservationService {
                     .person(p)
                     .role(role)
                     .room(room)
-                    //.status(EReservationStatus.PENDING)
                     .build();
             reservationRepository.save(reservation);
         }
@@ -105,6 +141,97 @@ public class ReservationService {
                 authentication.getName()
         );
     }
+
+    @Transactional
+    public void update(Authentication authentication, ReservationRequestDto dto, Long code) {
+        ReservationDetails detailsDb = getReservationDetailsByCode(code);
+        if (detailsDb.getStatus() != EReservationStatus.PENDING)
+            throw new OperationNotPermittedException("Vous ne pouvez pas modifier une réservation déja traitée");
+
+        if (!EnumUtils.isValidEnum(EReservationCategory.class, dto.category())) {
+            throw new BadRequestException("catégorie invalide : " + dto.category());
+        }
+
+        if (dto.persons() == null || dto.persons().isEmpty())
+            throw new BadRequestException("Aucun client ajouté");
+
+        LocalDateTime start = dto.startDate().atTime(12, 0, 0);
+        LocalDateTime end = dto.endDate().atTime(12, 0, 0);
+
+        //Grouper les personnes par chambre pour vérifier la charge totale demandée
+        Map<Long, Long> requestedCapacityPerRoom = dto.persons().stream()
+                .collect(Collectors.groupingBy(ReservationPersonsRequestDto::roomId, Collectors.counting()));
+        // Vérification de la disponibilité pour chaque chambre unique
+        requestedCapacityPerRoom.forEach((roomId, countRequested) -> {
+            Room room = roomService.getRoomById(roomId);
+
+            if (!room.isAvailable()) {
+                throw new BadRequestException("Chambre " + room.getCode() + " hors service.");
+            }
+
+            if (!room.isShared()) {
+                // CAS : NON PARTAGÉE
+                // On vérifie simplement si la chambre est déjà prise
+                boolean occupied = reservationRepository.isRoomOccupied(roomId, start, end,code);
+
+                if (occupied) {
+                    throw new BadRequestException("La chambre " + room.getName() + " est individuelle et déjà occupée.");
+                }
+
+            } else {
+                // CAS : PARTAGÉE
+                long currentOccupants = reservationRepository.countCurrentOccupants(roomId, start, end,code);
+
+                if (currentOccupants + countRequested > room.getCapacity()) {
+                    throw new BadRequestException(String.format(
+                            "Capacité dépassée pour la chambre partagée %s (%d/%d occupés).",
+                            room.getName(), currentOccupants, room.getCapacity()
+                    ));
+                }
+            }
+        });
+
+        reservationRepository.deleteAll(detailsDb.getReservations());
+        detailsDb.getReservations().clear();
+        detailsDb.setPlannedStart(start);
+        detailsDb.setPlannedEnd(end);
+        detailsDb.setCategory(EReservationCategory.valueOf(dto.category()));
+        detailsDb.setObservation(dto.observation());
+        detailsDb.setPriseEnCharge(dto.priseEnCharge() != null && dto.priseEnCharge());
+        detailsDb.setPriseEnChargeReference(dto.priseEnChargeReference());
+        detailsDb.setStatus(EReservationStatus.PENDING);
+
+        detailsDb = reservationDetailsRepository.save(detailsDb);
+        for(ReservationPersonsRequestDto person : dto.persons()){
+            if (!EnumUtils.isValidEnum(EGuestRole.class, person.role())) {
+                throw new BadRequestException("role invalide : " + person.role());
+            }
+            EGuestRole role = EGuestRole.valueOf(person.role());
+            Person p = personService.getPersonById(person.personId());
+            Room room = roomService.getRoomById(person.roomId());
+            Reservation reservation = Reservation.builder()
+                    .details(detailsDb)
+                    .person(p)
+                    .role(role)
+                    .room(room)
+                    .build();
+            reservationRepository.save(reservation);
+        }
+
+        activityLogService.logActivity(
+                EAuditActionTarget.RESERVATION,
+                EAuditActionOperation.CREATE,
+                String.format("Modification de la réservation (#%d) pour %d personne(s) du %s au %s (Catégorie: %s).",
+                        detailsDb.getCode(),
+                        dto.persons().size(),
+                        dto.startDate(),
+                        dto.endDate(),
+                        detailsDb.getCategory()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+    }
+
 
     @Transactional
     public void acceptReservation(Authentication authentication, Long code,LocalDateTime date) {

@@ -41,11 +41,19 @@ public class RoomController {
 
     @GetMapping("/all")
     ResponseEntity<List<RoomResponseDto>> getRooms(
-            Authentication authentication,
-            @RequestParam(name = "pavillonId",required = false) Long pavillonId,
-            @RequestParam(name = "clean",required = false) Boolean clean
-    ){
+                    Authentication authentication,
+                    @RequestParam(name = "pavillonId",required = false) Long pavillonId,
+                    @RequestParam(name = "clean",required = false) Boolean clean
+            ){
         return ResponseEntity.ok(roomService.getRooms(authentication,pavillonId,clean));
+    }
+
+    @GetMapping("/all/details")
+    ResponseEntity<List<RoomResponseDto>> getRoomsWithReservationsDetails(
+                    Authentication authentication,
+                    @RequestParam(name = "pavillonId",required = false) Long pavillonId
+            ){
+        return ResponseEntity.ok(roomService.getRoomsWithReservationsDetails(authentication,pavillonId));
     }
 
 

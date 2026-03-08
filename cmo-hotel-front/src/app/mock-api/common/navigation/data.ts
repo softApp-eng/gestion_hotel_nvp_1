@@ -109,7 +109,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
         subtitle: 'Référentiels & Tarifs',
         type: 'group',
         icon: 'heroicons_outline:cog-6-tooth',
-        data: { roles: [APP_ROLES.ADMIN] },
+        //data: { roles: [APP_ROLES.ADMIN] },
         children: [
             {
                 id: 'settings.persons',
@@ -117,6 +117,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type: 'basic',
                 icon: 'heroicons_outline:users',
                 link: '/settings/guests',
+                data: { permissions: [APP_PERMISSIONS.PERSON_LIST] },
             },
             {
                 id: 'settings.Hébergement',
@@ -124,6 +125,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type: 'basic',
                 icon: 'heroicons_outline:building-office',
                 link: '/settings/pavillon',
+                data: { permissions: [APP_PERMISSIONS.PAVILLON_LIST] },
             },
             {
                 id: 'settings.prices',
@@ -136,12 +138,14 @@ export const defaultNavigation: FuseNavigationItem[] = [
                         title: 'Tarifs Chambres',
                         type: 'basic',
                         link: '/settings/prices/room/types',
+                        data: { permissions: [APP_PERMISSIONS.ROOM_TYPE_LIST] },
                     },
                     {
                         id: 'settings.prices.meals',
                         title: 'Tarifs Repas',
                         type: 'basic',
                         link: '/settings/prices/meals/types',
+                        data: { permissions: [APP_PERMISSIONS.MEAL_TYPES_LIST] },
                     },
                 ],
             },

@@ -140,20 +140,6 @@
                             <div class="overflow-x-auto">
                                 <table mat-table [dataSource]="dataSource" >
 
-                            <!--<ng-container matColumnDef="info">
-                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 2%">  </th>
-                                <td mat-cell *matCellDef="let row">
-                                    <button mat-icon-button (click)="raiseReservationDetailsDialog(row)" matTooltip="Plus d'informations">
-                                        @if (selectedItem?.code == row.code && this.matDrawer.opened) {
-                                            <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_solid:information-circle' " ></mat-icon>
-                                        } @else {
-                                            <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_outline:information-circle' " ></mat-icon>
-                                        }
-
-                                    </button>
-                                </td>
-                            </ng-container>-->
-
                             <ng-container matColumnDef="code">
                                 <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 6%"> NUM </th>
                                 <td mat-cell class="text-center" *matCellDef="let row">
@@ -252,7 +238,21 @@
                                 </td>
                             </ng-container>
 
-
+                                    <ng-container matColumnDef="category">
+                                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 10%"> CATEGORIE </th>
+                                        <td mat-cell *matCellDef="let row" class="text-center">
+                                            <div class="inline-flex items-center space-x-2">
+                                        <span class="text-[11px] font-bold uppercase tracking-wider leading-none"
+                                              [ngClass]="{
+                                                  'text-blue-600 dark:text-blue-400': row.category.code === 'SINGLE',
+                                                  'text-purple-600 dark:text-purple-400': row.category.code === 'FAMILY',
+                                                  'text-gray-600 dark:text-gray-400': row.category.code === 'DELEGATION'
+                                              }"
+                                              [innerHTML]="row?.category?.name | highlight:key">
+                                        </span>
+                                            </div>
+                                        </td>
+                                    </ng-container>
 
                             <ng-container matColumnDef="action">
                                 <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 2%">  </th>
@@ -261,10 +261,10 @@
                                         <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
                                     </button>
                                     <mat-menu #menuAction="matMenu" >
-                                        <button mat-menu-item [routerLink]="'./edit/' + row?.id" >
+                                        <!--<button mat-menu-item [routerLink]="'./edit/' + row?.id" >
                                             <mat-icon svgIcon="edit" ></mat-icon>
                                             <span>Modifier</span>
-                                        </button>
+                                        </button>-->
                                         @if (row?.status?.code === 'CONFIRMED') {
                                             <button mat-menu-item (click)="raiseCloseReservation(row?.code)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_CLOSE]">
                                                 <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:edit_calendar'"></mat-icon>

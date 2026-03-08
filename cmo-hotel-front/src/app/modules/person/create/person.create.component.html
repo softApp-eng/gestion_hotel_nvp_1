@@ -111,9 +111,25 @@
                     <input matInput [formControlName]="'phoneNumber'" placeholder="Téléphone">
                 </mat-form-field>
 
-                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                <mat-form-field class="w-full p-2 text-2xl" appearance="outline">
                     <mat-label>Nationalité</mat-label>
-                    <input matInput [formControlName]="'nationality'" placeholder="Nationalité">
+                    <input type="text"
+                           matInput
+                           formControlName="nationality"
+                           [matAutocomplete]="auto"
+                           (blur)="validateNationality()">
+                    <mat-icon matSuffix class="icon-size-5 text-hint" [svgIcon]="'heroicons_outline:globe-alt'"></mat-icon>
+                    <mat-autocomplete #auto="matAutocomplete">
+                        @for (p of filteredPays | async; track p) {
+                            <mat-option [value]="p">
+                                <span class="text-lg">{{ p }}</span>
+                            </mat-option>
+                        }
+                    </mat-autocomplete>
+
+                    @if (form.get('nationality').value && (filteredPays | async)?.length === 0) {
+                        <mat-hint class="text-warn">Pays inconnu (sera effacé au clic ailleurs)</mat-hint>
+                    }
                 </mat-form-field>
 
                 <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">

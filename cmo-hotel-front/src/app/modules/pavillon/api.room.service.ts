@@ -33,6 +33,12 @@ export class ApiRoomService {
         return this._httpClient.get(`${this.API_URL}/all`, { params });
     }
 
+    getRoomsWithReservationsDetails(pavillonId = null): Observable<any>{
+        let params = new HttpParams()
+            .set('pavillonId', pavillonId == null?'':pavillonId);
+        return this._httpClient.get(`${this.API_URL}/all/details`, { params });
+    }
+
     grantedRooms(): Observable<any>{
         return this._httpClient.get(`${this.API_URL}/granted`);
     }

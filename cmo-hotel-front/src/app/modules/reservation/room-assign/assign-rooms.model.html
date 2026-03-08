@@ -26,20 +26,38 @@
             @if (rooms.length > 0){
                 <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'" disabled="isRoomLoading">
                     <mat-label>Chambre</mat-label>
-                    <mat-select [(ngModel)]="selectedRoom" name="selectedRoom">
+                    <mat-select [(ngModel)]="selectedRoom" name="selectedRoom" class="text-base">
                         @for (r of rooms; track r.id) {
-                            <mat-option [value]="r" [disabled]="r?.isReserved">
+                            <mat-option [value]="r" [disabled]="r.isDisabled">
                                 <div class="flex items-center justify-between w-full">
-                                    <span>{{r.roomType?.type + ' (' + r.code + ')'}}</span>
-                                    @if (!r?.available) {
-                                        <span class="text-warn text-xs font-bold border border-warn px-2 rounded">
-                                            HORS SERVICE
-                                        </span>
-                                    } @else if (r?.isReserved) {
-                                        <span class="text-warn text-xs font-bold border border-warn px-2 rounded">
-                                            OCCUPÉE
-                                        </span>
-                                    }
+
+                                    <div class="flex flex-col flex-grow">
+            <span class="font-medium">
+                {{ r.code }}
+                <span class="text-secondary text-xs ml-1">{{ (r?.shared)?'partagée':'' }}</span>
+            </span>
+                                        <span class="text-xs text-secondary italic">
+                {{ r.roomType?.type }} • Capacité: {{ r.capacity }}
+            </span>
+                                    </div>
+
+                                    <div class="flex items-center justify-end ml-4">
+                                        @if (r.statusReason) {
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded border uppercase whitespace-nowrap"
+                                                  [ngClass]="{
+                        'bg-red-50 text-red-600 border-red-200': r.isDisabled,
+                        'bg-blue-50 text-blue-600 border-blue-200': !r.isDisabled && r.shared
+                    }">
+                    {{ r.statusReason }}
+                </span>
+                                        }
+
+                                        @if (!r.isDisabled && !r.statusReason) {
+                                            <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded uppercase whitespace-nowrap">
+                    Disponible
+                </span>
+                                        }
+                                    </div>
                                 </div>
                             </mat-option>
                         }

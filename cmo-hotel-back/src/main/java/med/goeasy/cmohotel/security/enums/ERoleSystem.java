@@ -26,6 +26,7 @@ public enum ERoleSystem {
                     EPermissions.DEFAULT,
                     //reservation
                     EPermissions.RESERVATION_CREATE,
+                    EPermissions.RESERVATION_UPDATE,
                     EPermissions.RESERVATION_LIST,
                     EPermissions.RESERVATION_ONE,
                     EPermissions.RESERVATION_ACCEPT,
@@ -38,6 +39,8 @@ public enum ERoleSystem {
                     EPermissions.PAVILLON_SELECT_ONE,
                     EPermissions.ROOM_LIST,
                     EPermissions.ROOM_SELECT_ONE,
+                    EPermissions.ROOM_LIST_WITH_RESERVATION_DETAILS,
+                    EPermissions.ROOM_TYPE_LIST,
                     // persons
                     EPermissions.PERSON_CREATE,
                     EPermissions.PERSON_UPDATE,

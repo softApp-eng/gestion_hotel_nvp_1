@@ -17,5 +17,11 @@ export default [
         data: {
             permissions:[APP_PERMISSIONS.RESERVATION_CREATE]
         },
+    },{
+        path     : 'edit/:code',
+        component: ReservationCreateComponent,
+        data: {
+            permissions:[APP_PERMISSIONS.RESERVATION_UPDATE]
+        },
     }
 ] as Routes;

@@ -61,6 +61,10 @@ export class ApiReservationService {
         return this._httpClient.post(`${this.API_URL}/create`, payload);
     }
 
+    update(payload,code): Observable<any>{
+        return this._httpClient.put(`${this.API_URL}/update?code=${code}`, payload);
+    }
+
     acceptReservation(code,checkin): Observable<any>{
         return this._httpClient.put(`${this.API_URL}/accept?code=${code}&checkin=${checkin}`, {});
     }

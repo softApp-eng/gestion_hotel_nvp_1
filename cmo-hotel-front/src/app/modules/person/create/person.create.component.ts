@@ -12,7 +12,7 @@ import {
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, map, Observable, startWith } from 'rxjs';
 import { FuseAlertComponent, FuseAlertType } from '../../../../@fuse/components/alert';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ApiPersonService } from '../api.person.service';
@@ -22,6 +22,9 @@ import { ApiCommonService } from '../../../core/service/api.common.service';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { UtilsService } from '../../../core/service/utils.service';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
+import { AppConstantValues } from '../../../core/data/app-constant-values';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
     selector: 'person-add',
@@ -39,7 +42,9 @@ import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
         RouterLink,
         FuseAlertComponent,
         MatSlideToggleModule,
-        MatDatepickerModule
+        MatDatepickerModule,
+        MatAutocompleteModule,
+        AsyncPipe,
     ],
 })
 export class PersonCreateComponent implements OnInit {
@@ -51,6 +56,8 @@ export class PersonCreateComponent implements OnInit {
     };
     personId;
     grades;
+    pays: string[] = AppConstantValues.PAYS;
+    filteredPays: Observable<string[]>;
 
     /**
      * Constructor
@@ -62,42 +69,56 @@ export class PersonCreateComponent implements OnInit {
         private _utilsService: UtilsService,
         private _router: Router,
         private _toastr: Toastr,
-        private _activeRoute: ActivatedRoute,
-    ) {
-    }
+        private _activeRoute: ActivatedRoute
+    ) {}
 
     ngOnInit(): void {
         this.loadGrades();
-        this.form = this._formBuilder.group(
-            {
-                gradeId: ['', [Validators.required]],
-                //primaryPersonId: [''],
-                //relationshipType: [''],
-                identity: ['', [Validators.required]],
-                firstName: ['', [Validators.required]],
-                lastName: ['', [Validators.required]],
-                gender: [''],
-                email: [''],
-                birthDate: [''],
-                phoneNumber: [''],
-                nationality: [''],
-                language: [''],
-                matricule: [''],
-                unite: [''],
-                observation: [''],
-            }
-        );
+        this.form = this._formBuilder.group({
+            gradeId: ['', [Validators.required]],
+            identity: ['', [Validators.required]],
+            firstName: ['', [Validators.required]],
+            lastName: ['', [Validators.required]],
+            gender: [''],
+            email: [''],
+            birthDate: [''],
+            phoneNumber: [''],
+            nationality: ['Maroc'],
+            language: [''],
+            matricule: [''],
+            unite: [''],
+            observation: [''],
+        });
         // initialize form if edit mode
         if (this._router.url.includes('edit')) {
             this.initializeForm();
         }
+        this.filteredPays = this.form.get('nationality').valueChanges.pipe(
+            startWith(''),
+            map((value) => this._filter(value || ''))
+        );
+    }
+    private _filter(value: string): string[] {
+        const filterValue = value.toLowerCase();
+        return this.pays.filter((p) => p.toLowerCase().includes(filterValue));
     }
 
-    loadGrades(){
+    validateNationality(): void {
+        setTimeout(() => { // Un léger délai permet à l'autocomplete de finir sa sélection
+            const value = this.form.get('nationality').value;
+            if (value && !this.pays.includes(value)) {
+                this.form.get('nationality').setValue('');
+            }
+        }, 200);
+    }
+
+    loadGrades() {
         this._apiCommonService.grades().subscribe({
-            next: data => {this.grades = data;
-                console.log('grades',this.grades);},
-        })
+            next: (data) => {
+                this.grades = data;
+                console.log('grades', this.grades);
+            },
+        });
     }
 
     save() {
@@ -114,12 +135,14 @@ export class PersonCreateComponent implements OnInit {
 
         let payload = this.form.value;
         if (payload.birthDate) {
-            payload.birthDate = this._utilsService.convertToDate(payload.birthDate);
+            payload.birthDate = this._utilsService.convertToDate(
+                payload.birthDate
+            );
         }
 
         if (this.personId) {
             this._apiPersonService
-                .update(payload,this.personId)
+                .update(payload, this.personId)
                 .pipe(
                     finalize(() => {
                         // Show the alert
@@ -176,8 +199,6 @@ export class PersonCreateComponent implements OnInit {
                     },
                 });
         }
-
-
     }
 
     initializeForm() {
@@ -188,8 +209,6 @@ export class PersonCreateComponent implements OnInit {
                 console.log(data);
                 this.form.patchValue({
                     gradeId: data?.grade.id,
-                    //primaryPersonId: data?.primaryPersonId,
-                    //relationshipType: data?.relationshipType,
                     identity: data?.identity,
                     firstName: data?.firstName,
                     lastName: data?.lastName,
@@ -206,7 +225,7 @@ export class PersonCreateComponent implements OnInit {
                 this.form.enable();
             },
             error: (err) => {
-                this._toastr.error("error chargement du client");
+                this._toastr.error('error chargement du client');
             },
         });
     }

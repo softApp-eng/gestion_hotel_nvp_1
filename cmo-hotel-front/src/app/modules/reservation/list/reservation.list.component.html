@@ -89,7 +89,7 @@
                     </div>
                     <div class="flex items-center mt-6 sm:mt-0 sm:ml-4 space-x-3">
                         <button
-                            [disableIfNoPermission]="[APP_PERMISSIONS.PAVILLON_CREATE]"
+                            [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_CREATE]"
                             mat-flat-button
                             [color]="'primary'"
                             class="rounded-lg px-6 h-11 shadow-md hover:shadow-lg transition-all"
@@ -268,29 +268,15 @@
                             <div class="overflow-x-auto">
                                 <table mat-table [dataSource]="dataSource" >
 
-<!--                            <ng-container matColumnDef="info">-->
-<!--                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 2%">  </th>-->
-<!--                                <td mat-cell *matCellDef="let row">-->
-<!--                                    <button mat-icon-button (click)="openDrawer(row)" matTooltip="Plus d'informations">-->
-<!--                                        @if (selectedItem?.code == row.code && this.matDrawer.opened) {-->
-<!--                                            <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_solid:information-circle' " ></mat-icon>-->
-<!--                                        } @else {-->
-<!--                                            <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_outline:information-circle' " ></mat-icon>-->
-<!--                                        }-->
-
-<!--                                    </button>-->
-<!--                                </td>-->
-<!--                            </ng-container>-->
-
                             <ng-container matColumnDef="code">
-                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 6%"> NUM </th>
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 5%"> R# </th>
                                 <td mat-cell class="text-center" *matCellDef="let row">
-                                    <p class="text-md font-bold cursor-pointer" (click)="raiseReservationDetailsDialog(row)" [innerHTML]="row?.code + '' | highlight:key"></p>
+                                    <p class="text-md font-bold cursor-pointer" (click)="raiseReservationDetailsDialog(row)" [innerHTML]="''+row?.code | highlight:key"></p>
                                 </td>
                             </ng-container>
 
                             <ng-container matColumnDef="checkin">
-                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 15%"> CHECK-IN </th>
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 12%"> CHECK-IN </th>
                                 <td mat-cell *matCellDef="let row" class="text-center">
                                     @if (row?.checkin) {
                                         {{row?.checkin | date:'dd/MM/yyyy hh:mm':'':'en-US'}}
@@ -303,7 +289,7 @@
                             </ng-container>
 
                             <ng-container matColumnDef="checkout">
-                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 15%"> CHECK-OUT </th>
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 12%"> CHECK-OUT </th>
                                 <td mat-cell *matCellDef="let row" class="text-center">
                                     @if (row?.checkout) {
                                         {{row?.checkout | date:'dd/MM/yyyy hh:mm':'':'en-US'}}
@@ -323,7 +309,19 @@
                                             @if (row.showAllRooms ? allRooms : (allRooms | slice:0:3); as displayList) {
                                                 <ul class="space-y-1">
                                                     @for (room of displayList; track room.id) {
-                                                        <li class="list-disc list-inside" [innerHTML]="(room?.roomType?.type + ' (' + room?.name + ')')  | highlight:key"></li>
+                                                        <li class="relative pl-4 mb-1.5 last:mb-0 flex items-center group whitespace-nowrap">
+                                                            <span class="absolute left-0 w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+
+                                                            <div class="flex items-baseline space-x-2">
+                                                                <span class="text-[11px] uppercase tracking-wider text-secondary font-medium"
+                                                                      [innerHTML]="(room?.roomType?.type + ' :') | highlight:key">
+                                                                </span>
+
+                                                                <span class="text-sm font-bold text-gray-900 dark:text-gray-100"
+                                                                      [innerHTML]="room?.code | highlight:key">
+                                                                </span>
+                                                            </div>
+                                                        </li>
                                                     }
                                                 </ul>
                                             }
@@ -348,7 +346,7 @@
                             </ng-container>
 
                             <ng-container matColumnDef="person">
-                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 30%"> CLIENTS </th>
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 26%"> CLIENTS </th>
                                 <td mat-cell *matCellDef="let row" >
                                     <p [innerHTML]="row?.person?.firstName | highlight:key"></p>
                                     @if (row | extractGuestData:'person'; as allPersons) {
@@ -356,7 +354,15 @@
                                             @if (row.showAllPersons ? allPersons : (allPersons | slice:0:3); as displayPersonsList) {
                                                 <ul class="space-y-1">
                                                     @for (person of displayPersonsList; track person.id) {
-                                                        <li class="list-disc list-inside" [innerHTML]="(person?.grade?.code + ' ' + person?.firstName + ' ' + person?.lastName) | highlight:key"></li>
+                                                        <div class="flex items-baseline space-x-2 group whitespace-nowrap">
+                                                            <span class="text-xs font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400 px-1.5 py-0.5"
+                                                                  [innerHTML]="person?.grade?.code | highlight:key">
+                                                            </span>
+
+                                                            <span class="text-[15px]  text-gray-900 dark:text-gray-100"
+                                                                  [innerHTML]="(person?.firstName + ' ' + person?.lastName) | highlight:key">
+                                                            </span>
+                                                        </div>
                                                     }
                                                 </ul>
                                             }
@@ -377,6 +383,22 @@
                                             }
                                         </ul>
                                     }
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="category">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 10%"> CATEGORIE </th>
+                                <td mat-cell *matCellDef="let row" class="text-center">
+                                    <div class="inline-flex items-center space-x-2">
+                                        <span class="text-[11px] font-bold uppercase tracking-wider leading-none"
+                                              [ngClass]="{
+                                                  'text-blue-600 dark:text-blue-400': row.category.code === 'SINGLE',
+                                                  'text-purple-600 dark:text-purple-400': row.category.code === 'FAMILY',
+                                                  'text-gray-600 dark:text-gray-400': row.category.code === 'DELEGATION'
+                                              }"
+                                            [innerHTML]="row?.category?.name | highlight:key">
+                                        </span>
+                                    </div>
                                 </td>
                             </ng-container>
 
@@ -408,15 +430,17 @@
                                             <span>Détails </span>
                                         </button>
 
-                                        <button mat-menu-item disabled>
-                                            <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:edit_calendar'"></mat-icon>
-                                            <span>Modifier </span>
-                                        </button>
+                                        @if (row?.status?.code === 'PENDING') {
+                                            <button mat-menu-item [routerLink]="'./edit/' + row?.code" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_CREATE]">
+                                                <mat-icon class="icon-size-5" [svgIcon]="'edit'"></mat-icon>
+                                                <span>Modifier</span>
+                                            </button>
+                                        }
 
                                         @if (row?.status?.code === 'CONFIRMED') {
                                             <button mat-menu-item (click)="raiseCloseReservation(row?.code)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_CLOSE]">
                                                 <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:edit_calendar'"></mat-icon>
-                                                <span>Cloturer </span>
+                                                <span>Cloturer</span>
                                             </button>
                                         }
 

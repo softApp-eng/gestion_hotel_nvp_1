@@ -34,9 +34,7 @@
     <div class="flex-auto p-4 sm:p-6">
         <div class="w-full bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
 
-            <!-- Alert -->
-            <form [formGroup]="form">
-
+            <form [formGroup]="horizontalStepperForm">
                 @if (showAlert) {
                     <fuse-alert
                         class="my-4"
@@ -58,291 +56,448 @@
                         </div>
                     </fuse-alert>
                 }
+                <mat-horizontal-stepper [linear]="true" #horizontalStepper (selectionChange)="onStepChange($event)">
+                    <ng-template matStepperIcon="edit">
+                        <mat-icon [svgIcon]="'edit'"></mat-icon>
+                    </ng-template>
 
-                <div class="mb-6">
-                    <p class="text-lg font-medium">{{reservationId?'Modifier':'Nouvelle'}} réservation</p>
-                    @if (!reservationId){
-                        <p class="text-secondary">Ajouter une nouvelle réservation.</p>
-                    }
-                </div>
+                    <ng-template matStepperIcon="done">
+                        <mat-icon [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                    </ng-template>
+                    <mat-step
+                        [formGroupName]="'step1'"
+                        [stepControl]="horizontalStepperForm.get('step1')"
+                        #horizontalStepperStep1
+                    >
+                        <ng-template matStepLabel>Informations Initiales</ng-template>
+                        <p class="my-6 font-medium">Définissez la durée et les conditions de votre séjour</p>
 
-                <mat-form-field class="flex flex-col" [appearance]="'outline'">
-                    <mat-label>Période prévue</mat-label>
-                    <mat-date-range-input formGroupName="dateRange" [min]="today" [rangePicker]="rangePicker" >
-                        <input matStartDate formControlName="start"  [placeholder]="'Date debut'" readonly (click)="rangePicker.open()" style="cursor: pointer !important;"/>
-                        <input matEndDate formControlName="end" [placeholder]="'Date fin'" readonly (click)="rangePicker.open()" style="cursor: pointer !important;"/>
-                    </mat-date-range-input>
-                    <mat-datepicker-toggle  matIconSuffix [for]="rangePicker"></mat-datepicker-toggle>
-                    <mat-date-range-picker #rangePicker>
-                        <mat-date-range-picker-actions>
-                            <button mat-button matDateRangePickerCancel>Annuler</button>
-                            <button mat-button="elevated" mat-flat-button [color]="'primary'" matDateRangePickerApply>Appliquer</button>
-                        </mat-date-range-picker-actions>
-                    </mat-date-range-picker>
-                    @if (durationInDays) {
-                        <mat-hint>{{durationInDays}} Jour(s)</mat-hint>
-                    }
+                        <mat-form-field
+                            class="flex-auto w-full fuse-mat-no-subscript cursor-pointer"
+                            appearance="outline"
+                            (click)="rangePicker.open()">
 
-                    @if (form.get('dateRange').hasError('required')) {
-                        <mat-error>
-                            Champ obligatoire
-                        </mat-error>
-                    }
-                </mat-form-field>
+                            <mat-label>Période prévue</mat-label>
 
-                <mat-form-field class="w-full text-2xl mt-2" [appearance]="'outline'">
-                    <mat-label>Categorie</mat-label>
-                    <mat-select formControlName="category">
-                        @for (c of categories; track c.code) {
-                            <mat-option [value]="c.code">{{c.name}}</mat-option>
-                        }
-                    </mat-select>
-                    @if (form.get('category').hasError('required') && form.get('category').touched) {
-                        <mat-error>La catégorie est obligatoire</mat-error>
-                    }
-                </mat-form-field>
+                            <mat-date-range-input
+                                formGroupName="dateRange"
+                                [min]="today"
+                                [rangePicker]="rangePicker">
+                                <input
+                                    matStartDate
+                                    formControlName="start"
+                                    placeholder="Date début"
+                                    readonly
+                                    class="cursor-pointer">
+                                <input
+                                    matEndDate
+                                    formControlName="end"
+                                    placeholder="Date fin"
+                                    readonly
+                                    class="cursor-pointer">
+                            </mat-date-range-input>
 
-                <div class="flex items-center gap-4 w-full">
-                    <div class="flex items-center h-full pb-6">
-                        <mat-checkbox
-                        [color]="'primary'"
-                        [formControlName]="'priseEnCharge'">
-                        Prise en charge
-                    </mat-checkbox>
-                    </div>
-                    @if (form.get('priseEnCharge').value) {
-                        <mat-form-field class="flex-auto text-2xl" [appearance]="'outline'">
-                            <mat-label>Réference</mat-label>
-                            <input matInput [formControlName]="'priseEnChargeReference'" placeholder="Reference de la prise en charge">
+                            <mat-icon
+                                class="icon-size-5 mr-2"
+                                matPrefix
+                                [svgIcon]="'heroicons_outline:calendar'"
+                            ></mat-icon>
+
+                            <mat-datepicker-toggle matIconSuffix [for]="rangePicker"></mat-datepicker-toggle>
+
+                            <mat-date-range-picker #rangePicker>
+                                <mat-date-range-picker-actions>
+                                    <button mat-button matDateRangePickerCancel>Annuler</button>
+                                    <button mat-flat-button color="primary" matDateRangePickerApply>Appliquer</button>
+                                </mat-date-range-picker-actions>
+                            </mat-date-range-picker>
+                            @if (durationInDays > 0) {
+                                <mat-hint>{{durationInDays}} Jour(s)</mat-hint>
+                            }
                         </mat-form-field>
-                    }
-                </div>
 
+                        <div class="flex mt-4">
+                            <mat-form-field class="flex-auto fuse-mat-no-subscript" appearance="outline">
+                                <mat-label>Catégorie</mat-label>
+                                <mat-select formControlName="category" placeholder="Sélectionnez une catégorie">
+                                    @for (c of categories; track c.code) {
+                                        <mat-option [value]="c.code">
+                                            <span class="font-medium">{{c.name}}</span>
+                                        </mat-option>
+                                    }
+                                </mat-select>
+                                <mat-icon
+                                    class="icon-size-5 mr-2 text-hint"
+                                    matPrefix
+                                    [svgIcon]="'heroicons_outline:tag'"
+                                ></mat-icon>
+                                @if (horizontalStepperForm.get('step1.category').hasError('required') && horizontalStepperForm.get('step1.category').touched) {
+                                    <mat-error>La catégorie est obligatoire</mat-error>
+                                }
+                            </mat-form-field>
+                        </div>
 
-                <div class="flex items-center space-x-4 my-4 w-full">
-                    <h2 class="font-semibold">Gérer les clients ({{persons.length}})</h2>
-
-                    <a mat-stroked-button class="h-8 min-h-8" [disabled]="!form.get('category').value" (click)="raisePersonAddDialog()">
-                        <span class="inline-flex items-center text-sm">
-                            <span>Ajouter</span>
-                            <mat-icon class="ml-1 icon-size-4" [svgIcon]="'mat_solid:person_add_alt_1'"></mat-icon>
-                        </span>
-                    </a>
-
-                    <div class="flex-auto"></div>
-
-                    @if (persons.length > 0){
-                        @if (groupedAction) {
-                            <a mat-stroked-button
-                               class="h-8 min-h-8"
-                               [matMenuTriggerFor]="groupActionMenu">
-                        <span class="inline-flex items-center text-sm">
-                            <span>Action groupée</span>
-                            <mat-icon class="ml-1 icon-size-4" [svgIcon]="'heroicons_solid:chevron-down'"></mat-icon>
-                        </span>
-                            </a>
-                        }
-
-                        <mat-slide-toggle class="example-margin"
-                                          matTooltip="Action groupée?"
-                                          [checked]="groupedAction"
-                                          (change)="selectedGroupedPersons = [];groupedAction = $event.checked">
-                        </mat-slide-toggle>
-                    }
-
-
-                    <mat-menu #groupActionMenu="matMenu" [xPosition]="'before'">
-                        @if (persons.length > selectedGroupedPersons.length){
-                            <button mat-menu-item (click)="selectAll(true)">
-                                <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:done_all'"></mat-icon>
-                                <span>sélectionner tout </span>
-                            </button>
-                        } @else {
-                            <button mat-menu-item (click)="selectAll(false)">
-                                <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:remove_done'"></mat-icon>
-                                <span>désélectionner tout</span>
-                            </button>
-                        }
-
-                        <button mat-menu-item (click)="raiseRoomAssignDialog()" [disabled]="selectedGroupedPersons.length == 0">
-                            <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:hotel'"></mat-icon>
-                            <span>Affecter à une chambre</span>
-                        </button>
-                        <button mat-menu-item [matMenuTriggerFor]="rolesMenu" [disabled]="selectedGroupedPersons.length == 0" >
-                            <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:person_pin'"></mat-icon>
-                            <span>Ajouter un rôle</span>
-                        </button>
-                    </mat-menu>
-
-                    <mat-menu #rolesMenu="matMenu" [xPosition]="'before'">
-                        @for (r of roles; track r.code) {
-                            <button mat-menu-item (click)="assignRole(r.code)" >
-                                <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:person_pin'"></mat-icon>
-                                <span>{{r.name}}</span>
-                            </button>
-                        }
-
-                    </mat-menu>
-                </div>
-
-                <div class="mt-8 flex flex-col divide-y border-b border-t">
-                    @for (p of persons; track p.id) {
-                        <div class="flex flex-col py-6 sm:flex-row sm:items-center">
+                        <div class="flex flex-col mt-2 p-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-transparent">
                             <div class="flex items-center">
+                                <mat-checkbox
+                                    [color]="'primary'"
+                                    formControlName="priseEnCharge"
+                                    class="font-medium">
+                                    Prise en charge par un organisme
+                                </mat-checkbox>
+                            </div>
+
+                            @if (horizontalStepperForm.get('step1.priseEnCharge').value) {
+                                <div class="mt-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <mat-form-field class="w-full fuse-mat-no-subscript" appearance="outline">
+                                        <mat-label>Référence de la prise en charge</mat-label>
+                                        <input matInput formControlName="priseEnChargeReference" placeholder="ref...">
+                                        <mat-icon class="icon-size-5 mr-2 text-hint" matPrefix [svgIcon]="'heroicons_outline:document-text'"></mat-icon>
+                                    </mat-form-field>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button class="px-8" mat-flat-button [color]="'primary'" type="button" matStepperNext
+                                    [disabled]="horizontalStepperForm.get('step1').invalid">
+                                Suivant
+                            </button>
+                        </div>
+                    </mat-step>
+
+                    <mat-step
+                        [formGroupName]="'step2'"
+                        [stepControl]="horizontalStepperForm.get('step2')"
+                        #horizontalStepperStep2
+                    >
+                        <ng-template matStepLabel>Résidents</ng-template>
+                        <p class="my-6 font-medium">Ajoutez les résidents ou invités concernés par cette réservation</p>
+                        @if (horizontalStepperForm.get('step1.category').value === 'FAMILY' && persons.length > 0) {
+                            <div class="mt-2 text-xs font-medium">
+                                @if (countLeads() === 0) {
+                                    <span class="text-amber-600">⚠️ Une famille doit avoir un responsable (Principal ou Mandataire).</span>
+                                } @else if (countLeads() > 1) {
+                                    <span class="text-red-600">⚠️ Trop de responsables ! Un seul Principal ou Mandataire est autorisé pour une famille.</span>
+                                }
+                            </div>
+                        }
+                        <div class="flex items-center space-x-4 my-4 w-full">
+                            <h2 class="font-semibold">Résidents ({{persons.length}})</h2>
+
+                            <a mat-stroked-button class="h-8 min-h-8" [disabled]="!horizontalStepperForm.get('step1.category').value" (click)="raisePersonAddDialog()">
+                                <span class="inline-flex items-center text-sm">
+                                    <span>Ajouter</span>
+                                    <mat-icon class="ml-1 icon-size-4" [svgIcon]="'mat_solid:person_add_alt_1'"></mat-icon>
+                                </span>
+                            </a>
+
+                            <div class="flex-auto"></div>
+
+                            @if (persons.length > 0){
                                 @if (groupedAction) {
-                                    <mat-checkbox
-                                        class="flex h-10 min-h-10 items-center pl-1 pr-4"
-                                        [color]="'primary'"
-                                        [checked]="isPersonSelected(p)"
-                                        (change)="toggleSelection(p, $event.checked)"
-                                    >
-                                    </mat-checkbox>
-                                } @else {
-                                    <div class="flex h-10 w-10 flex-0 items-center justify-center overflow-hidden rounded-full">
-                                        <mat-icon class="h-full w-full object-cover" [svgIcon]="'heroicons_outline:user-group'"></mat-icon>
-                                    </div>
+                                    <a mat-stroked-button
+                                       class="h-8 min-h-8"
+                                       [matMenuTriggerFor]="groupActionMenu">
+                                        <span class="inline-flex items-center text-sm">
+                                            <span>Action groupée</span>
+                                            <mat-icon class="ml-1 icon-size-4" [svgIcon]="'heroicons_solid:chevron-down'"></mat-icon>
+                                        </span>
+                                    </a>
                                 }
 
-                                <div class="ml-4">
-                                    <div class="font-medium">
-                                        {{ (((p?.gender == 'F')?'Mme ':(p?.gender == 'M')?'Mr ':'') + p?.firstName + ' ' + p?.lastName) }}
+                                <mat-slide-toggle class="example-margin"
+                                                  matTooltip="Action groupée?"
+                                                  [checked]="groupedAction"
+                                                  (change)="selectedGroupedPersons = [];groupedAction = $event.checked">
+                                </mat-slide-toggle>
+                            }
+
+
+                            <mat-menu #groupActionMenu="matMenu" [xPosition]="'before'">
+                                @if (persons.length > selectedGroupedPersons.length){
+                                    <button mat-menu-item (click)="selectAll(true)">
+                                        <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:done_all'"></mat-icon>
+                                        <span>sélectionner tout </span>
+                                    </button>
+                                } @else {
+                                    <button mat-menu-item (click)="selectAll(false)">
+                                        <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:remove_done'"></mat-icon>
+                                        <span>désélectionner tout</span>
+                                    </button>
+                                }
+
+                                <button mat-menu-item (click)="raiseRoomAssignDialog()" [disabled]="selectedGroupedPersons.length == 0">
+                                    <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:hotel'"></mat-icon>
+                                    <span>Affecter à une chambre</span>
+                                </button>
+                                <button mat-menu-item [matMenuTriggerFor]="rolesMenu" [disabled]="selectedGroupedPersons.length == 0" >
+                                    <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:person_pin'"></mat-icon>
+                                    <span>Ajouter un rôle</span>
+                                </button>
+                            </mat-menu>
+
+                            <mat-menu #rolesMenu="matMenu" [xPosition]="'before'">
+                                @for (r of filteredRoles; track r.code) {
+                                    <button mat-menu-item (click)="assignRole(r.code)" >
+                                        <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:person_pin'"></mat-icon>
+                                        <span>{{r.name}}</span>
+                                    </button>
+                                }
+
+                            </mat-menu>
+                        </div>
+
+                        <div class="mt-8 flex flex-col divide-y border-b border-t">
+                            @for (p of persons; track p.id) {
+                                <div class="flex flex-col py-6 sm:flex-row sm:items-center">
+                                    <div class="flex items-center">
+                                        @if (groupedAction) {
+                                            <mat-checkbox
+                                                class="flex h-10 min-h-10 items-center pl-1 pr-4"
+                                                [color]="'primary'"
+                                                [checked]="isPersonSelected(p)"
+                                                (change)="toggleSelection(p, $event.checked)"
+                                            >
+                                            </mat-checkbox>
+                                        } @else {
+                                            <div class="flex h-10 w-10 flex-0 items-center justify-center overflow-hidden rounded-full">
+                                                <mat-icon class="h-full w-full object-cover" [svgIcon]="'heroicons_outline:user-group'"></mat-icon>
+                                            </div>
+                                        }
+
+                                        <div class="ml-4">
+                                            <div class="font-medium">
+                                                {{ (((p?.gender == 'F')?'Mme ':(p?.gender == 'M')?'Mr ':'') + p?.firstName + ' ' + p?.lastName) }}
+                                            </div>
+                                            <div class="text-secondary">
+                                                {{ p?.grade?.name }}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="text-secondary">
-                                        {{ p?.grade?.name }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-4 flex items-center sm:ml-auto sm:mt-0">
-                                <!-- room -->
-                                @if (p?.room) {
-                                    <div class="mt-6 flex items-center space-x-6 lg:mt-0">
-                                        <div class="flex flex-col items-center">
+                                    <div class="mt-4 flex items-center sm:ml-auto sm:mt-0">
+                                        <!-- room -->
+                                        @if (p?.room) {
+                                            <div class="mt-6 flex items-center space-x-6 lg:mt-0">
+                                                <div class="flex flex-col items-center">
                                             <span class="font-bold">
                                                 {{p?.room?.code}}
                                             </span>
-                                            <span class="text-secondary text-sm font-medium">
+                                                    <span class="text-secondary text-sm font-medium">
                                                 {{p?.room?.roomType?.type}}
                                             </span>
-                                        </div>
-                                    </div>
+                                                </div>
+                                            </div>
+                                        } @else {
+                                            <div class="mt-6 flex items-center space-x-6 lg:mt-0">
+                                                <div class="flex flex-col items-center">
+                                                    <span class="text-sm font-medium text-red-400 italic">Aucune chambre affectée</span>
+                                                </div>
+                                            </div>
+                                        }
+                                        <div class="mx-8 hidden h-8 border-l-2 lg:flex"></div>
 
-
-                                } @else {
-                                    <div class="mt-6 flex items-center space-x-6 lg:mt-0">
-                                        <div class="flex flex-col items-center">
-                                            <span class="text-sm font-medium text-red-400 italic">Aucune chambre affectée</span>
-                                        </div>
-                                    </div>
-                                }
-                                <div class="mx-8 hidden h-8 border-l-2 lg:flex"></div>
-
-                                <div class="order-2 ml-4 sm:order-1 sm:ml-0">
-                                    <mat-form-field class="fuse-mat-dense w-56" [subscriptSizing]="'dynamic'">
-                                        <mat-select [(value)]="p.role" [panelClass]="'w-72 min-w-72 max-w-72 h-auto max-h-none'" disableOptionCentering #roleSelect="matSelect" placeholder="Choisir un role..">
-                                            <mat-select-trigger class="text-md">
-                                                <span>Role:</span>
-                                                <span class="ml-1 font-medium">
+                                        <div class="order-2 ml-4 sm:order-1 sm:ml-0">
+                                            <mat-form-field class="fuse-mat-dense w-56" [subscriptSizing]="'dynamic'">
+                                                <mat-select [(value)]="p.role" [panelClass]="'w-72 min-w-72 max-w-72 h-auto max-h-none'" disableOptionCentering #roleSelect="matSelect" placeholder="Choisir un role.." [panelClass]="'role-select-panel'">
+                                                    <mat-select-trigger class="text-md">
+                                                        <span>Role:</span>
+                                                        <span class="ml-1 font-medium">
                                                         {{ getRoleName(p.role) }}
                                                 </span>
-                                            </mat-select-trigger>
-                                            @for (role of roles; track role) {
-                                                <mat-option class="h-auto py-4 leading-none" [value]="role.code">
-                                                    <div class="font-medium">
-                                                        {{ role.name }}
-                                                    </div>
-                                                    <div class="text-secondary mt-1.5 whitespace-normal text-sm leading-normal">
-                                                        {{ role.description }}
-                                                    </div>
-                                                </mat-option>
-                                            }
-                                        </mat-select>
-                                    </mat-form-field>
-                                </div>
-                                <div class="order-1 sm:order-2 sm:ml-3">
-                                    <button mat-icon-button (click)="unSelectPerson(p)">
-                                        <mat-icon class="text-red-800 dark:text-red-50" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-
-                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
-                    <mat-label>Observation</mat-label>
-                    <textarea
-                        [formControlName]="'observation'"
-                        matInput
-                        cdkTextareaAutosize
-                        cdkAutosizeMinRows="2"
-                        cdkAutosizeMaxRows="5"
-                        #autosize="cdkTextareaAutosize">
-                    </textarea>
-                </mat-form-field>
-
-                @if (estimatedPayment && estimatedPayment.length > 0) {
-                    <div class="mt-6 overflow-hidden bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
-                        <div class="bg-gray-100 dark:bg-gray-800 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                            <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider">
-                                Détail de la Tarification
-                            </h3>
-                            <span class="px-2.5 py-0.5 bg-primary/10 text-primary text-md font-semibold rounded-full border border-primary/20">
-                                Séjour de {{ durationInDays }} {{ durationInDays > 1 ? 'jours' : 'jour' }}
-                            </span>
-                        </div>
-
-                        <div class="divide-y divide-gray-200 dark:divide-gray-700 divide-dashed">
-                            @for (detail of estimatedPayment; track detail.roomName) {
-                                <div class="flex justify-between items-center p-4 hover:bg-gray-100/50 dark:hover:bg-gray-700/30 transition-colors">
-                                    <div class="flex flex-col">
-                                        <span class="font-semibold text-gray-700 dark:text-gray-200">{{ detail.roomName }}</span>
-                                        <span class="text-[10px] text-gray-500 uppercase">Tarif par nuitée</span>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-gray-900 dark:text-white">{{ detail.totalPrice | number:'1.2-2' }} MAD</div>
-                                        <div class="text-xs text-gray-500 italic">{{ detail.unitPrice | number:'1.2-2' }} MAD / jour</div>
+                                                    </mat-select-trigger>
+                                                    @for (role of filteredRoles; track role) {
+                                                        <mat-option class="h-auto py-4 leading-none" [value]="role.code">
+                                                            <div class="font-medium">
+                                                                {{ role.name }}
+                                                            </div>
+                                                            <div class="text-secondary mt-1.5 whitespace-normal text-sm leading-normal">
+                                                                {{ role.description }}
+                                                            </div>
+                                                        </mat-option>
+                                                    }
+                                                </mat-select>
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="order-1 sm:order-2 sm:ml-3">
+                                            <button mat-icon-button (click)="unSelectPerson(p)">
+                                                <mat-icon class="text-red-800 dark:text-red-50" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             }
                         </div>
 
-                        <div class="bg-white dark:bg-gray-900/50 p-4 border-t border-gray-200 dark:border-gray-700">
-                            <div class="flex justify-between items-end">
-                                <div class="flex flex-col">
-                                    <span class="text-xs font-medium text-gray-500 uppercase tracking-widest">Montant Total Estimé</span>
-                                    <span class="text-[10px] text-gray-400">Toutes taxes comprises (TTC)</span>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-3xl font-extrabold text-primary tracking-tight">
-                                        {{ estimatedTotal | number:'1.2-2' }} <span class="text-sm font-medium">MAD</span>
-                                    </div>
-                                </div>
+                        <div class="flex justify-end">
+                            <button
+                                class="mr-2 px-8"
+                                mat-flat-button
+                                [color]="'accent'"
+                                type="button"
+                                matStepperPrevious
+                            >
+                                Précédent
+                            </button>
+                            <button
+                                class="px-8"
+                                mat-flat-button
+                                [color]="'primary'"
+                                [disabled]="!isStepResidentsValid"
+                                type="button"
+                                matStepperNext
+                            >
+                                Suivant
+                            </button>
+                        </div>
+                    </mat-step>
+
+                    <mat-step
+                        [formGroupName]="'step3'"
+                        [stepControl]="horizontalStepperForm.get('step3')"
+                    >
+                        <ng-template matStepLabel>Observations</ng-template>
+
+                        <div class="mt-6 mb-8">
+                            <h3 class="text-lg font-bold">Consignes & Besoins Particuliers</h3>
+                            <p class="text-secondary font-medium">
+                                (Optionnel) Notez ici toute demande spécifique relative au séjour ou aux préférences des hôtes.
+                            </p>
+                        </div>
+
+                        <div class="flex">
+                            <mat-form-field class="flex-auto fuse-mat-no-subscript" appearance="outline">
+                                <mat-label>Notes internes ou demandes spéciales</mat-label>
+                                <textarea
+                                    matInput
+                                    [formControlName]="'observation'"
+                                    placeholder="Ex: Régime alimentaire spécifique, besoin d'un lit bébé, arrivée prévue après 22h..."
+                                    [rows]="5">
+                                </textarea>
+                                <mat-icon
+                                    class="icon-size-5 mr-2 text-hint"
+                                    matPrefix
+                                    [svgIcon]="'heroicons_outline:chat-bubble-bottom-center-text'">
+                                </mat-icon>
+                                <mat-hint>Ces informations seront visibles par l'équipe d'accueil.</mat-hint>
+                            </mat-form-field>
+                        </div>
+
+                        <div class="mt-8 flex justify-end">
+                            <button
+                                class="mr-2 px-8"
+                                mat-flat-button
+                                [color]="'accent'"
+                                type="button"
+                                matStepperPrevious
+                            >
+                                Précédent
+                            </button>
+                            <button
+                                class="px-8"
+                                mat-flat-button
+                                [color]="'primary'"
+                                type="button"
+                                matStepperNext
+                            >
+                                Suivant
+                            </button>
+                        </div>
+                    </mat-step>
+
+                    <mat-step>
+                        <ng-template matStepLabel>Confirmation</ng-template>
+                        <div class="flex items-center space-x-4 my-8">
+                            <div class="flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
+                                <mat-icon class="icon-size-6" [svgIcon]="'heroicons_outline:check-badge'"></mat-icon>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-extrabold tracking-tight leading-none">Vérifiez les informations</h2>
+                                <p class="text-secondary font-medium mt-1">Dernière étape avant la validation finale de la réservation.</p>
                             </div>
                         </div>
-                        @if (form.get('priseEnCharge').value) {
-                            <div class="bg-white dark:bg-gray-900/50 p-4 border-t border-gray-200 dark:border-gray-700">
-                                <div class="flex justify-between items-end">
-                                    <div class="flex flex-col">
-                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-widest">Prise en charge</span>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="text-3xl font-extrabold text-primary tracking-tight">
-                                            0 <span class="text-sm font-medium">MAD</span>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+                            <div class="space-y-4">
+                                <div class="bg-gray-50 dark:bg-gray-800 p-6 rounded-2xl border border-dashed border-gray-300">
+                                    <h3 class="font-bold text-lg mb-4 flex items-center">
+                                        <mat-icon class="mr-2" [svgIcon]="'heroicons_outline:information-circle'"></mat-icon>
+                                        Détails de la Réservation
+                                    </h3>
+                                    <div class="space-y-2 text-md">
+                                        <div class="flex justify-between">
+                                            <span class="text-secondary">Période :</span>
+                                            <span class="font-semibold">{{ horizontalStepperForm.get('step1.dateRange.start').value | date:'dd/MM/yyyy' }} - {{ horizontalStepperForm.get('step1.dateRange.end').value | date:'dd/MM/yyyy' }}</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-secondary">Durée :</span>
+                                            <span class="font-semibold">{{ durationInDays }} Nuitée(s)</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-secondary">Hôtes inscrits :</span>
+                                            <span class="font-semibold">{{ persons.length }}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        }
 
-                    </div>
-                }
+                            <div class="space-y-4">
+                                @if (estimatedPayment && estimatedPayment.length > 0) {
+                                    <div class="bg-card shadow-lg rounded-2xl border border-primary/20 overflow-hidden">
+                                        <div class="bg-primary/5 px-6 py-4 border-b border-primary/10 flex justify-between items-center">
+                                            <h3 class="text-sm font-bold text-primary uppercase">Estimation Folio</h3>
+                                            <span class="text-xs font-bold text-primary">{{ durationInDays }} Nuits</span>
+                                        </div>
 
+                                        <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                                            @for (detail of estimatedPayment; track detail.roomName) {
+                                                <div class="p-4 flex justify-between items-center">
+                                                    <div class="flex flex-col text-sm">
+                                                        <span class="font-bold">{{ detail.roomName }}</span>
+                                                        <span class="text-xs text-secondary italic">{{ detail.unitPrice | number:'1.2-2' }} MAD / nuit</span>
+                                                    </div>
+                                                    <span class="font-bold">{{ detail.totalPrice | number:'1.2-2' }} MAD</span>
+                                                </div>
+                                            }
+                                        </div>
 
-                <div class="flex items-end justify-end mx-3 mt-8">
-                    <button mat-flat-button [color]="'primary'" [disabled]="form.disabled || form.invalid" (click)="save()">
-                        Enregistrer
-                    </button>
-                </div>
+                                        <div class="p-6 bg-primary text-white">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-xs font-bold uppercase">Total Général TTC</span>
+                                                <span class="text-2xl font-black">{{ estimatedTotal | number:'1.2-2' }} MAD</span>
+                                            </div>
+                                        </div>
+
+                                        @if (horizontalStepperForm.get('step1.priseEnCharge').value) {
+                                            <div class="p-4 bg-emerald-500 text-white flex justify-between items-center">
+                                                <span class="text-xs font-bold uppercase">Prise en charge active (Réf: {{horizontalStepperForm.get('step1.priseEnChargeReference').value}})</span>
+                                                <span class="text-lg font-bold">0.00 MAD</span>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="mt-8 flex justify-end">
+                            <button
+                                class="mr-2 px-8"
+                                mat-flat-button
+                                [color]="'accent'"
+                                type="button"
+                                matStepperPrevious
+                            >
+                                Précédent
+                            </button>
+                            <button
+                                class="px-8"
+                                mat-flat-button color="primary"  (click)="save()" [disabled]="isSaving"
+                                type="button"
+                            >
+                                @if (!isSaving) { Confirmer la Réservation } @else { Traitement... }
+                            </button>
+                        </div>
+                    </mat-step>
+                </mat-horizontal-stepper>
             </form>
             </div>
     </div>

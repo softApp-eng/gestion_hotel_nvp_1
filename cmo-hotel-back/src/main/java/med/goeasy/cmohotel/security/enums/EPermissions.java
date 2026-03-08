@@ -57,6 +57,7 @@ public enum EPermissions {
     ROOM_UPDATE(ROOM, "room:update", "Modifier une chambre", UPDATE,true,""),
     ROOM_LIST(ROOM, "room:list", "lister les chambres", READ,true,""),
     ROOM_LIST_GRANTED(ROOM, "room:granted", "lister les chambres affectées", READ,true,""),
+    ROOM_LIST_WITH_RESERVATION_DETAILS(ROOM, "room:list:reservations:details", "lister les chambres avec les details de reservation", READ,true,""),
     ROOM_SELECT_ONE(ROOM, "room:one", "charger une chambre", READ,true,""),
     ROOM_DELETE(ROOM, "room:delete", "Supprimer une chambre", DELETE,true,""),
     // ROOMS TYPES
@@ -74,6 +75,7 @@ public enum EPermissions {
 
     // RESERVATIONS
     RESERVATION_CREATE(RESERVATION, "reservation:create", "Créer une réservation", CREATE,true,""),
+    RESERVATION_UPDATE(RESERVATION, "reservation:update", "Modofer une réservation", UPDATE,true,""),
     RESERVATION_LIST(RESERVATION, "reservation:list", "lister les réservations", READ,true,""),
     RESERVATION_ONE(RESERVATION, "reservation:one", "charger une réservation", READ,true,""),
     RESERVATION_ACCEPT(RESERVATION, "reservation:accept", "accepter une réservation", MANAGE,true,""),
