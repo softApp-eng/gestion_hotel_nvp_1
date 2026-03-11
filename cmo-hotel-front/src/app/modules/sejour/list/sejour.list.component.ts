@@ -58,7 +58,6 @@ import { CloseReservationModel } from '../../reservation/list/dialog-close-reser
         FormsModule,
         MatTabsModule,
         MatDatepickerModule,
-        RouterLink,
         DatePipe,
         ExtractGuestDataPipe,
         SlicePipe,
@@ -137,16 +136,7 @@ export class SejourListComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         this.dataSource.data = [];
         this._apiReservationService
-            .search(
-                this.key,
-                '',
-                ['CONFIRMED'],
-                [],
-                '',
-                '',
-                this.currentPage,
-                this.pageSize
-            )
+            .getSejours()
             .pipe(
                 finalize(() => {
                     this.isLoading = false;
@@ -154,8 +144,8 @@ export class SejourListComponent implements OnInit, OnDestroy {
             )
             .subscribe({
                 next: (value: any) => {
-                    this.dataSource.data = value?.content || [];
-                    this.totalRows = value?.totalElements || 0;
+                    this.dataSource.data = value || [];
+                    this.totalRows = value?.length || 0;
 
                     setTimeout(() => {
                         if (this._paginator) {

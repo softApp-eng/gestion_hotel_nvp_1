@@ -5,12 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import med.goeasy.cmohotel.persistence.entity.enums.EPrestationType;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -29,8 +31,14 @@ public class Prestation {
     @ManyToOne(optional = false)
     private Reservation reservation;
 
-    @ManyToOne(optional = false)
-    private MealType mealType;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private EPrestationType type;
+
+    @Column(nullable = false)
+    private String name;
+
+    private BigDecimal price;
 
     @Column(nullable = false)
     private Integer quantity;

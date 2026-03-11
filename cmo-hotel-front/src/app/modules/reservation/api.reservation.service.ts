@@ -45,8 +45,8 @@ export class ApiReservationService {
         return this._httpClient.get(`${this.API_URL}/planning/${type}`, { params });
     }
 
-    getUpcomingReservations(): Observable<any>{
-        return this._httpClient.get(`${this.API_URL}/upcoming`);
+    getSejours(): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/sejours`);
     }
 
     getResidentReservations(): Observable<any>{

@@ -12,14 +12,14 @@ chambre partagé
 
 ### reservation
     - verifier le check in/out
+    - verifier le calcule des prix
 
 ### person
     - nationalité obligatoire?
-    - identité probleme pour les enfants -18
+    - probleme d'identité pour les enfants -18
+    - toujours trie par grade
+
 ### prestation
-    - une prestation peut etre repas ou autre services
-    - ajout des prestation en groupe ou individuel
-    - modifier une prestation affiche des cartes des prestations cliquable pour l'editer et avec boutton de suppréssion
-    - ajouter d'autre infos au tableau (total des prestations, fusionnement par code de reservation, category)
+
 ### gouvernance
 ### night audit

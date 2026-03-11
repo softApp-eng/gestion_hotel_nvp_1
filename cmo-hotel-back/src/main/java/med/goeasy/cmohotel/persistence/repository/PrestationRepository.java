@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface PrestationRepository extends JpaRepository<Prestation, String> {
 
-    @Query("FROM Prestation p WHERE p.reservation.id = ?1")
+    @Query("FROM Prestation p WHERE p.reservation.id = ?1 order by p.day desc, p.id")
     List<Prestation> findPrestationsByReservationId(String reservationId);
 }

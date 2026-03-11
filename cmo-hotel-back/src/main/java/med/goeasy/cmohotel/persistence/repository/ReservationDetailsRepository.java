@@ -64,5 +64,14 @@ public interface ReservationDetailsRepository extends JpaRepository<ReservationD
             @Param("end") LocalDateTime end
     );
 
+    @Query(value = """
+        SELECT DISTINCT rd FROM ReservationDetails rd
+        WHERE
+            rd.status = 'CONFIRMED'
+            AND CURRENT_DATE >= CAST(COALESCE(rd.checkin, rd.plannedStart) AS date)
+            AND CURRENT_DATE <= CAST(COALESCE(rd.checkout, rd.plannedEnd) AS date)
+        """)
+    List<ReservationDetails> getSejours();
+
 
 }

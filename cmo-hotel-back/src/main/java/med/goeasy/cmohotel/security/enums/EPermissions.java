@@ -107,7 +107,8 @@ public enum EPermissions {
     MEAL_PRICE_DELETE(MEAL, "price:delete", "Supprimer un prix de repas", DELETE,true,""),
 
     // PRESTATION
-    PRESTATION_CREATE(PRESTATION, "prestation:create", "Créer une préstation", CREATE,true,""),
+    PRESTATION_CREATE(PRESTATION, "prestation:create", "Créer un groupe de préstations", CREATE,true,""),
+    PRESTATION_UPDATE(PRESTATION, "prestation:update", "Modifier une préstation", UPDATE,true,""),
     PRESTATION_FOR_RESIDENTS(PRESTATION, "prestation:residents:list", "Lister les préstations des residents", READ,true,""),
     PRESTATION_DELETE(PRESTATION, "prestation:delete", "Supprimer une préstation", DELETE,true,""),
 

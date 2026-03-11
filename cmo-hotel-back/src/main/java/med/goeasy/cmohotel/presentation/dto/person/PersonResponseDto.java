@@ -12,8 +12,8 @@ import java.time.LocalDate;
 public record PersonResponseDto(
         String id,
         GradeDto grade,
-        PersonResponseDto primaryPerson,
-        ERelationshipType relationshipType,
+        //PersonResponseDto primaryPerson,
+        //ERelationshipType relationshipType,
         String identity,
         String firstName,
         String lastName,
@@ -35,8 +35,8 @@ public record PersonResponseDto(
                 return PersonResponseDto.builder()
                         .id(entity.getId())
                         .grade(GradeDto.mapToDto(entity.getGrade()))
-                        .primaryPerson(PersonResponseDto.mapToDto(entity.getPrimaryPerson()))
-                        .relationshipType(entity.getRelationshipType())
+                        //.primaryPerson(PersonResponseDto.mapToDto(entity.getPrimaryPerson()))
+                        //.relationshipType(entity.getRelationshipType())
                         .identity(entity.getIdentity())
                         .firstName(entity.getFirstName())
                         .lastName(entity.getLastName())

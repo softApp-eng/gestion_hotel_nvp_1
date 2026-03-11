@@ -122,7 +122,7 @@ public class WebSecurityConfig {
 						// Réservations
 						.requestMatchers(POST,"/v1/reservations/create").hasAuthority(EPermissions.RESERVATION_CREATE.getAuthority())
 						.requestMatchers(PUT,"/v1/reservations/update").hasAuthority(EPermissions.RESERVATION_UPDATE.getAuthority())
-						.requestMatchers(GET,"/v1/reservations/search","/v1/reservations/upcoming","/v1/reservations/planning/**").hasAuthority(EPermissions.RESERVATION_LIST.getAuthority())
+						.requestMatchers(GET,"/v1/reservations/search","/v1/reservations/upcoming","/v1/reservations/planning/**","/v1/reservations/sejours").hasAuthority(EPermissions.RESERVATION_LIST.getAuthority())
 						.requestMatchers(GET,"/v1/reservations/one").hasAuthority(EPermissions.RESERVATION_ONE.getAuthority())
 						.requestMatchers(PUT,"/v1/reservations/accept").hasAuthority(EPermissions.RESERVATION_ACCEPT.getAuthority())
 						.requestMatchers(PUT,"/v1/reservations/cancel").hasAuthority(EPermissions.RESERVATION_CANCEL.getAuthority())
@@ -153,8 +153,9 @@ public class WebSecurityConfig {
 						.requestMatchers(PUT,"/v1/meals/price/update").hasAuthority(EPermissions.MEAL_PRICE_UPDATE.getAuthority())
 						.requestMatchers(DELETE,"/v1/meals/price/delete").hasAuthority(EPermissions.MEAL_PRICE_DELETE.getAuthority())
 						// Préstations
-						.requestMatchers(POST,"/v1/prestations/create").hasAuthority(EPermissions.PRESTATION_CREATE.getAuthority())
-						.requestMatchers(GET,"/v1/prestations/residents").hasAuthority(EPermissions.PRESTATION_FOR_RESIDENTS.getAuthority())
+						.requestMatchers(POST,"/v1/prestations/create","/v1/prestations/reservation/create").hasAuthority(EPermissions.PRESTATION_CREATE.getAuthority())
+						.requestMatchers(PUT,"/v1/prestations/update").hasAuthority(EPermissions.PRESTATION_UPDATE.getAuthority())
+						.requestMatchers(GET,"/v1/prestations/residents","/v1/prestations/reservation").hasAuthority(EPermissions.PRESTATION_FOR_RESIDENTS.getAuthority())
 						.requestMatchers(DELETE,"/v1/prestations/delete").hasAuthority(EPermissions.PRESTATION_DELETE.getAuthority())
 
 						//.anyRequest().authenticated()

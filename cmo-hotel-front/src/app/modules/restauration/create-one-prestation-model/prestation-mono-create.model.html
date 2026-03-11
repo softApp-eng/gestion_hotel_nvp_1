@@ -1,0 +1,102 @@
+<div class="-m-6 flex flex-col max-h-[95vh] md:w-160 md:min-w-160 overflow-hidden">
+    <mat-toolbar class=" mat-accent h-14 min-h-14 px-2 m-0 flex-none">
+        <div class="flex items-center w-full justify-between">
+            <div class="flex items-center" >
+                <mat-icon class="icon-size-5 mr-3 text-white" [svgIcon]="'heroicons_solid:filter'"></mat-icon>
+                <span class="text-xl  text-white">{{title}}</span>
+            </div>
+            <button mat-icon-button (click)="matDialogRef.close()" aria-label="fermer" class="text-white">
+                <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
+            </button>
+        </div>
+    </mat-toolbar>
+
+    <div class="flex justify-center p-4 bg-gray-50 dark:bg-transparent border-b">
+        <mat-button-toggle-group
+            [disabled]="prestation"
+            [(ngModel)]="type"
+            class="border-none bg-gray-200 dark:bg-gray-800 p-1 rounded-xl h-10 w-full max-w-xs"
+            appearance="standard">
+            <mat-button-toggle value="MEAL" class="flex-1 rounded-lg font-bold text-xs uppercase tracking-widest">
+                REPAS
+            </mat-button-toggle>
+            <mat-button-toggle value="SERVICE" class="flex-1 rounded-lg font-bold text-xs uppercase tracking-widest">
+                SERVICES
+            </mat-button-toggle>
+        </mat-button-toggle-group>
+    </div>
+
+    <div class="flex-auto overflow-y-auto p-6">
+        <form [formGroup]="form">
+
+            @if (type == 'MEAL') {
+                <mat-form-field class="w-full p-2" appearance="outline">
+                    <mat-label>Repas</mat-label>
+                    <mat-select formControlName="name">
+                        @for (m of meals; track m?.id) {
+                            <mat-option [value]="m.name">
+                                {{ m.name }}
+                            </mat-option>
+                        }
+                    </mat-select>
+                    @if (form.get('name').hasError('required') && form.get('name').touched) {
+                        <mat-error>Repas est obligatoire</mat-error>
+                    }
+                </mat-form-field>
+            }
+            @if (type == 'SERVICE') {
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Nom</mat-label>
+                    <input matInput [formControlName]="'name'" placeholder="Nom">
+                    @if (form.get('name').hasError('required')) {
+                        <mat-error>Champ obligatoire</mat-error>
+                    }
+                </mat-form-field>
+            }
+
+
+            <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                <mat-label>Quantité</mat-label>
+                <input matInput [formControlName]="'quantity'" placeholder="quantity" type="number" min="1">
+                @if (form.get('quantity').hasError('required')) {
+                    <mat-error>Champ obligatoire</mat-error>
+                }
+            </mat-form-field>
+
+            @if (type == 'SERVICE') {
+                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                    <mat-label>Prix</mat-label>
+                    <input matInput [formControlName]="'price'" placeholder="Prix" type="number" min="0">
+                    @if (form.get('price').hasError('required')) {
+                        <mat-error>Champ obligatoire</mat-error>
+                    }
+                </mat-form-field>
+            }
+
+
+            <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                <mat-label>Observation</mat-label>
+                <textarea
+                    [formControlName]="'observation'"
+                    matInput
+                    cdkTextareaAutosize
+                    cdkAutosizeMinRows="2"
+                    cdkAutosizeMaxRows="5"
+                    #autosize="cdkTextareaAutosize">
+                    </textarea>
+            </mat-form-field>
+
+
+            <div class="flex items-start justify-between mx-3 mt-8">
+                <button mat-stroked-button (click)="matDialogRef.close()">
+                    Annuler
+                </button>
+                <button mat-flat-button [color]="'primary'" [disabled]="form.disabled || form.invalid" (click)="save()">
+                    Enregistrer
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>

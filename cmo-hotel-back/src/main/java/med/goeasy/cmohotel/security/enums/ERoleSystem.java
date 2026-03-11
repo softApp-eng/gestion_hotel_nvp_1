@@ -76,6 +76,7 @@ public enum ERoleSystem {
                     EPermissions.PRESTATION_CREATE,
                     EPermissions.PRESTATION_FOR_RESIDENTS,
                     EPermissions.PRESTATION_DELETE,
+                    EPermissions.PRESTATION_UPDATE,
                     EPermissions.RESERVATION_RESIDENTS
             )),
 

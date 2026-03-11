@@ -13,125 +13,251 @@
 
     <div class="flex-auto overflow-y-auto p-6 bg-gray-50 dark:bg-transparent">
 
-        <div class="flex flex-wrap items-center justify-between mb-8 gap-4">
-            <div class="flex items-center gap-3">
-                <div class="px-3 py-1 rounded-full text-sm font-semibold"
-                     [ngStyle]="{'background-color': reservation?.status?.code === 'CONFIRMED' ? '#e0e7ff' : '#fef3c7', 'color': reservation?.status?.code === 'CONFIRMED' ? '#4338ca' : '#92400e'}">
-                    {{reservation?.status?.name}}
-                </div>
-                <div class="px-3 py-1 rounded-full text-sm font-semibold bg-gray-200 text-gray-700">
-                    {{reservation?.category?.name}}
-                </div>
-                @if (reservation?.priseEnCharge) {
-                    <div class="px-3 py-1 rounded-full text-sm font-semibold bg-warn text-white">
-                        Prise en charge
-                    </div>
-                }
 
-            </div>
-            <div class="text-secondary text-md flex items-center">
-                <mat-icon class="icon-size-4 mr-1" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
-                Créé le {{reservation?.createdAt[2]}}/{{reservation?.createdAt[1]}}/{{reservation?.createdAt[0]}}
-            </div>
+        <div class="flex justify-center items-center w-full pb-4">
+            <mat-button-toggle-group [(ngModel)]="mode">
+                <mat-button-toggle value="HEBERGEMENT" (click)="changeMode('HEBERGEMENT')">HEBERGEMENT</mat-button-toggle>
+                <mat-button-toggle value="PRESTATION" (click)="changeMode('PRESTATION')">PRESTATION</mat-button-toggle>
+            </mat-button-toggle-group>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-            <div class="bg-card shadow rounded-2xl p-6 border">
-                <div class="text-lg font-bold mb-4 border-b pb-2 flex items-center text-primary">
-                    <mat-icon class="mr-2 icon-size-5" [svgIcon]="'heroicons_outline:home-modern'"></mat-icon>
-                    Hébergement
-                </div>
-                <div class="space-y-4">
-                    <div class="flex justify-between">
-                        <span class="text-secondary">Pavillon</span>
-                        <span class="font-medium">{{reservation?.guests[0]?.room?.pavillon?.name}}</span>
-                    </div>
-                    <div class="flex justify-between border-t pt-2">
-                        <div class="flex flex-col">
-                            <span class="text-xs text-secondary uppercase">Arrivée</span>
-                            <span class="font-bold">{{reservation?.plannedStart}}</span>
+        @if (mode === 'HEBERGEMENT') {
+            <ng-container>
+                <div class="flex flex-wrap items-center justify-between mb-8 gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="px-3 py-1 rounded-full text-sm font-semibold"
+                             [ngStyle]="{'background-color': reservation?.status?.code === 'CONFIRMED' ? '#e0e7ff' : '#fef3c7', 'color': reservation?.status?.code === 'CONFIRMED' ? '#4338ca' : '#92400e'}">
+                            {{reservation?.status?.name}}
                         </div>
-                        <mat-icon class="rotate-90 md:rotate-0" [svgIcon]="'heroicons_outline:arrow-long-right'"></mat-icon>
-                        <div class="flex flex-col text-right">
-                            <span class="text-xs text-secondary uppercase">Départ</span>
-                            <span class="font-bold">{{reservation?.plannedEnd}}</span>
+                        <div class="px-3 py-1 rounded-full text-sm font-semibold bg-gray-200 text-gray-700">
+                            {{reservation?.category?.name}}
+                        </div>
+                        @if (reservation?.priseEnCharge) {
+                            <div class="px-3 py-1 rounded-full text-sm font-semibold bg-warn text-white">
+                                Prise en charge
+                            </div>
+                        }
+
+                    </div>
+                    <div class="text-secondary text-md flex items-center">
+                        <mat-icon class="icon-size-4 mr-1" [svgIcon]="'heroicons_outline:calendar'"></mat-icon>
+                        Créé le {{reservation?.createdAt[2]}}/{{reservation?.createdAt[1]}}/{{reservation?.createdAt[0]}}
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                    <div class="bg-card shadow rounded-2xl p-6 border">
+                        <div class="text-lg font-bold mb-4 border-b pb-2 flex items-center text-primary">
+                            <mat-icon class="mr-2 icon-size-5" [svgIcon]="'heroicons_outline:home-modern'"></mat-icon>
+                            Hébergement
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex justify-between">
+                                <span class="text-secondary">Pavillon</span>
+                                <span class="font-medium">{{reservation?.guests[0]?.room?.pavillon?.name}}</span>
+                            </div>
+                            <div class="flex justify-between border-t pt-2">
+                                <div class="flex flex-col">
+                                    <span class="text-xs text-secondary uppercase">Arrivée</span>
+                                    <span class="font-bold">{{reservation?.plannedStart}}</span>
+                                </div>
+                                <mat-icon class="rotate-90 md:rotate-0" [svgIcon]="'heroicons_outline:arrow-long-right'"></mat-icon>
+                                <div class="flex flex-col text-right">
+                                    <span class="text-xs text-secondary uppercase">Départ</span>
+                                    <span class="font-bold">{{reservation?.plannedEnd}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-card shadow rounded-2xl p-6 border">
+                        <div class="text-lg font-bold mb-4 border-b pb-2 flex items-center text-primary">
+                            <mat-icon class="mr-2 icon-size-5" [svgIcon]="'heroicons_outline:chat-bubble-left-right'"></mat-icon>
+                            Observations
+                        </div>
+                        <p class="italic text-secondary">
+                            "{{reservation?.observation || 'Aucune observation particulière.'}}"
+                        </p>
+                        <div class="mt-4 p-3 bg-blue-50 dark:bg-gray-800 rounded-lg border border-blue-100">
+                            <div class="text-xs text-blue-600 font-bold uppercase mb-1">Unité de référence</div>
+                            <div class="text-md">{{reservation?.guests[0]?.person?.unite}}</div>
                         </div>
                     </div>
                 </div>
-            </div>
+                <div class="mt-8 bg-card shadow rounded-2xl overflow-hidden border">
+                    <div class="bg-gray-100 dark:bg-gray-800 px-6 py-4 font-bold flex items-center">
+                        <mat-icon class="mr-2 icon-size-5 text-primary" [svgIcon]="'heroicons_outline:users'"></mat-icon>
+                        Occupants ({{reservation?.guests?.length}})
+                    </div>
+                    <table class="w-full border-collapse">
+                        <thead>
+                        <tr class="text-xs uppercase text-secondary bg-gray-50 dark:bg-transparent border-b">
+                            <th class="px-6 py-4 text-center">Grade & Nom</th>
+                            <th class="px-6 py-4 text-center">Identité / Matricule</th>
+                            <th class="px-6 py-4 text-center">Hébergement</th>
+                            <th class="px-6 py-4 text-center">Rôle</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            @for (guest of reservation?.guests; track guest.id) {
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
 
-            <div class="bg-card shadow rounded-2xl p-6 border">
-                <div class="text-lg font-bold mb-4 border-b pb-2 flex items-center text-primary">
-                    <mat-icon class="mr-2 icon-size-5" [svgIcon]="'heroicons_outline:chat-bubble-left-right'"></mat-icon>
-                    Observations
-                </div>
-                <p class="italic text-secondary">
-                    "{{reservation?.observation || 'Aucune observation particulière.'}}"
-                </p>
-                <div class="mt-4 p-3 bg-blue-50 dark:bg-gray-800 rounded-lg border border-blue-100">
-                    <div class="text-xs text-blue-600 font-bold uppercase mb-1">Unité de référence</div>
-                    <div class="text-md">{{reservation?.guests[0]?.person?.unite}}</div>
-                </div>
-            </div>
-        </div>
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="font-bold text-slate-900 dark:text-white">{{guest?.person?.firstName}} {{guest?.person?.lastName}}</div>
+                                        <div class="text-sm text-secondary">{{guest?.person?.grade?.name}}</div>
+                                    </td>
 
-        <div class="mt-8 bg-card shadow rounded-2xl overflow-hidden border">
-            <div class="bg-gray-100 dark:bg-gray-800 px-6 py-4 font-bold flex items-center">
-                <mat-icon class="mr-2 icon-size-5 text-primary" [svgIcon]="'heroicons_outline:users'"></mat-icon>
-                Occupants ({{reservation?.guests?.length}})
-            </div>
-            <table class="w-full border-collapse">
-                <thead>
-                <tr class="text-xs uppercase text-secondary bg-gray-50 dark:bg-transparent border-b">
-                    <th class="px-6 py-4 text-center">Grade & Nom</th>
-                    <th class="px-6 py-4 text-center">Identité / Matricule</th>
-                    <th class="px-6 py-4 text-center">Hébergement</th>
-                    <th class="px-6 py-4 text-center">Rôle</th>
-                </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    @for (guest of reservation?.guests; track guest.id) {
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="flex flex-col items-center justify-center w-full">
+                                            <div class="text-sm font-semibold text-slate-700 dark:text-slate-300 leading-tight">
+                                                {{guest?.person?.identity}}
+                                            </div>
+                                            <div class="text-xs text-secondary mt-0.5">
+                                                {{guest?.person?.matricule}}
+                                            </div>
+                                        </div>
+                                    </td>
 
-                            <td class="px-6 py-4 text-center">
-                                <div class="font-bold text-slate-900 dark:text-white">{{guest?.person?.firstName}} {{guest?.person?.lastName}}</div>
-                                <div class="text-sm text-secondary">{{guest?.person?.grade?.name}}</div>
-                            </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="font-bold text-primary">
+                                            {{guest?.room?.code}}
+                                        </div>
+                                        <div class="text-sm text-secondary">
+                                            {{guest?.room?.roomType?.type}}
+                                        </div>
+                                    </td>
 
-                            <td class="px-6 py-4 text-center">
-                                <div class="flex flex-col items-center justify-center w-full">
-                                    <div class="text-sm font-semibold text-slate-700 dark:text-slate-300 leading-tight">
-                                        {{guest?.person?.identity}}
-                                    </div>
-                                    <div class="text-xs text-secondary mt-0.5">
-                                        {{guest?.person?.matricule}}
-                                    </div>
-                                </div>
-                            </td>
-
-                            <td class="px-6 py-4 text-center">
-                                <div class="font-bold text-primary">
-                                    {{guest?.room?.code}}
-                                </div>
-                                <div class="text-sm text-secondary">
-                                    {{guest?.room?.roomType?.type}}
-                                </div>
-                            </td>
-
-                            <td class="px-6 py-4 text-center">
+                                    <td class="px-6 py-4 text-center">
                                 <span class="inline-flex items-center justify-center text-xs font-semibold px-3 py-1 rounded-full shadow-sm"
                                       [ngClass]="guest?.role?.code === 'PRINCIPAL'
                                                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
                                                  : 'bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400'">
                                     {{guest?.role?.name}}
                                 </span>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </ng-container>
+        }
+
+        @if (mode === 'PRESTATION') {
+            <ng-container>
+                <div class="flex flex-col space-y-6 animate-fade-in">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border shadow-sm flex items-center">
+                            <div class="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 mr-4">
+                                <mat-icon [svgIcon]="'heroicons_outline:calculator'"></mat-icon>
+                            </div>
+                            <div>
+                                <div class="text-xs text-secondary uppercase font-bold tracking-wider">Total Prestations</div>
+                                <div class="text-xl font-black text-slate-800 dark:text-white">{{ calculateTotal() }} <span class="text-sm font-normal text-secondary">MAD</span></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border shadow-sm flex items-center">
+                            <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 mr-4">
+                                <mat-icon [svgIcon]="'heroicons_outline:cake'"></mat-icon>
+                            </div>
+                            <div>
+                                <div class="text-xs text-secondary uppercase font-bold tracking-wider">Repas</div>
+                                <div class="text-xl font-black text-slate-800 dark:text-white">{{ calculateTotalByType('MEAL') }}</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border shadow-sm flex items-center">
+                            <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 mr-4">
+                                <mat-icon [svgIcon]="'heroicons_outline:sparkles'"></mat-icon>
+                            </div>
+                            <div>
+                                <div class="text-xs text-secondary uppercase font-bold tracking-wider">Services (EXTRAS)</div>
+                                <div class="text-xl font-black text-slate-800 dark:text-white">{{ calculateTotalByType('SERVICE') }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-card shadow rounded-2xl overflow-hidden border">
+                        <div class="bg-gray-100 dark:bg-gray-800 px-6 py-4 font-bold flex justify-between items-center">
+                            <div class="flex items-center">
+                                <mat-icon class="mr-2 icon-size-5 text-primary" [svgIcon]="'heroicons_outline:list-bullet'"></mat-icon>
+                                Détail des consommations
+                            </div>
+                        </div>
+
+                        <table class="w-full border-collapse">
+                            <thead>
+                            <tr class="text-[10px] uppercase text-secondary bg-gray-50 dark:bg-transparent border-b tracking-widest">
+                                <th class="px-6 py-3 text-left">Bénéficiaire</th>
+                                <th class="px-6 py-3 text-left">Date & Heure</th>
+                                <th class="px-6 py-3 text-left">Désignation</th>
+                                <th class="px-6 py-3 text-center">Type</th>
+                                <th class="px-6 py-3 text-center">Qté</th>
+                                <th class="px-6 py-3 text-right">Sous-total</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                @for (item of prestationsSummary; track item) {
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm font-bold text-slate-900 dark:text-white">{{ item.beneficiaire }}</div>
+                                            <div class="text-[10px] text-secondary">{{ item.grade }}</div>
+                                        </td>
+
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium">{{ item.date }}</div>
+                                        </td>
+
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-tight">{{ item.label }}</div>
+                                            @if (item.observation) {
+                                                <div class="text-[10px] italic text-secondary flex items-center mt-0.5">
+                                                    <mat-icon class="icon-size-3 mr-1" [svgIcon]="'heroicons_outline:chat-bubble-bottom-center'"></mat-icon>
+                                                    {{ item.observation }}
+                                                </div>
+                                            }
+                                        </td>
+
+                                        <td class="px-6 py-4 text-center">
+                                            <span [ngClass]="item.type === 'MEAL' ? 'text-blue-600 bg-blue-50 border-blue-100' : 'text-amber-600 bg-amber-50 border-amber-100'"
+                                                  class="text-[9px] font-black px-2 py-0.5 rounded uppercase border">
+                                                {{ item.type == 'MEAL' ? 'Repas':'Service (extras)' }}
+                                            </span>
+                                        </td>
+
+                                        <td class="px-6 py-4 text-center font-mono font-bold text-sm">
+                                            x{{ item.quantite }}
+                                        </td>
+
+                                        <td class="px-6 py-4 text-right">
+                                            <div class="text-sm font-black text-indigo-600 dark:text-indigo-400">
+                                                {{ item.prixUnitaire * item.quantite }} <span class="text-[10px] font-normal">DH</span>
+                                            </div>
+                                            <div class="text-[9px] text-secondary">{{ item.prixUnitaire }} DH / u</div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="bg-gray-50/80 dark:bg-gray-800/20">
+                            <tr>
+                                <td colspan="5" class="px-6 py-4 text-right font-bold text-secondary uppercase text-[10px] tracking-widest">Montant Total Prestations</td>
+                                <td class="px-6 py-4 text-right text-lg font-black text-indigo-700 dark:text-indigo-300">
+                                    {{ calculateTotal() }} <span class="text-xs font-normal">MAD</span>
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </ng-container>
+        }
+
+
+
+
+
     </div>
 
     <div class="p-4 bg-gray-50 border-t flex justify-end gap-3 flex-none">

@@ -14,12 +14,12 @@ import { MatFormField, MatPrefix } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { PrestationManageModel } from '../dialog-manage-prestation/prestation-manage-model';
 import { MatDialog } from '@angular/material/dialog';
-import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../@fuse/services/confirmation';
-import { Toastr } from '../../../core/service/toastr.service';
 import { HighlightPipe } from '../../../../@fuse/pipes/HighlightPipe';
+import { PrestationMonoCreateModel } from '../create-one-prestation-model/prestation-mono-create.model';
+import { PrestationEditModel } from '../edit-prestation-model/prestation-edit.model';
+import { ExtractGuestDataPipe } from '../../reservation/list/extract-guest-data-pipe';
+import { ReservationDetailsModel } from '../../reservation/dialog-reservation-details/reservation.details.model';
 
 @Component({
     selector: 'app-restauration-list',
@@ -55,29 +55,15 @@ import { HighlightPipe } from '../../../../@fuse/pipes/HighlightPipe';
 export class PrestationListComponent implements OnInit {
     @ViewChild('matDrawer') matDrawer: MatDrawer;
     @ViewChild(MatPaginator) paginator: MatPaginator;
-    actionConfigDialogue: FuseConfirmationConfig = {
-        title: '',
-        message: '',
-        icon: {
-            show: true,
-            name: 'heroicons_outline:exclamation-triangle',
-            color: 'warn',
-        },
-        actions: {
-            confirm: {
-                show: true,
-                label: 'Confirmer',
-                color: 'warn',
-            },
-            cancel: {
-                show: true,
-                label: 'Annuler',
-            },
-        },
-        dismissible: true,
-    };
 
-    displayedColumns: string[] = ['grade', 'name','identity','totalPrice', 'action'];
+    displayedColumns: string[] = [
+        'reservationCode',
+        'category',
+        'client',
+        'identity',
+        'totalPrice',
+        'action',
+    ];
     dataSource = new MatTableDataSource<any>([]);
     selectedItem: any;
 
@@ -90,23 +76,38 @@ export class PrestationListComponent implements OnInit {
     prestations = [];
     key = '';
 
+    rowSpans: Map<string, number> = new Map();
+
     constructor(
         private apiService: ApiRestaurationService,
-        private snackBar: MatSnackBar,
-        private dialog: MatDialog,
-        private _fuseConfirmationService: FuseConfirmationService,
-        private _toast: Toastr,
         private _matDialog: MatDialog
     ) {}
 
     ngOnInit(): void {
         this.loadPrestations();
     }
+
     loadPrestations() {
         this.apiService.getPrestationsForResidents().subscribe({
             next: (res) => {
-                this.prestations = this.dataSource.data = this.dataSource.data = res;
-                this.totalRows = res.length;
+                console.log('r',res);
+                let sortedData = res;
+                sortedData?.sort((a, b) => {
+                    // On accède à la profondeur details -> code
+                    const codeA = a.details?.code || 0;
+                    const codeB = b.details?.code || 0;
+
+                    // Pour un tri décroissant (DESC) : b - a
+                    return codeB - codeA;
+                });
+
+                this.prestations = sortedData;
+                this.dataSource.data = sortedData;
+
+                this.calculateRowSpans();
+                this.totalRows = sortedData.length;
+
+
                 if (this.paginator) {
                     this.dataSource.paginator = this.paginator;
                 }
@@ -116,32 +117,61 @@ export class PrestationListComponent implements OnInit {
         });
     }
 
+    updateDataSource(newData: any[]) {
+        this.dataSource.data = newData;
+        this.calculateRowSpans();
+    }
+
+    calculateRowSpans() {
+        this.rowSpans.clear();
+        const data = this.dataSource.data;
+
+        data.forEach((row, index) => {
+            const resId = row.reservationId;
+            if (!this.rowSpans.has(resId)) {
+                // Compte les occurrences consécutives du même ID
+                let count = 0;
+                for (let i = index; i < data.length; i++) {
+                    if (data[i].reservationId === resId) {
+                        count++;
+                    } else {
+                        break;
+                    }
+                }
+                this.rowSpans.set(resId, count);
+            }
+        });
+    }
+
+// Méthode pour vérifier si c'est la première ligne du groupe
+    isFirstInGroup(index: number): boolean {
+        if (index === 0) return true;
+        return this.dataSource.data[index].reservationId !== this.dataSource.data[index - 1].reservationId;
+    }
+
     search(key: string): void {
         this.key = key?.trim().toLowerCase();
 
-        // Si la clé est vide, on réinitialise avec toutes les données originales
         if (!this.key) {
             this.dataSource.data = this.prestations;
-            return;
+        } else {
+            this.dataSource.data = this.prestations?.filter((item) => {
+                const person = item?.person;
+                const searchFields = [
+                    person?.identity,
+                    person?.matricule,
+                    person?.firstName,
+                    person?.lastName,
+                    person?.grade?.name,
+                ];
+                return searchFields.some((field) =>
+                    field?.toLowerCase().includes(this.key)
+                );
+            });
         }
 
-        this.dataSource.data = this.prestations?.filter((item) => {
-            const person = item?.person;
-
-            // On crée un tableau des champs dans lesquels on veut chercher
-            const searchFields = [
-                person?.identity,
-                person?.matricule,
-                person?.firstName,
-                person?.lastName,
-                person?.grade?.name
-            ];
-
-            // On vérifie si au moins un des champs contient la clé
-            return searchFields.some(field =>
-                field?.toLowerCase().includes(this.key)
-            );
-        });
+        // Recalculer après filtrage
+        this.calculateRowSpans();
     }
 
     totalAmount(p): number {
@@ -149,7 +179,7 @@ export class PrestationListComponent implements OnInit {
             return 0;
         }
         return p.prestations.reduce((acc, p) => {
-            return acc + (p.price * p.quantity);
+            return acc + p.price * p.quantity;
         }, 0);
     }
 
@@ -177,50 +207,34 @@ export class PrestationListComponent implements OnInit {
         this.currentPage = event.pageIndex;
     }
 
-    raiseSavePrestation(row: any) {
-        const dialogRef = this.dialog.open(PrestationManageModel, {
-            width: '400px',
-            data: row,
-        });
-
-        dialogRef.afterClosed().subscribe((updated) => {
-            if (updated) {
-                this.snackBar.open(
-                    'Prestation modifiée avec succès',
-                    'Fermer',
-                    { duration: 2000 }
-                );
-                this.loadPrestations();
-            }
-        });
+    raiseEditPrestation(row: any) {
+        this._matDialog
+            .open(PrestationEditModel, {
+                data: { reservation: row },
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((data) => {
+                if (data?.reload) {
+                    this.loadPrestations();
+                }
+            });
     }
-    deletePrestation(row: any): void {
-        this.actionConfigDialogue.title = `Confirmer la suppression de la prestation`;
 
-        this.actionConfigDialogue.message = `Êtes-vous sûr de vouloir supprimer la prestation de
-        "<strong>${row.person.firstName} ${row.person.lastName}</strong>" ?
-        <br> Cette action est irréversible.`;
-
-        const dialogRef = this._fuseConfirmationService.open(
-            this.actionConfigDialogue
-        );
-
-        dialogRef.afterClosed().subscribe((result) => {
-            if (result === 'confirmed') {
-                this.apiService.deletePrestation(row.id).subscribe({
-                    next: () => {
-                        this._toast.success('Prestation supprimée avec succès');
-                        this.loadPrestations();
-                    },
-                    error: (err) =>
-                        this._toast.error(
-                            err?.error?.description ||
-                                "Une erreur s'est produite"
-                        ),
-                });
-            }
-        });
+    raiseSaveOnePrestation(row) {
+        this._matDialog
+            .open(PrestationMonoCreateModel, {
+                data: { reservation: row.reservationId },
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((data) => {
+                if (data?.reload) {
+                    this.loadPrestations();
+                }
+            });
     }
+
     protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
     protected readonly Date = Date;
 }

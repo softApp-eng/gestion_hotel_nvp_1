@@ -33,7 +33,7 @@
                         </div>
                         <div class="flex flex-col p-4 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20">
                             <span class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Quantité</span>
-                            <span class="text-xl font-bold text-blue-700 dark:text-blue-300">{{ totalQuantities(selectedItem) }} Repas(s)</span>
+                            <span class="text-xl font-bold text-blue-700 dark:text-blue-300">{{ totalQuantities(selectedItem) }} Service(s)</span>
                         </div>
                     </div>
 
@@ -82,7 +82,7 @@
                                             <div class="flex flex-col sm:flex-row sm:items-center justify-between">
                                                 <div>
                                                     <div class="font-bold text-slate-900 dark:text-white leading-tight">
-                                                        {{ p?.meal?.name }}
+                                                        {{ p?.name }}
                                                     </div>
                                                     <div class="text-xs text-secondary mt-0.5">
                                                         {{ p?.quantity }} couvert(s) × {{ p?.price | number:'1.2-2' }} MAD
@@ -150,11 +150,12 @@
                     <div class="flex items-center mt-6 sm:mt-0 sm:ml-4 space-x-3">
                         <button
                             mat-flat-button
+                            [disableIfNoPermission]="[APP_PERMISSIONS.PRESTATION_CREATE]"
                             [color]="'primary'"
                             class="rounded-lg px-6 h-11 shadow-md hover:shadow-lg transition-all"
                             [routerLink]="'./create'">
                             <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:plus'"></mat-icon>
-                            <span class="ml-2 font-semibold">Nouvelle préstations</span>
+                            <span class="ml-2 font-semibold">Prestations en groupe</span>
                         </button>
                     </div>
                 </div>
@@ -178,30 +179,54 @@
                         <div class="overflow-x-auto">
                             <table mat-table [dataSource]="dataSource" class="w-full">
 
-
-                                <ng-container matColumnDef="grade">
-                                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10" style="width: 25%"> GRADE </th>
-                                    <td mat-cell *matCellDef="let row">
-                                        <p class="text-md" [innerHTML]="row?.person?.grade?.name | highlight:key"></p>
-                                    </td>
-                                </ng-container>
-
-                                <ng-container matColumnDef="name">
-                                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10" style="width: 30%"> NOM & PRENOM </th>
+                                <ng-container matColumnDef="reservationCode">
+                                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 5%"> R# </th>
                                     <td mat-cell *matCellDef="let row" >
-                                        <p class="font-semibold" [innerHTML]="(row?.person?.firstName + ' ' + row?.person?.lastName) | highlight:key"></p>
+                                        <div class="flex items-baseline space-x-2 group whitespace-nowrap">
+                                            <span class="text-md font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400 px-1.5 py-0.5"
+                                                  [innerHTML]="row?.details?.code | highlight:key">
+                                            </span>
+                                        </div>
+
                                     </td>
                                 </ng-container>
 
-                                <ng-container matColumnDef="totalPrice">
-                                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10 items-center justify-center text-center" style="width: 20%">
-                                        Montant Total
-                                    </th>
-                                    <td mat-cell *matCellDef="let row" class="px-6 py-4 text-right">
-                                        <span class="text-md font-bold text-emerald-600 dark:text-emerald-400">
-                                            {{ totalAmount(row) | number:'1.2-2' }}
-                                            <small class="text-[10px] ml-0.5 uppercase opacity-70">MAD</small>
+                                <ng-container matColumnDef="category">
+                                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 10%"> CATEGORIE </th>
+                                    <td mat-cell *matCellDef="let row" class="text-center">
+                                        <div class="inline-flex items-center space-x-2">
+                                        <span class="text-[11px] font-bold uppercase tracking-wider leading-none"
+                                              [ngClass]="{
+                                                  'text-blue-600 dark:text-blue-400': row?.details.category.code === 'SINGLE',
+                                                  'text-purple-600 dark:text-purple-400': row?.details.category.code === 'FAMILY',
+                                                  'text-gray-600 dark:text-gray-400': row?.details.category.code === 'DELEGATION'
+                                              }"
+                                              [innerHTML]="row?.details?.category?.name | highlight:key">
                                         </span>
+                                        </div>
+                                    </td>
+                                </ng-container>
+
+                                <ng-container matColumnDef="client">
+                                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 26%"> RESIDENTS </th>
+                                    <td mat-cell *matCellDef="let row" >
+                                        <div class="flex items-baseline space-x-2 group whitespace-nowrap">
+                                            <span class="text-xs font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400 px-1.5 py-0.5"
+                                                  [innerHTML]="row?.person?.grade?.code | highlight:key">
+                                            </span>
+                                            <span class="text-[15px]  text-gray-900 dark:text-gray-100"
+                                                  [innerHTML]="(row?.person?.firstName + ' ' + row?.person?.lastName) | highlight:key">
+                                            </span>
+                                            @if (row?.details?.category?.code === 'FAMILY' && row?.role) {
+                                                <span class="ml-2 px-1.5 py-0 text-[10px] font-bold uppercase tracking-tighter
+                                                         bg-indigo-50/80 text-indigo-600 border border-indigo-100/50
+                                                         dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800/40
+                                                         rounded-md shadow-sm self-center">
+                                                {{ row.role.name }}
+                                            </span>
+                                                }
+                                        </div>
+
                                     </td>
                                 </ng-container>
 
@@ -217,6 +242,18 @@
                                                  [innerHTML]="row?.person?.matricule | highlight:key">
                                             </div>
                                         </div>
+                                    </td>
+                                </ng-container>
+
+                                <ng-container matColumnDef="totalPrice">
+                                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10 items-center justify-center text-center" style="width: 20%">
+                                        MONTANT TOTAL
+                                    </th>
+                                    <td mat-cell *matCellDef="let row" class="px-6 py-4 tems-center justify-center text-center">
+                                        <span class="text-md font-bold text-emerald-600 dark:text-emerald-400">
+                                            {{ totalAmount(row) | number:'1.2-2' }}
+                                            <small class="text-[10px] ml-0.5 uppercase opacity-70">MAD</small>
+                                        </span>
                                     </td>
                                 </ng-container>
 
@@ -239,14 +276,21 @@
                                         </div>
 
                                         <mat-menu #menuAction="matMenu" class="min-w-[180px] rounded-xl shadow-xl border border-gray-100 dark:border-gray-800">
-                                            <button mat-menu-item (click)="raiseSavePrestation(row)">
-                                                <mat-icon class="text-amber-500" svgIcon="heroicons_outline:pencil-square"></mat-icon>
-                                                <span>Modifier</span>
+                                            <button mat-menu-item
+                                                    (click)="raiseSaveOnePrestation(row)"
+                                                    [disableIfNoPermission]="[APP_PERMISSIONS.PRESTATION_CREATE]"
+                                                    class="group hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors duration-200">
+                                                <mat-icon class="text-emerald-500 group-hover:scale-110 transition-transform"
+                                                          svgIcon="heroicons_outline:plus-circle"></mat-icon>
+                                                <span class="font-medium text-slate-700 dark:text-slate-200">Ajouter Prestation</span>
                                             </button>
-                                            <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
-                                            <button mat-menu-item (click)="deletePrestation(row)" class="group" disabled>
-                                                <mat-icon class="text-red-500 group-hover:text-red-600" svgIcon="heroicons_outline:trash"></mat-icon>
-                                                <span class="text-red-600 font-medium">Supprimer</span>
+
+                                            <button mat-menu-item
+                                                    (click)="raiseEditPrestation(row)"
+                                                    class="group hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors duration-200">
+                                                <mat-icon class="text-amber-500 group-hover:rotate-12 transition-transform"
+                                                          svgIcon="heroicons_outline:pencil-square"></mat-icon>
+                                                <span class="font-medium text-slate-700 dark:text-slate-200">Modifier</span>
                                             </button>
                                         </mat-menu>
                                     </td>

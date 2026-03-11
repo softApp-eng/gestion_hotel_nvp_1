@@ -152,6 +152,11 @@ public class ReservationController {
     }
 
 
+    @GetMapping("/sejours")
+    ResponseEntity<List<ReservationDetailsResponseDto>> getSejours(Authentication authentication){
+        return ResponseEntity.ok(reservationService.getSejours());
+    }
+
     @GetMapping("/planning/{type}")
     ResponseEntity<List<ReservationCalenderResponseDto>> getRangReservations(
             Authentication authentication,

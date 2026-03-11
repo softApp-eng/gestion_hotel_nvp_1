@@ -21,14 +21,16 @@ export class ApiRestaurationService {
         return this._httpClient.post(`${this.API_URL}/create`, data);
     }
 
+    createPrestationForPerson(data: any) {
+        return this._httpClient.post(`${this.API_URL}/reservation/create`, data);
+    }
+
     getPrestationsForResidents(): Observable<any[]> {
         return this._httpClient.get<any[]>(`${this.API_URL}/residents`);
     }
 
-    getMealPrice(mealType: string, personId: string) {
-        return this._httpClient.get<number>(
-            `${this.API_URL}/meal-price?mealType=${mealType}&personId=${personId}`
-        );
+    getPrestationsForReservation(code): Observable<any[]> {
+        return this._httpClient.get<any[]>(`${this.API_URL}/reservation?code=${code}`);
     }
 
     deletePrestation(id): Observable<void> {
@@ -39,7 +41,7 @@ export class ApiRestaurationService {
 
     updatePrestation(id: string, prestation: any): Observable<any> {
         return this._httpClient.put<any>(
-            `${this.API_URL}/update/${id}`,
+            `${this.API_URL}/update?id=${id}`,
             prestation
         );
     }

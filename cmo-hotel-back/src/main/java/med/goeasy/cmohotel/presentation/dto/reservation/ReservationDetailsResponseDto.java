@@ -59,4 +59,25 @@ public record ReservationDetailsResponseDto(
                 .priseEnChargeReference(entity.getPriseEnChargeReference())
                 .build();
     }
+
+    public static ReservationDetailsResponseDto mapToDtoWithoutGuests(ReservationDetails entity){
+        if (entity == null)
+            return null;
+        return ReservationDetailsResponseDto.builder()
+                .code(entity.getCode())
+                .category(entity.getCategory())
+                .plannedStart(entity.getPlannedStart())
+                .plannedEnd(entity.getPlannedEnd())
+                .checkin(entity.getCheckin())
+                .checkout(entity.getCheckout())
+                .createdBy(entity.getCreatedBy())
+                .lastModifiedBy(entity.getLastModifiedBy())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .status(entity.getStatus())
+                .observation(entity.getObservation())
+                .priseEnCharge(entity.isPriseEnCharge())
+                .priseEnChargeReference(entity.getPriseEnChargeReference())
+                .build();
+    }
 }

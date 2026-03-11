@@ -4,13 +4,18 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import med.goeasy.cmohotel.persistence.entity.Prestation;
 import med.goeasy.cmohotel.persistence.entity.Reservation;
+import med.goeasy.cmohotel.persistence.entity.enums.EGuestRole;
 import med.goeasy.cmohotel.presentation.dto.person.PersonResponseDto;
+import med.goeasy.cmohotel.presentation.dto.reservation.ReservationDetailsResponseDto;
+
 import java.util.List;
 
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record PrestationResponseDto(
         String reservationId,
+        EGuestRole role,
+        ReservationDetailsResponseDto details,
         PersonResponseDto person,
         List<PrestationDetailsResponseDto> prestations
 ) {
@@ -19,11 +24,13 @@ public record PrestationResponseDto(
             return null;
         return PrestationResponseDto.builder()
                 .reservationId(entity.getId())
+                .role(entity.getRole())
+                .details(ReservationDetailsResponseDto.mapToDtoWithoutGuests(entity.getDetails()))
                 .person(PersonResponseDto.mapToDto(entity.getPerson()))
                 .prestations(
                         prestations == null ? null :
                                 prestations.stream()
-                                        .map(p -> PrestationDetailsResponseDto.mapToDto(p, entity.getPerson()))
+                                        .map(PrestationDetailsResponseDto::mapToDto)
                                         .toList())
                 .build();
     }

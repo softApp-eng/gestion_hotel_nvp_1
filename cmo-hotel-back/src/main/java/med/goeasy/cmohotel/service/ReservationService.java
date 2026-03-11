@@ -359,6 +359,12 @@ public class ReservationService {
         );
     }
 
+    public List<ReservationDetailsResponseDto> getSejours() {
+        List<ReservationDetails> reservations = reservationDetailsRepository.getSejours();
+        return reservations.stream().map(ReservationDetailsResponseDto::mapToDto).toList();
+        //log.info("{} get reservations", authentication.getName());
+    }
+
     public List<ReservationCalenderResponseDto> getReservationForCalender(Authentication authentication,LocalDate start,LocalDate end){
         List<ReservationDetails> rangeReservations = reservationDetailsRepository.getRangeReservations(
                 List.of(EReservationStatus.PENDING, EReservationStatus.CONFIRMED),
