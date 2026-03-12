@@ -96,21 +96,40 @@
                     <table mat-table [dataSource]="dataSource" class="min-w-full">
 
                         <ng-container matColumnDef="name">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 20%"> CHAMBRE </th>
-                            <td mat-cell *matCellDef="let row">
-                                <div class="flex flex-col leading-tight items-center justify-center w-full">
-                                    <span class="font-medium" [innerHTML]="row?.name | highlight:key"></span>
-                                    <span class="text-xs text-hint" [innerHTML]="(row?.pavillon?.name +' ('+ row?.code+')') | highlight:key"></span>
+                            <th mat-header-cell *matHeaderCellDef
+                                class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center px-4"
+                                style="width: 20%">
+                                CHAMBRE
+                            </th>
+
+                            <td mat-cell *matCellDef="let row" class="text-center px-4">
+                                <div class="flex flex-col leading-tight items-center justify-center w-full mx-auto">
+                                    <span class="font-medium truncate max-w-full"
+                                          [innerHTML]="row?.name | highlight:key"></span>
+
+                                    <span class="text-xs text-hint truncate max-w-full"
+                                          [innerHTML]="(row?.pavillon?.name +' ('+ row?.code+')') | highlight:key"></span>
                                 </div>
                             </td>
                         </ng-container>
 
                         <ng-container matColumnDef="type">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 20%"> TYPE </th>
-                            <td mat-cell *matCellDef="let row">
-                                <div class="flex flex-col leading-tight items-center justify-center w-full">
-                                    <span class="font-medium" [innerHTML]="row?.roomType?.type | highlight:key"></span>
-                                    <span class="text-xs text-hint" matTooltip="Capacité">{{ row?.shared ? 'Partagée ('+row?.capacity+')':'('+row?.capacity+')'}}</span>
+                            <th mat-header-cell *matHeaderCellDef
+                                class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center px-4"
+                                style="width: 20%">
+                                TYPE
+                            </th>
+
+                            <td mat-cell *matCellDef="let row" class="text-center px-4">
+                                <div class="flex flex-col leading-tight items-center justify-center w-full mx-auto">
+                                    <span class="font-medium whitespace-nowrap"
+                                          [innerHTML]="row?.roomType?.type | highlight:key">
+                                    </span>
+                                    <span class="text-xs text-hint flex items-center justify-center gap-1"
+                                          [matTooltip]="'Capacité: ' + row?.capacity">
+                                        <mat-icon *ngIf="row?.shared" class="icon-size-3" [svgIcon]="'heroicons_outline:users'"></mat-icon>
+                                                                {{ row?.shared ? 'Partagée (' + row?.capacity + ')' : '(' + row?.capacity + ')' }}
+                                    </span>
                                 </div>
                             </td>
                         </ng-container>
@@ -168,7 +187,7 @@
                         </ng-container>
 
 
-                        <ng-container matColumnDef="action">
+                        <ng-container matColumnDef="action" stickyEnd>
                             <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 2%">  </th>
                             <td mat-cell *matCellDef="let row">
                                 <button mat-icon-button [matMenuTriggerFor]="menuAction">
