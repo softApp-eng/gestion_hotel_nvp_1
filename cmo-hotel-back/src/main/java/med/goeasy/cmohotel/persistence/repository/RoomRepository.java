@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +35,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     Optional<Room> findRoomById(Long roomId);
 
     @Modifying
+    @Transactional
     @Query("update Room r set r.clean = false")
     void makeAllRoomsDirty();
 }

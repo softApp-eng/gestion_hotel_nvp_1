@@ -181,7 +181,19 @@
                                             @if (row.showAllRooms ? allRooms : (allRooms | slice:0:3); as displayList) {
                                                 <ul class="space-y-1">
                                                     @for (room of displayList; track room.id) {
-                                                        <li class="list-disc list-inside" [innerHTML]="(room?.roomType?.type + ' (' + room?.name + ')')  | highlight:key"></li>
+                                                        <li class="relative pl-4 mb-1.5 last:mb-0 flex items-center group whitespace-nowrap">
+                                                            <span class="absolute left-0 w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+
+                                                            <div class="flex items-baseline space-x-2">
+                                                                <span class="text-[11px] uppercase tracking-wider text-secondary font-medium"
+                                                                      [innerHTML]="(room?.roomType?.type + ' :') | highlight:key">
+                                                                </span>
+
+                                                                <span class="text-sm font-bold text-gray-900 dark:text-gray-100"
+                                                                      [innerHTML]="room?.code | highlight:key">
+                                                                </span>
+                                                            </div>
+                                                        </li>
                                                     }
                                                 </ul>
                                             }
@@ -209,26 +221,45 @@
                                 <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 30%"> CLIENTS </th>
                                 <td mat-cell *matCellDef="let row" >
                                     <p [innerHTML]="row?.person?.firstName | highlight:key"></p>
-                                    @if (row | extractGuestData:'person'; as allPersons) {
+                                    @if (row.guests; as allGuests) {
                                         <ul class="space-y-1">
-                                            @if (row.showAllPersons ? allPersons : (allPersons | slice:0:3); as displayPersonsList) {
+                                            @if (row.showAllPersons ? allGuests : (allGuests | slice:0:3); as displayGuestsList) {
                                                 <ul class="space-y-1">
-                                                    @for (person of displayPersonsList; track person.id) {
-                                                        <li class="list-disc list-inside" [innerHTML]="(person?.grade?.code + ' ' + person?.firstName + ' ' + person?.lastName) | highlight:key"></li>
+                                                    @for (guest of displayGuestsList; track guest.id) {
+                                                        <div class="flex items-baseline space-x-2 group whitespace-nowrap">
+                                                            <span class="text-xs font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400 px-1.5 py-0.5"
+                                                                  [innerHTML]="guest.person?.grade?.code | highlight:key">
+                                                            </span>
+
+                                                            <span class="text-[15px] text-gray-900 dark:text-gray-100"
+                                                                  [innerHTML]="(guest.person?.firstName + ' ' + guest.person?.lastName) | highlight:key">
+                                                            </span>
+
+                                                            @if (row?.category?.code === 'FAMILY' && guest.role) {
+                                                                <span class="ml-2 px-1.5 py-0 text-[10px] font-bold uppercase tracking-tighter
+                                                                         bg-indigo-50/80 text-indigo-600 border border-indigo-100/50
+                                                                         dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800/40
+                                                                         rounded-md shadow-sm self-center">
+                                                                    {{ guest.role.name }}
+                                                                </span>
+                                                            }
+                                                        </div>
                                                     }
                                                 </ul>
                                             }
 
-                                            @if (allPersons?.length > 3) {
+                                            @if (allGuests?.length > 3) {
                                                 <button
                                                     mat-button
                                                     color="primary"
                                                     class="mt-1 h-8 min-h-8 px-2 text-xs w-fit"
                                                     (click)="row.showAllPersons = !row.showAllPersons">
                                                     <div class="flex items-center">
-                                                        <mat-icon class="icon-size-4 mr-1" [svgIcon]="row.showAllPersons ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'"></mat-icon>
+                                                        <mat-icon class="icon-size-4 mr-1"
+                                                                  [svgIcon]="row.showAllPersons ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'">
+                                                        </mat-icon>
                                                         <span>
-                                                            {{ row.showAllPersons ? 'Voir moins' : 'Voir ' + (allPersons.length - 3) + ' de plus' }}
+                                                            {{ row.showAllPersons ? 'Voir moins' : 'Voir ' + (allGuests.length - 3) + ' de plus' }}
                                                         </span>
                                                     </div>
                                                 </button>
@@ -238,23 +269,23 @@
                                 </td>
                             </ng-container>
 
-                                    <ng-container matColumnDef="category">
-                                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 10%"> CATEGORIE </th>
-                                        <td mat-cell *matCellDef="let row" class="text-center">
-                                            <div class="inline-flex items-center space-x-2">
-                                        <span class="text-[11px] font-bold uppercase tracking-wider leading-none"
-                                              [ngClass]="{
-                                                  'text-blue-600 dark:text-blue-400': row.category.code === 'SINGLE',
-                                                  'text-purple-600 dark:text-purple-400': row.category.code === 'FAMILY',
-                                                  'text-gray-600 dark:text-gray-400': row.category.code === 'DELEGATION'
-                                              }"
-                                              [innerHTML]="row?.category?.name | highlight:key">
-                                        </span>
-                                            </div>
-                                        </td>
-                                    </ng-container>
+                            <ng-container matColumnDef="category">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 10%"> CATEGORIE </th>
+                                <td mat-cell *matCellDef="let row" class="text-center">
+                                    <div class="inline-flex items-center space-x-2">
+                                <span class="text-[11px] font-bold uppercase tracking-wider leading-none"
+                                      [ngClass]="{
+                                          'text-blue-600 dark:text-blue-400': row.category.code === 'SINGLE',
+                                          'text-purple-600 dark:text-purple-400': row.category.code === 'FAMILY',
+                                          'text-gray-600 dark:text-gray-400': row.category.code === 'DELEGATION'
+                                      }"
+                                      [innerHTML]="row?.category?.name | highlight:key">
+                                </span>
+                                    </div>
+                                </td>
+                            </ng-container>
 
-                            <ng-container matColumnDef="action">
+                            <ng-container matColumnDef="action" stickyEnd>
                                 <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 2%">  </th>
                                 <td mat-cell *matCellDef="let row" class="text-center">
                                     <button mat-icon-button [matMenuTriggerFor]="menuAction">
@@ -268,7 +299,7 @@
                                         @if (row?.status?.code === 'CONFIRMED') {
                                             <button mat-menu-item (click)="raiseCloseReservation(row?.code)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_CLOSE]">
                                                 <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:edit_calendar'"></mat-icon>
-                                                <span>Cloturer </span>
+                                                <span>Clôturer </span>
                                             </button>
                                         }
                                     </mat-menu>

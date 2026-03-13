@@ -32,7 +32,6 @@ export class ExtractGuestDataPipe implements PipeTransform {
                 return true;
             });
         }
-
         return filteredData;
     }
 }

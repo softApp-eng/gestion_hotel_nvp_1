@@ -15,6 +15,7 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -68,6 +69,7 @@ public class DynamicJobService {
         AppConfiguration config = configRepo.findById(1L).orElse(new AppConfiguration());
         config.setAutoCleaningRoomTimeCronExpression(cronExpression);
         configRepo.save(config);
+        refreshSchedule();
         activityLogService.logActivity(
                 EAuditActionTarget.CONFIGURATION,
                 EAuditActionOperation.UPDATE,
@@ -77,7 +79,8 @@ public class DynamicJobService {
         );
     }
 
-    private void executeJob() {
+    @Transactional
+    protected void executeJob() {
         roomRepository.makeAllRoomsDirty();
         activityLogService.logActivity(
                 EAuditActionTarget.JOB_SYSTEM,
