@@ -92,9 +92,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, String
         SELECT r FROM Reservation r
         JOIN r.details rd
         WHERE rd.status = 'CONFIRMED'
-        AND CURRENT_DATE >= CAST(COALESCE(rd.checkin, rd.plannedStart) AS date)
-        AND CURRENT_DATE <= CAST(COALESCE(rd.checkout, rd.plannedEnd) AS date)
     """)
+    //AND CURRENT_DATE >= CAST(COALESCE(rd.checkin, rd.plannedStart) AS date)
+        //        AND CURRENT_DATE <= CAST(COALESCE(rd.checkout, rd.plannedEnd) AS date)
     List<Reservation> findResidentReservations();
 
     @Query("""

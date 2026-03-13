@@ -87,15 +87,15 @@ export const defaultNavigation: FuseNavigationItem[] = [
         ],
     },
     {
-        id: 'restauration',
-        title: 'Services',
+        id: 'prestation',
+        title: 'Prestations & Services',
         subtitle: 'Restauration & Extras',
         type: 'group',
         icon: 'mat_outline:fastfood',
         children: [
             {
                 id: 'managements.restaurationList',
-                title: 'Prestations Repas',
+                title: 'Prestations & Services',
                 type: 'basic',
                 icon: 'mat_outline:fastfood',
                 link: '/managements/restauration',

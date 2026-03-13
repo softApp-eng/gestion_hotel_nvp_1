@@ -16,7 +16,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 import { MatDialog } from '@angular/material/dialog';
-import { DatePipe, NgClass, SlicePipe, TitleCasePipe } from '@angular/common';
+import { DatePipe, JsonPipe, NgClass, NgIf, SlicePipe, TitleCasePipe } from '@angular/common';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatDrawer, MatDrawerContainer, MatSidenavModule } from '@angular/material/sidenav';
 import { FormsModule } from '@angular/forms';
@@ -61,6 +61,9 @@ import { CloseReservationModel } from '../../reservation/list/dialog-close-reser
         DatePipe,
         ExtractGuestDataPipe,
         SlicePipe,
+        JsonPipe,
+        DisableIfNoPermissionDirective,
+        NgIf,
     ],
 })
 export class SejourListComponent implements OnInit, OnDestroy {
@@ -109,7 +112,6 @@ export class SejourListComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-
         //this.searchPersons();
         this.dataSource.paginator = this._paginator;
         // Subscribe to media query change
@@ -144,9 +146,18 @@ export class SejourListComponent implements OnInit, OnDestroy {
             )
             .subscribe({
                 next: (value: any) => {
+                    value?.forEach((row) => {
+                        if (row?.guests) {
+                            row?.guests.sort((a, b) => {
+                                const orderA = a.role?.order || 0;
+                                const orderB = b.role?.order || 0;
+                                return orderA - orderB;
+                            });
+                        }
+                    });
                     this.dataSource.data = value || [];
                     this.totalRows = value?.length || 0;
-
+                    console.log(value);
                     setTimeout(() => {
                         if (this._paginator) {
                             this._paginator.pageIndex = this.currentPage;
@@ -165,7 +176,7 @@ export class SejourListComponent implements OnInit, OnDestroy {
     raiseReservationDetailsDialog(reservation) {
         this._matDialog
             .open(ReservationDetailsModel, {
-                data: { reservation: reservation},
+                data: { reservation: reservation },
                 disableClose: true,
             })
             .afterClosed()
@@ -177,11 +188,10 @@ export class SejourListComponent implements OnInit, OnDestroy {
     }
 
     raiseCloseReservation(code) {
-        if (!code)
-            return;
+        if (!code) return;
         this._matDialog
             .open(CloseReservationModel, {
-                data: { code: code},
+                data: { code: code },
                 disableClose: true,
             })
             .afterClosed()

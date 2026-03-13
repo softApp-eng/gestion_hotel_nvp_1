@@ -20,6 +20,7 @@ import { PrestationMonoCreateModel } from '../create-one-prestation-model/presta
 import { PrestationEditModel } from '../edit-prestation-model/prestation-edit.model';
 import { ExtractGuestDataPipe } from '../../reservation/list/extract-guest-data-pipe';
 import { ReservationDetailsModel } from '../../reservation/dialog-reservation-details/reservation.details.model';
+import { ApiReservationService } from '../../reservation/api.reservation.service';
 
 @Component({
     selector: 'app-restauration-list',
@@ -80,6 +81,7 @@ export class PrestationListComponent implements OnInit {
 
     constructor(
         private apiService: ApiRestaurationService,
+        private _apiReservationService: ApiReservationService,
         private _matDialog: MatDialog
     ) {}
 
@@ -90,63 +92,35 @@ export class PrestationListComponent implements OnInit {
     loadPrestations() {
         this.apiService.getPrestationsForResidents().subscribe({
             next: (res) => {
-                console.log('r',res);
                 let sortedData = res;
                 sortedData?.sort((a, b) => {
                     // On accède à la profondeur details -> code
                     const codeA = a.details?.code || 0;
                     const codeB = b.details?.code || 0;
 
-                    // Pour un tri décroissant (DESC) : b - a
-                    return codeB - codeA;
+                    if (codeB !== codeA) {
+                        return codeB - codeA;
+                    }
+
+                    // 2. Deuxième critère (si codes égaux) : role.order (DESC)
+                    const orderA = a.role?.order || 0;
+                    const orderB = b.role?.order || 0;
+
+                    return orderA - orderB;
                 });
 
                 this.prestations = sortedData;
                 this.dataSource.data = sortedData;
 
-                this.calculateRowSpans();
                 this.totalRows = sortedData.length;
 
 
                 if (this.paginator) {
                     this.dataSource.paginator = this.paginator;
                 }
-                console.log('Prestations chargées:', res);
             },
             error: (err) => console.error(err),
         });
-    }
-
-    updateDataSource(newData: any[]) {
-        this.dataSource.data = newData;
-        this.calculateRowSpans();
-    }
-
-    calculateRowSpans() {
-        this.rowSpans.clear();
-        const data = this.dataSource.data;
-
-        data.forEach((row, index) => {
-            const resId = row.reservationId;
-            if (!this.rowSpans.has(resId)) {
-                // Compte les occurrences consécutives du même ID
-                let count = 0;
-                for (let i = index; i < data.length; i++) {
-                    if (data[i].reservationId === resId) {
-                        count++;
-                    } else {
-                        break;
-                    }
-                }
-                this.rowSpans.set(resId, count);
-            }
-        });
-    }
-
-// Méthode pour vérifier si c'est la première ligne du groupe
-    isFirstInGroup(index: number): boolean {
-        if (index === 0) return true;
-        return this.dataSource.data[index].reservationId !== this.dataSource.data[index - 1].reservationId;
     }
 
     search(key: string): void {
@@ -154,24 +128,26 @@ export class PrestationListComponent implements OnInit {
 
         if (!this.key) {
             this.dataSource.data = this.prestations;
-        } else {
-            this.dataSource.data = this.prestations?.filter((item) => {
-                const person = item?.person;
-                const searchFields = [
-                    person?.identity,
-                    person?.matricule,
-                    person?.firstName,
-                    person?.lastName,
-                    person?.grade?.name,
-                ];
-                return searchFields.some((field) =>
-                    field?.toLowerCase().includes(this.key)
-                );
-            });
+            return; // Stop ici si vide
         }
 
-        // Recalculer après filtrage
-        this.calculateRowSpans();
+        this.dataSource.data = this.prestations?.filter((item) => {
+            const person = item?.person;
+            const details = item?.details;
+            const role = item?.role;
+
+            const searchString = [
+                person?.identity,
+                person?.firstName,
+                person?.lastName,
+                person?.grade?.code,
+                person?.grade?.name,
+                details?.code?.toString(),
+                role?.name
+            ].join(' ').toLowerCase();
+
+            return searchString.includes(this.key);
+        });
     }
 
     totalAmount(p): number {
@@ -235,6 +211,19 @@ export class PrestationListComponent implements OnInit {
             });
     }
 
+    raiseReservationDetailsDialog(code) {
+        this._apiReservationService.getReservation(code).subscribe({
+            next: (data) => {
+                this._matDialog
+                    .open(ReservationDetailsModel, {
+                        data: { reservation: data},
+                        disableClose: true,
+                    })
+                    .afterClosed()
+                    .subscribe();
+            }
+        })
+    }
+
     protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
-    protected readonly Date = Date;
 }

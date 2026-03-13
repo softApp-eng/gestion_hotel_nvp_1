@@ -3,7 +3,6 @@ package med.goeasy.cmohotel.persistence.repository;
 import med.goeasy.cmohotel.persistence.entity.ReservationDetails;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
-import med.goeasy.cmohotel.presentation.dto.reservation.ReservedRoomResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -68,9 +67,10 @@ public interface ReservationDetailsRepository extends JpaRepository<ReservationD
         SELECT DISTINCT rd FROM ReservationDetails rd
         WHERE
             rd.status = 'CONFIRMED'
-            AND CURRENT_DATE >= CAST(COALESCE(rd.checkin, rd.plannedStart) AS date)
-            AND CURRENT_DATE <= CAST(COALESCE(rd.checkout, rd.plannedEnd) AS date)
+        order by rd.code desc
         """)
+    //AND CURRENT_DATE >= CAST(COALESCE(rd.checkin, rd.plannedStart) AS date)
+    //AND CURRENT_DATE <= CAST(COALESCE(rd.checkout, rd.plannedEnd) AS date)
     List<ReservationDetails> getSejours();
 
 
