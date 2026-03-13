@@ -232,6 +232,32 @@ public class ReservationService {
         );
     }
 
+    @Transactional
+    public void switchRoom(String reservationId, Long newRoomId, String reason,LocalDateTime switchTime) {
+        Reservation reservation = getReservationById(reservationId);
+        Room oldRoom = reservation.getRoom();
+        Room nextRoom = roomService.getRoomById(newRoomId);
+
+        SwitchedRoom history = SwitchedRoom.builder()
+                .previousRoom(oldRoom)
+                .newRoom(nextRoom)
+                .switchTime(switchTime)
+                .reason(reason)
+                .build();
+
+        reservation.setRoom(nextRoom);
+
+        reservation.getSwitchedRooms().add(history);
+
+        reservationRepository.save(reservation);
+
+    }
+
+    @Transactional
+    public void removeSwitchRoom(String reservationId, Long newRoomId, String reason,LocalDateTime switchTime) {
+
+    }
+
 
     @Transactional
     public void acceptReservation(Authentication authentication, Long code,LocalDateTime date) {

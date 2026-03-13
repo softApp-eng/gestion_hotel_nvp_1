@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 @EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"meal_type_id", "category"})
+        @UniqueConstraint(name = "meal_categ_price_unique", columnNames = {"meal_type_id", "category"})
 })
 public class MealPrice {
 
@@ -25,7 +25,6 @@ public class MealPrice {
     private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "meal_type_id")
     private MealType mealType;
 
     @Enumerated(EnumType.STRING)

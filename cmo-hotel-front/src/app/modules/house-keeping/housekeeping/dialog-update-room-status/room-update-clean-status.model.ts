@@ -19,7 +19,6 @@ import { ApiHousekeepingService } from '../../api.housekeeping.service';
 import { MatDatepicker, MatDatepickerInput, MatDatepickerToggle } from '@angular/material/datepicker';
 import { NgIf } from '@angular/common';
 import { UtilsService } from '../../../../core/service/utils.service';
-import { NgxAngularTimePickerLibraryModule } from 'ngx-angular-time-picker-library';
 
 @Component({
     selector: 'room-status-model',

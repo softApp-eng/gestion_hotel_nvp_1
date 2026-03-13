@@ -15,6 +15,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -42,6 +44,10 @@ public class Reservation {
 
     @ManyToOne
     private Room room;
+
+    @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("switchTime DESC")
+    private List<SwitchedRoom> switchedRooms = new ArrayList<>();
 
     private LocalDateTime exceptionalCheckin;
     private LocalDateTime exceptionalCheckout;
