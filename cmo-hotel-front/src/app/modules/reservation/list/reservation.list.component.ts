@@ -1,5 +1,4 @@
 import {
-    AfterViewInit,
     ChangeDetectorRef,
     Component,
     OnDestroy,
@@ -8,22 +7,20 @@ import {
     ViewEncapsulation,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
+import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { finalize, Subject, takeUntil } from 'rxjs';
+import { finalize, Subject } from 'rxjs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 import { MatDialog } from '@angular/material/dialog';
 import { HighlightPipe } from '../../../../@fuse/pipes/HighlightPipe';
-import { DatePipe, NgClass, SlicePipe, TitleCasePipe } from '@angular/common';
+import { DatePipe, NgClass, SlicePipe } from '@angular/common';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ApiReservationService } from '../api.reservation.service';
-import { MatDrawer, MatDrawerContainer, MatSidenavModule } from '@angular/material/sidenav';
+import {  MatSidenavModule } from '@angular/material/sidenav';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
-import { HasPermissionDirective } from '../../../core/auth/HasPermissionDirective';
-import { FuseMediaWatcherService } from '../../../../@fuse/services/media-watcher';
 import { FormsModule } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ExtractGuestDataPipe } from './extract-guest-data-pipe';
@@ -31,13 +28,10 @@ import { MatOption } from '@angular/material/core';
 import { MatSelect, MatSelectTrigger } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { ApiCommonService } from '../../../core/service/api.common.service';
-import { DomSanitizer } from '@angular/platform-browser';
 import { UtilsService } from '../../../core/service/utils.service';
 import {DisableIfNoPermissionDirective} from "../../../core/auth/DisableIfNoPermissionDirective";
 import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../@fuse/services/confirmation';
-import { ToastrService } from 'ngx-toastr';
 import { Toastr } from '../../../core/service/toastr.service';
-import { PersonManageModel } from '../dialog-manage-person/person-manage.model';
 import { AcceptReservationModel } from './dialog-accept-reservation/accept.reservation.model';
 import { ReservationDetailsModel } from '../dialog-reservation-details/reservation.details.model';
 import { CloseReservationModel } from './dialog-close-reservation/close.reservation.model';
@@ -57,7 +51,6 @@ import { CloseReservationModel } from './dialog-close-reservation/close.reservat
         MatTooltipModule,
         NgClass,
         MatPaginator,
-        MatDrawerContainer,
         MatSidenavModule,
         MatIconModule,
         FormsModule,
@@ -90,9 +83,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
-    @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
-    drawerMode: 'side' | 'over';
-    selectedItem;
+
     @ViewChild(MatPaginator, { static: true }) _paginator: MatPaginator;
     dataSource = new MatTableDataSource<any>([]);
     totalRows = 0;
@@ -147,7 +138,6 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         private _utilsService: UtilsService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseConfirmationService: FuseConfirmationService,
-        private _fuseMediaWatcherService: FuseMediaWatcherService
     ) {}
 
     get activeFiltersCount(): number {
@@ -212,17 +202,6 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         this.loadCategories();
         //this.searchPersons();
         this.dataSource.paginator = this._paginator;
-        // Subscribe to media query change
-        this._fuseMediaWatcherService
-            .onMediaQueryChange$('(min-width: 1440px)')
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((state) => {
-                // Calculate the drawer mode
-                this.drawerMode = state.matches ? 'side' : 'over';
-                // Mark for check
-                this._changeDetectorRef.markForCheck();
-            });
-
         this.search();
     }
 
@@ -268,15 +247,6 @@ export class ReservationListComponent implements OnInit, OnDestroy {
                     });
                 },
             });
-    }
-
-    openDrawer(item) {
-        this.selectedItem = item;
-        this.matDrawer.open();
-    }
-
-    closeDrawer() {
-        this.matDrawer.close();
     }
 
     getStatusStyle(status: string) {

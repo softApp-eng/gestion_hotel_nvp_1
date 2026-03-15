@@ -11,6 +11,7 @@ export const APP_MODULES = {
     PRESTATION:'prestations',
     CONFIGURATION:'configurations',
     MEALS:'meals',
+    INVOICE:'invoices',
 
 }
 

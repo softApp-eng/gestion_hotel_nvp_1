@@ -7,10 +7,12 @@ import lombok.Getter;
 @Getter
 public enum EPaymentMode {
 
-    PRISE_EN_CHARGE,
-    TPE,
-    ESPECE,
-    CHEQUE
+    PRISE_EN_CHARGE("Prise en charge"),
+    TPE("TPE"),
+    ESPECE("Espèce"),
+    CHEQUE("Cheque"),
     ;
+
+    private final String name;
 
 }

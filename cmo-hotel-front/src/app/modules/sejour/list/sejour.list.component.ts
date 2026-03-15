@@ -1,6 +1,4 @@
 import {
-    AfterViewInit,
-    ChangeDetectorRef,
     Component,
     OnDestroy,
     OnInit,
@@ -8,34 +6,25 @@ import {
     ViewEncapsulation,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { finalize, Subject, takeUntil } from 'rxjs';
+import { finalize, Subject } from 'rxjs';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 import { MatDialog } from '@angular/material/dialog';
-import { DatePipe, JsonPipe, NgClass, NgIf, SlicePipe, TitleCasePipe } from '@angular/common';
-import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { MatDrawer, MatDrawerContainer, MatSidenavModule } from '@angular/material/sidenav';
+import { DatePipe, NgClass, SlicePipe } from '@angular/common';
+import { MatPaginator } from '@angular/material/paginator';
 import { FormsModule } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
-import { MatOption } from '@angular/material/core';
-import { MatSelect, MatSelectTrigger } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
 import { HighlightPipe } from '../../../../@fuse/pipes/HighlightPipe';
-import { HasPermissionDirective } from '../../../core/auth/HasPermissionDirective';
 import { ExtractGuestDataPipe } from '../../reservation/list/extract-guest-data-pipe';
 import { DisableIfNoPermissionDirective } from '../../../core/auth/DisableIfNoPermissionDirective';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
 import { ApiReservationService } from '../../reservation/api.reservation.service';
-import { ApiCommonService } from '../../../core/service/api.common.service';
-import { UtilsService } from '../../../core/service/utils.service';
-import { FuseMediaWatcherService } from '../../../../@fuse/services/media-watcher';
-import { PersonManageModel } from '../../reservation/dialog-manage-person/person-manage.model';
 import { ReservationDetailsModel } from '../../reservation/dialog-reservation-details/reservation.details.model';
 import { CloseReservationModel } from '../../reservation/list/dialog-close-reservation/close.reservation.model';
+import { NightValidationModel } from '../night-validation/night-validation.model';
 
 @Component({
     selector: 'sejour-list',
@@ -52,21 +41,16 @@ import { CloseReservationModel } from '../../reservation/list/dialog-close-reser
         MatTooltipModule,
         NgClass,
         MatPaginator,
-        MatDrawerContainer,
-        MatSidenavModule,
         MatIconModule,
         FormsModule,
         MatTabsModule,
-        MatDatepickerModule,
         DatePipe,
         ExtractGuestDataPipe,
         SlicePipe,
-        JsonPipe,
         DisableIfNoPermissionDirective,
-        NgIf,
     ],
 })
-export class SejourListComponent implements OnInit, OnDestroy {
+export class SejourListComponent implements OnInit {
     protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
     isLoading: boolean = false;
     displayedColumns: string[] = [
@@ -80,11 +64,9 @@ export class SejourListComponent implements OnInit, OnDestroy {
         'action',
     ];
 
-    private _unsubscribeAll: Subject<any> = new Subject<any>();
+    reservations;
 
-    @ViewChild('matDrawer', { static: true }) matDrawer: MatDrawer;
-    drawerMode: 'side' | 'over';
-    selectedItem;
+
     @ViewChild(MatPaginator, { static: true }) _paginator: MatPaginator;
     dataSource = new MatTableDataSource<any>([]);
     totalRows = 0;
@@ -98,43 +80,16 @@ export class SejourListComponent implements OnInit, OnDestroy {
      */
     constructor(
         private _apiReservationService: ApiReservationService,
-        private _apiCommonService: ApiCommonService,
         private _matDialog: MatDialog,
-        private _utilsService: UtilsService,
-        private _changeDetectorRef: ChangeDetectorRef,
-        private _fuseMediaWatcherService: FuseMediaWatcherService
     ) {}
-
-    ngOnDestroy(): void {
-        // Unsubscribe from all subscriptions
-        this._unsubscribeAll.next(null);
-        this._unsubscribeAll.complete();
-    }
 
     ngOnInit(): void {
         //this.searchPersons();
         this.dataSource.paginator = this._paginator;
-        // Subscribe to media query change
-        this._fuseMediaWatcherService
-            .onMediaQueryChange$('(min-width: 1440px)')
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((state) => {
-                // Calculate the drawer mode
-                this.drawerMode = state.matches ? 'side' : 'over';
-                // Mark for check
-                this._changeDetectorRef.markForCheck();
-            });
-
-        this.search();
+        this.getSejour();
     }
 
-    pageChanged(event: PageEvent) {
-        this.pageSize = event.pageSize;
-        this.currentPage = event.pageIndex;
-        this.search();
-    }
-
-    search() {
+    getSejour() {
         this.isLoading = true;
         this.dataSource.data = [];
         this._apiReservationService
@@ -155,7 +110,7 @@ export class SejourListComponent implements OnInit, OnDestroy {
                             });
                         }
                     });
-                    this.dataSource.data = value || [];
+                    this.reservations = this.dataSource.data = value || [];
                     this.totalRows = value?.length || 0;
                     console.log(value);
                     setTimeout(() => {
@@ -168,11 +123,6 @@ export class SejourListComponent implements OnInit, OnDestroy {
             });
     }
 
-    openDrawer(item) {
-        this.selectedItem = item;
-        this.matDrawer.open();
-    }
-
     raiseReservationDetailsDialog(reservation) {
         this._matDialog
             .open(ReservationDetailsModel, {
@@ -183,9 +133,6 @@ export class SejourListComponent implements OnInit, OnDestroy {
             .subscribe();
     }
 
-    closeDrawer() {
-        this.matDrawer.close();
-    }
 
     raiseCloseReservation(code) {
         if (!code) return;
@@ -197,8 +144,23 @@ export class SejourListComponent implements OnInit, OnDestroy {
             .afterClosed()
             .subscribe((result) => {
                 if (result.reload) {
-                    this.search();
+                    this.getSejour();
                 }
             });
+    }
+
+    raiseNightValidate() {
+        this._matDialog
+            .open(NightValidationModel, {
+                data: { reservations: this.reservations },
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((result) => {
+            });
+    }
+
+    search() {
+
     }
 }

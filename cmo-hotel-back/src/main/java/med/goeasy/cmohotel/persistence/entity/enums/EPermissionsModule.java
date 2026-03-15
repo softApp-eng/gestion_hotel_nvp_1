@@ -21,6 +21,7 @@ public enum EPermissionsModule {
     CONFIGURATION("configurations","Configuration de la plateforme"),
     MEAL("meals","Gérer les repas"),
     PRESTATION("prestations","Gérer les préstations"),
+    INVOICE("invoices","Gérer les factures"),
     ;
 
     private final String name;

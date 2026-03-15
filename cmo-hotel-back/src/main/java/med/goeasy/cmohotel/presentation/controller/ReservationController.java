@@ -1,6 +1,7 @@
 package med.goeasy.cmohotel.presentation.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -78,6 +79,25 @@ public class ReservationController {
         return ResponseEntity.ok(ApiResponse.builder().message("reservation annulée").build());
     }
 
+    @PostMapping("/switch-room")
+    ResponseEntity<ApiResponse> switchRoom(
+            Authentication authentication,
+            @Valid @RequestBody SwitchRoomDto dto
+    ){
+        reservationService.switchRoom(authentication,dto);
+        return ResponseEntity.ok(ApiResponse.builder().message("reservation bien modifiée").build());
+    }
+
+    @DeleteMapping("/switch-room")
+    ResponseEntity<ApiResponse> removeLastRoomSwitch(
+            Authentication authentication,
+            @Valid @NotBlank(message = "id de reservation requis") @RequestParam() String reservationId,
+            @Valid @NotBlank(message = "id de changement requis") @RequestParam() Long switchedRoomId
+    ){
+        reservationService.removeLastRoomSwitch(authentication,reservationId,switchedRoomId);
+        return ResponseEntity.ok(ApiResponse.builder().message("reservation bien modifiée").build());
+    }
+
     @DeleteMapping("/delete")
     ResponseEntity<ApiResponse> deleteReservation(
             Authentication authentication,
@@ -138,7 +158,6 @@ public class ReservationController {
                 estatus.add(EReservationStatus.valueOf(s));
             });
         }
-
 
         return ResponseEntity.ok(reservationService.search(
                 authentication,

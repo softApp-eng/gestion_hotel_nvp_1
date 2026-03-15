@@ -129,6 +129,8 @@ public class WebSecurityConfig {
 						.requestMatchers(PUT,"/v1/reservations/close").hasAuthority(EPermissions.RESERVATION_CLOSE.getAuthority())
 						.requestMatchers(DELETE,"/v1/reservations/delete").hasAuthority(EPermissions.RESERVATION_DELETE.getAuthority())
 						.requestMatchers(DELETE,"/v1/reservations/residents").hasAuthority(EPermissions.RESERVATION_RESIDENTS.getAuthority())
+						.requestMatchers(DELETE,"/v1/reservations/switch-room").hasAuthority(EPermissions.RESERVATION_ROOM_CHANGE.getAuthority())
+						.requestMatchers(POST,"/v1/reservations/switch-room").hasAuthority(EPermissions.RESERVATION_ROOM_CHANGE.getAuthority())
 						// House keeping
 						.requestMatchers(GET,"/v1/house-keeping/agents/all").hasAuthority(EPermissions.HOUSE_KEEPING_AGENT_LIST.getAuthority())
 						.requestMatchers(POST,"/v1/house-keeping/agents/create").hasAuthority(EPermissions.HOUSE_KEEPING_AGENT_CREATE.getAuthority())
@@ -157,6 +159,10 @@ public class WebSecurityConfig {
 						.requestMatchers(PUT,"/v1/prestations/update").hasAuthority(EPermissions.PRESTATION_UPDATE.getAuthority())
 						.requestMatchers(GET,"/v1/prestations/residents","/v1/prestations/reservation").hasAuthority(EPermissions.PRESTATION_FOR_RESIDENTS.getAuthority())
 						.requestMatchers(DELETE,"/v1/prestations/delete").hasAuthority(EPermissions.PRESTATION_DELETE.getAuthority())
+
+						// Invoices
+						.requestMatchers(POST,"/v1/invoices/night/validate").hasAuthority(EPermissions.INVOICE_NIGHT_VALIDATE.getAuthority())
+						.requestMatchers(GET,"/v1/invoices/search").hasAuthority(EPermissions.INVOICE_LIST.getAuthority())
 
 						//.anyRequest().authenticated()
 						.anyRequest().hasAuthority(EPermissions.DEFAULT.getAuthority())

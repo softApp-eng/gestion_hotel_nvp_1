@@ -16,6 +16,7 @@ import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 import med.goeasy.cmohotel.persistence.repository.ReservationDetailsRepository;
 import med.goeasy.cmohotel.persistence.repository.ReservationRepository;
+import med.goeasy.cmohotel.persistence.repository.SwitchedRoomRepository;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
 import med.goeasy.cmohotel.presentation.dto.person.PersonResponseDto;
 import med.goeasy.cmohotel.presentation.dto.prices.PriceEstimationResponse;
@@ -54,6 +55,7 @@ public class ReservationService {
     private final TemplateEngine templateEngine;
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
+    private final InvoiceService invoiceService;
 
     @Transactional
     public void create(Authentication authentication, ReservationRequestDto dto) {
@@ -233,16 +235,16 @@ public class ReservationService {
     }
 
     @Transactional
-    public void switchRoom(String reservationId, Long newRoomId, String reason,LocalDateTime switchTime) {
-        Reservation reservation = getReservationById(reservationId);
+    public void switchRoom(Authentication authentication, SwitchRoomDto dto) {
+        Reservation reservation = getReservationById(dto.reservationId());
         Room oldRoom = reservation.getRoom();
-        Room nextRoom = roomService.getRoomById(newRoomId);
+        Room nextRoom = roomService.getRoomById(dto.newRoomId());
 
         SwitchedRoom history = SwitchedRoom.builder()
                 .previousRoom(oldRoom)
                 .newRoom(nextRoom)
-                .switchTime(switchTime)
-                .reason(reason)
+                .switchTime(dto.switchTime())
+                .reason(dto.reason())
                 .build();
 
         reservation.setRoom(nextRoom);
@@ -250,12 +252,60 @@ public class ReservationService {
         reservation.getSwitchedRooms().add(history);
 
         reservationRepository.save(reservation);
-
+        activityLogService.logActivity(
+                EAuditActionTarget.RESERVATION,
+                EAuditActionOperation.UPDATE,
+                String.format("Changement de la chambre de %s (%s - > %s)",
+                        reservation.getPerson().getFullName(),
+                        oldRoom.getCode(),
+                        nextRoom.getCode()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     @Transactional
-    public void removeSwitchRoom(String reservationId, Long newRoomId, String reason,LocalDateTime switchTime) {
+    public void removeLastRoomSwitch(Authentication authentication, String reservationId, Long switchedRoomId) {
+        // 1. Récupérer la réservation avec ses historiques
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new EntityNotFoundException("Réservation non trouvée"));
 
+        // 2. Trouver l'entrée spécifique à supprimer
+        SwitchedRoom switchToRemove = reservation.getSwitchedRooms().stream()
+                .filter(s -> s.getId().equals(switchedRoomId))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Historique de switch non trouvé"));
+
+        // 3. Supprimer l'entrée de la liste
+        // Grâce à orphanRemoval = true et CascadeType.ALL, elle sera supprimée de la DB
+        reservation.getSwitchedRooms().remove(switchToRemove);
+
+        // 4. Mettre à jour la chambre actuelle de la personne
+        // On regarde s'il reste d'autres switchs après la suppression
+        if (!reservation.getSwitchedRooms().isEmpty()) {
+            // Comme la liste est annotée @OrderBy("switchTime DESC"),
+            // le premier élément est maintenant le switch précédent
+            Room lastRoom = reservation.getSwitchedRooms().get(0).getNewRoom();
+            reservation.setRoom(lastRoom);
+        } else {
+            // S'il n'y a plus aucun switch, on revient à la chambre initiale.
+            // NOTE: Si vous ne stockez pas la chambre initiale ailleurs,
+            // vous pouvez utiliser 'previousRoom' de l'élément qu'on vient de supprimer.
+            reservation.setRoom(switchToRemove.getPreviousRoom());
+        }
+
+        // 5. Sauvegarder
+        reservationRepository.save(reservation);
+        activityLogService.logActivity(
+                EAuditActionTarget.RESERVATION,
+                EAuditActionOperation.DELETE,
+                String.format("Suppression du Changement de la chambre de %s (%s - > %s)",
+                        reservation.getPerson().getFullName(),
+                        switchToRemove.getPreviousRoom().getCode(),
+                        switchToRemove.getNewRoom().getCode()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
 
@@ -304,7 +354,8 @@ public class ReservationService {
         // Change status
         reservationDetails.setStatus(EReservationStatus.CLOSED);
         reservationDetails.setCheckout(date);
-        reservationDetailsRepository.save(reservationDetails);
+        reservationDetails = reservationDetailsRepository.save(reservationDetails);
+        invoiceService.activateInvoice(reservationDetails);
         activityLogService.logActivity(
                 EAuditActionTarget.RESERVATION,
                 EAuditActionOperation.UPDATE,
@@ -430,17 +481,6 @@ public class ReservationService {
                 authentication.getName()
         );
         return generateReservationInvoice(details);
-    }
-
-
-    // TO CHECK
-    public ReservationResponseDto getActiveReservationByPerson(String personId){
-
-        return reservationRepository
-                .findActiveReservationByPersonId(personId)
-                .stream().findFirst()
-                .map(ReservationResponseDto::mapToDto)
-                .orElse(null);
     }
 
     /// /////////////////////////////////////////////////////////////////////////////

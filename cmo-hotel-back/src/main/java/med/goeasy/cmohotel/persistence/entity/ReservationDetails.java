@@ -31,7 +31,8 @@ import java.util.List;
 public class ReservationDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator="seq-res-details")
+    @SequenceGenerator(name="seq-res-details",sequenceName="seq-res-details", allocationSize=1)
     private Long code;
 
     @OneToMany(mappedBy = "details", cascade = CascadeType.ALL)

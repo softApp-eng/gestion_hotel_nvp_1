@@ -21,7 +21,7 @@ export class ApiCommonService
         return this._httpClient.get(`${this.API_URL}/grades`);
     }
 
-    getEnumsData(target : 'grade-categories'|'guest-roles'|'relationships'|'reservation-categories'|'reservation-status'|'meal-types'): Observable<any>{
+    getEnumsData(target : 'grade-categories'|'guest-roles'|'relationships'|'reservation-categories'|'reservation-status'|'meal-types'|'invoice-status'|'payment-mode'): Observable<any>{
         return this._httpClient.get(`${this.API_URL}/enums/${target}`);
     }
 

@@ -13,7 +13,8 @@ chambre partagé
 ### reservation
     - verifier le check in/out
     - verifier le calcule des prix
-    - changer chambre !!!
+    - changer chambre dans le front
+    - paiement
 
 ### person
     - nationalité obligatoire?
@@ -24,3 +25,7 @@ chambre partagé
 
 ### gouvernance
 ### night audit
+
+
+le paiement  effectué par la reception, il selectionne la reservation et applique un mode de paiment, ilpeut aussi génerer un etat d'ecaissement d un jours donné
+night audit un service de verification chaque jours qui valide les nuittée de chaque resident avec une décision de prolonger pour les client qui depacent leurs checkout

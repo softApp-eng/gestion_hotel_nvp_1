@@ -34,6 +34,7 @@ public enum ERoleSystem {
                     EPermissions.RESERVATION_CLOSE,
                     EPermissions.RESERVATION_DELETE,
                     EPermissions.RESERVATION_RESIDENTS,
+                    EPermissions.RESERVATION_ROOM_CHANGE,
                     // rooms and pavillon
                     EPermissions.PAVILLON_LIST,
                     EPermissions.PAVILLON_SELECT_ONE,
@@ -46,8 +47,28 @@ public enum ERoleSystem {
                     EPermissions.PERSON_UPDATE,
                     EPermissions.PERSON_LIST,
                     EPermissions.PERSON_SELECT_ONE,
-                    EPermissions.PERSON_DELETE
+                    EPermissions.PERSON_DELETE,
+                    // prestation
+                    EPermissions.PRESTATION_FOR_RESIDENTS
 
+            )),
+
+    NIGHT_AUDIT("night audit",
+            "Profil d'accès pour valider les nuités et les factures.",
+            EnumSet.of(
+                    EPermissions.DEFAULT,
+                    EPermissions.INVOICE_NIGHT_VALIDATE,
+
+                    EPermissions.RESERVATION_LIST,
+                    EPermissions.RESERVATION_ONE,
+                    EPermissions.RESERVATION_RESIDENTS,
+                    EPermissions.PRESTATION_FOR_RESIDENTS,
+                    EPermissions.PAVILLON_LIST,
+                    EPermissions.PAVILLON_SELECT_ONE,
+                    EPermissions.ROOM_LIST,
+                    EPermissions.ROOM_SELECT_ONE,
+                    EPermissions.ROOM_LIST_WITH_RESERVATION_DETAILS,
+                    EPermissions.INVOICE_LIST
             )),
 
     GOVERNANCE("governance",

@@ -22,7 +22,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
     },
     {
         id: 'reservations',
-        title: 'Opérations',
+        title: 'Réservations',
         subtitle: 'Front-desk & Séjours',
         type: 'group',
         icon: 'heroicons_outline:calendar',
@@ -51,6 +51,25 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 icon: 'heroicons_outline:calendar-days',
                 link: '/managements/calender',
                 data: { permissions: [APP_PERMISSIONS.RESERVATION_LIST] },
+            },
+        ],
+    },
+
+    {
+        id: 'invoices',
+        title: 'Factures',
+        subtitle: 'Gestion des factures',
+        type: 'group',
+        icon: 'heroicons_outline:calendar',
+        data: { modules: [APP_MODULES.INVOICE] },
+        children: [
+            {
+                id: 'invoices.list',
+                title: 'Factures',
+                type: 'basic',
+                icon: 'heroicons_outline:clipboard-document-list',
+                link: '/managements/invoices',
+                data: { permissions: [APP_PERMISSIONS.INVOICE_LIST] },
             },
         ],
     },
@@ -113,7 +132,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
         children: [
             {
                 id: 'settings.persons',
-                title: 'Annuaire Clients',
+                title: 'Historique Clients',
                 type: 'basic',
                 icon: 'heroicons_outline:users',
                 link: '/settings/guests',

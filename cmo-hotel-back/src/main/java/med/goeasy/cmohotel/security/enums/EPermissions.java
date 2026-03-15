@@ -83,6 +83,7 @@ public enum EPermissions {
     RESERVATION_CLOSE(RESERVATION, "reservation:close", "cloturer une réservation", MANAGE,true,""),
     RESERVATION_DELETE(RESERVATION, "reservation:delete", "supprimer une réservation", DELETE,true,""),
     RESERVATION_RESIDENTS(RESERVATION, "reservation:residents", "charger réservations des residents", READ,true,""),
+    RESERVATION_ROOM_CHANGE(RESERVATION, "reservation:room:change", "hanger la chambre d'un resident", MANAGE,true,""),
 
     //HOUSE KEEPING
     HOUSE_KEEPING_AGENT_CREATE(HOUSE_KEEPING, "agent:create", "Créer un agent", CREATE,true,""),
@@ -112,6 +113,9 @@ public enum EPermissions {
     PRESTATION_FOR_RESIDENTS(PRESTATION, "prestation:residents:list", "Lister les préstations des residents", READ,true,""),
     PRESTATION_DELETE(PRESTATION, "prestation:delete", "Supprimer une préstation", DELETE,true,""),
 
+    // INVOICE,
+    INVOICE_NIGHT_VALIDATE(INVOICE, "night:validate", "valider les nuitées des factures", MANAGE,true,""),
+    INVOICE_LIST(INVOICE, "invoice:list", "lister des factures", MANAGE,true,"")
 
     ;
 

@@ -89,7 +89,12 @@ export const APP_PERMISSIONS = {
 
     // PRESTATION
     PRESTATION_CREATE:'prestations:prestation:create',
+    PRESTATION_UPDATE:'prestations:prestation:update',
     PRESTATION_DELETE:'prestations:prestation:delete',
     PRESTATION_FOR_RESIDENTS:'prestations:prestation:residents:list',
+
+    // NIGHT AUDIT
+    INVOICE_NIGHT_VALIDATE:'invoices:night:validate',
+    INVOICE_LIST:'invoices:invoice:list',
 
 }

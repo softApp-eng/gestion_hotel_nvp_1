@@ -44,8 +44,8 @@ public class CmoHotelBackApplication {
             //feeder.grantPermissionToRole(EPermissions.PRESTATION_UPDATE,ERoleSystem.ADMIN);
             //feeder.grantPermissionToRole(EPermissions.PRESTATION_UPDATE,ERoleSystem.PRESTATION_MANAGER);
             //feeder.grantPermissionToRole(EPermissions.ROOM_LIST_WITH_RESERVATION_DETAILS,ERoleSystem.ADMIN);
-            //feeder.grantPermissionToRole(EPermissions.ROOM_TYPE_DELETE,ERoleSystem.ADMIN);
-            //feeder.resetRolePermissions(ERoleSystem.PRESTATION_MANAGER);
+            //feeder.grantPermissionToRole(EPermissions.PRESTATION_FOR_RESIDENTS,ERoleSystem.NIGHT_AUDIT);
+            //feeder.resetRolePermissions(ERoleSystem.NIGHT_AUDIT);
             /*feeder.createPrestationsAccounts(
                     r.findByName(ERoleSystem.RESERVATIONS_MANAGER.getRoleName()).get()
             );*/

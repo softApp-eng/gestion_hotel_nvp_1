@@ -287,6 +287,7 @@
 
                                             <button mat-menu-item
                                                     (click)="raiseEditPrestation(row)"
+                                                    [disableIfNoPermission]="[APP_PERMISSIONS.PRESTATION_UPDATE]"
                                                     class="group hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors duration-200">
                                                 <mat-icon class="text-amber-500 group-hover:rotate-12 transition-transform"
                                                           svgIcon="heroicons_outline:pencil-square"></mat-icon>

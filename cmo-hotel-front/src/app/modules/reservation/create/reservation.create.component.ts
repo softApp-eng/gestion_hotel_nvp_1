@@ -399,7 +399,7 @@ export class ReservationCreateComponent implements OnInit {
                 error: (err) => {
                     this.alert = {
                         type: 'error',
-                        message: 'Erreur lors de la sauvegarde.',
+                        message: err?.error?.description || 'Erreur lors de la sauvegarde.',
                     };
                     this.showAlert = true;
                 },

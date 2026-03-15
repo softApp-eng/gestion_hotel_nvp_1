@@ -153,6 +153,13 @@ public class Feeder {
                         .findFirst()
                         .orElseThrow(()-> new BadRequestException("no role found with name " + ERoleSystem.FRON_DESK.getRoleName()))
         );
+
+        createNightAuditAccounts(
+                roleList.stream()
+                        .filter(r -> r.getName().equals(ERoleSystem.NIGHT_AUDIT.getRoleName()))
+                        .findFirst()
+                        .orElseThrow(()-> new BadRequestException("no role found with name " + ERoleSystem.NIGHT_AUDIT.getRoleName()))
+        );
     }
 
     private void createAdminAccount(AppRole adminRole) {
@@ -189,6 +196,18 @@ public class Feeder {
         frontdesk.setRoles( Set.of(frontDeskRole));
         appUserRepository.save(frontdesk);
         log.info("Fron desk accounts created");
+    }
+
+    public void createNightAuditAccounts(AppRole nightAuditRole) {
+        AppUser nightAudit = new AppUser();
+        nightAudit.setUsername("night");
+        nightAudit.setPassword(encoder.encode("123456"));
+        nightAudit.setAccountStatus(true);
+        nightAudit.setFirstName("night");
+        nightAudit.setLastName("night");
+        nightAudit.setRoles( Set.of(nightAuditRole));
+        appUserRepository.save(nightAudit);
+        log.info("Night audit accounts created");
     }
 
     private void createGovernanceAccounts(AppRole governanceRole) {

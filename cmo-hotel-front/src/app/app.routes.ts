@@ -133,6 +133,12 @@ export const appRoutes: Route[] = [
                 },
             },
             {
+                path: 'invoices', loadChildren: () => import('app/modules/invoice/invoice.routes'),
+                data: {
+                    module:[APP_MODULES.INVOICE]
+                },
+            },
+            {
                 path: 'housekeeping',
                 data: {
                     module:[APP_MODULES.HOUSEKEEPING]

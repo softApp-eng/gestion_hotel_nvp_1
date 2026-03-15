@@ -61,6 +61,14 @@ public class CommonService {
                     .code(e.name())
                     .name(e.getName())
                     .build()).toList();
+            case "invoice-status" -> Arrays.stream(EInvoiceStatus.values()).map(e -> EnumsDto.builder()
+                    .code(e.name())
+                    .name(e.getName())
+                    .build()).toList();
+            case "payment-mode" -> Arrays.stream(EPaymentMode.values()).map(e -> EnumsDto.builder()
+                    .code(e.name())
+                    .name(e.getName())
+                    .build()).toList();
             default -> enumsDtos;
         };
     }

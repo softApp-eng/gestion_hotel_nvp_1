@@ -32,6 +32,10 @@ public class SwitchedRoom {
     @ManyToOne
     private Room newRoom;
 
+    @ManyToOne()
+    @JoinColumn(name = "reservation_id")
+    private Reservation reservation;
+
     private LocalDateTime switchTime;
 
     private String reason;

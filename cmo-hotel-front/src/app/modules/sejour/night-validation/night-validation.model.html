@@ -1,0 +1,61 @@
+<div class="-m-6 flex flex-col max-h-[95vh] md:w-160 md:min-w-160 overflow-hidden">
+    <mat-toolbar class=" mat-accent h-14 min-h-14 px-2 m-0 flex-none">
+        <div class="flex items-center w-full justify-between">
+            <div class="flex items-center" >
+                <mat-icon class="icon-size-5 mr-3 text-white" [svgIcon]="'heroicons_solid:filter'"></mat-icon>
+                <span class="text-xl  text-white">{{title}}</span>
+            </div>
+            <button mat-icon-button (click)="matDialogRef.close()" aria-label="fermer" class="text-white">
+                <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
+            </button>
+        </div>
+    </mat-toolbar>
+
+
+    <div class="flex-auto overflow-y-auto p-8" [formGroup]="nightForm">
+
+        @if (data.reservations?.length === 0) {
+            <div class="mb-6 p-4 border border-red-200 bg-red-50 rounded-lg flex items-start">
+                <mat-icon class="text-red-500 mr-3" svgIcon="heroicons_solid:exclamation-triangle"></mat-icon>
+                <div class="text-red-800 text-sm">
+                    <span class="font-bold">Aucune réservation trouvée.</span>
+                    <p>Vous ne pouvez pas valider une nuitée pour une chambre vide.</p>
+                </div>
+            </div>
+        }
+
+        <div class="grid grid-cols-1 gap-6">
+            <mat-form-field class="w-full" appearance="outline">
+                <mat-label>Date de la nuitée</mat-label>
+                <input matInput [matDatepicker]="dp3" formControlName="nightDate" [max]="maxDate">
+                <mat-datepicker-toggle matIconSuffix [for]="dp3"></mat-datepicker-toggle>
+                <mat-datepicker #dp3></mat-datepicker>
+                <mat-error>La date est obligatoire</mat-error>
+            </mat-form-field>
+
+            <mat-form-field class="w-full" appearance="outline">
+                <mat-label>Observation (Optionnel)</mat-label>
+                <textarea matInput formControlName="observation" rows="3" placeholder="Notes éventuelles..."></textarea>
+            </mat-form-field>
+
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div class="text-secondary text-sm font-medium mb-2">Résumé de l'occupation</div>
+                <div class="flex items-center text-md font-semibold text-gray-700">
+                    <mat-icon class="icon-size-4 mr-2" svgIcon="heroicons_solid:users"></mat-icon>
+                    {{ totalPersons }} Personne(s) dans {{ totalRooms }} chambre(s)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex items-center justify-end px-6 py-4 bg-gray-50 border-t space-x-3 flex-none">
+        <button mat-button (click)="matDialogRef.close()">Annuler</button>
+        <button mat-flat-button
+                color="primary"
+                [disabled]="nightForm.invalid || data.reservations?.length === 0 || loading"
+                (click)="validate()">
+            <mat-progress-spinner *ngIf="loading" class="mr-2" [diameter]="18" [mode]="'indeterminate'"></mat-progress-spinner>
+            Valider la nuitée
+        </button>
+    </div>
+</div>
