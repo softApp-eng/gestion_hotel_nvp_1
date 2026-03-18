@@ -33,6 +33,58 @@
             </button>
 
             <mat-menu #actionsMenu="matMenu" class="min-w-[200px] rounded-xl shadow-xl border border-gray-100 dark:border-gray-800">
+
+                <button mat-menu-item [matMenuTriggerFor]="ficheNettoyageMenu">
+                    <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:document-text'"></mat-icon>
+                    <span>Fiche Nettoyage</span>
+                </button>
+
+                <button mat-menu-item [matMenuTriggerFor]="etatGlobalMenu">
+                    <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:table-cells'"></mat-icon>
+                    <span>État Global</span>
+                </button>
+
+                <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
+
+                <button mat-menu-item (click)="loadRooms()">
+                    <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
+                    <span>Actualiser l'état</span>
+                </button>
+            </mat-menu>
+
+            <mat-menu #ficheNettoyageMenu="matMenu">
+                <button mat-menu-item (click)="exportPDF('fiche', 'download')">
+                    <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:arrow-down-tray'"></mat-icon>
+                    <span>Exporter PDF</span>
+                </button>
+                <button mat-menu-item (click)="exportPDF('fiche', 'print')">
+                    <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                    <span>Imprimer direct</span>
+                </button>
+            </mat-menu>
+
+            <mat-menu #etatGlobalMenu="matMenu">
+                <button mat-menu-item (click)="exportPDF('global', 'download')">
+                    <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:arrow-down-tray'"></mat-icon>
+                    <span>Exporter PDF</span>
+                </button>
+                <button mat-menu-item (click)="exportPDF('global', 'print')">
+                    <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                    <span>Imprimer direct</span>
+                </button>
+            </mat-menu>
+        </div>
+        <!--<div class="flex items-center mt-6 sm:mt-0 sm:ml-4 space-x-3">
+            <button
+                mat-icon-button
+                [matMenuTriggerFor]="actionsMenu"
+                aria-label="Actions de gouvernance"
+                class="rounded-full"
+            >
+                <mat-icon [svgIcon]="'heroicons_outline:cog-6-tooth'"></mat-icon>
+            </button>
+
+            <mat-menu #actionsMenu="matMenu" class="min-w-[200px] rounded-xl shadow-xl border border-gray-100 dark:border-gray-800">
                 <button mat-menu-item >
                     <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:arrow-down-tray'"></mat-icon>
                     <span>Télécharger PDF</span>
@@ -50,7 +102,7 @@
                     <span>Actualiser l'état</span>
                 </button>
             </mat-menu>
-        </div>
+        </div>-->
     </div>
 
     <!-- Main -->

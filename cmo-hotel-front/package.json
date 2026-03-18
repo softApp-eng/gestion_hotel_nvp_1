@@ -35,6 +35,8 @@
         "apexcharts": "3.49.1",
         "crypto-js": "4.2.0",
         "highlight.js": "11.9.0",
+        "jspdf": "^4.2.1",
+        "jspdf-autotable": "^5.0.7",
         "lodash-es": "4.17.21",
         "luxon": "3.4.4",
         "moment": "^2.30.1",
