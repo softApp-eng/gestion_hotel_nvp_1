@@ -49,7 +49,9 @@ public enum ERoleSystem {
                     EPermissions.PERSON_SELECT_ONE,
                     EPermissions.PERSON_DELETE,
                     // prestation
-                    EPermissions.PRESTATION_FOR_RESIDENTS
+                    EPermissions.PRESTATION_FOR_RESIDENTS,
+                    // invoice
+                    EPermissions.INVOICE_PAY
 
             )),
 

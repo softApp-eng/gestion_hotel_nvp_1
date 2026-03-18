@@ -18,8 +18,10 @@ import med.goeasy.cmohotel.presentation.dto.housekeeping.request.UpdateRoomClean
 import med.goeasy.cmohotel.presentation.dto.housekeeping.response.HousekeepingAgentResponseDto;
 import med.goeasy.cmohotel.presentation.dto.housekeeping.response.RoomHousekeepingDto;
 import med.goeasy.cmohotel.presentation.dto.invoice.request.NightValidationDto;
+import med.goeasy.cmohotel.presentation.dto.invoice.request.PaymentRequestDto;
 import med.goeasy.cmohotel.presentation.dto.invoice.response.InvoiceResponseDto;
 import med.goeasy.cmohotel.presentation.dto.reservation.ReservationDetailsResponseDto;
+import org.apache.commons.lang3.EnumUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -92,11 +94,11 @@ public class InvoiceService {
                         .roomApplied(room)
                         .roomName(room.getName())
                         .roomPriceApplied(price)
-                        .guests(new ArrayList<>())
+                        //.guests(new ArrayList<>())
                         .build();
-
+                invoice.getValidatedNights().add(night);
                 // 5. Capturer l'état des invités (GuestInfo)
-                for (Reservation res : guestsInRoom) {
+                /*for (Reservation res : guestsInRoom) {
                     Person p = res.getPerson();
                     GuestInfo guestInfo = GuestInfo.builder()
                             .validatedNight(night)
@@ -110,7 +112,7 @@ public class InvoiceService {
                             .identity(p.getIdentity())
                             .build();
                     night.getGuests().add(guestInfo);
-                }
+                }*/
 
                 validatedNightRepository.save(night);
             }
@@ -190,7 +192,7 @@ public class InvoiceService {
 
     private void updateInvoiceTotals(Invoice invoice) {
         double roomTotal = invoice.getValidatedNights().stream()
-                .mapToDouble(ValidatedNight::getRoomPriceApplied)
+                .mapToDouble(vn -> vn.getRoomPriceApplied() != null ? vn.getRoomPriceApplied() : 0.0)
                 .sum();
 
         // Ajoutez ici la logique pour totalPrestationPrice si nécessaire
@@ -233,6 +235,19 @@ public class InvoiceService {
         );
     }
 
+    public void payInvoice(Authentication authentication, PaymentRequestDto dto) {
+        Invoice invoice = invoiceRepository.findById(dto.num())
+                .orElseThrow(()-> new BadRequestException("Numero de facture invalide."));
+        if (!EnumUtils.isValidEnum(EPaymentMode.class, dto.paymentMode()))
+            throw new BadRequestException("mode de paiement invalide : " + dto.paymentMode());
+
+        invoice.setPaidAt(LocalDateTime.now());
+        invoice.setPaymentMode(EPaymentMode.valueOf(dto.paymentMode()));
+        invoice.setStatus(EInvoiceStatus.PAID);
+        invoice.setDescription(dto.observation());
+        invoiceRepository.save(invoice);
+    }
+
 
     /// /////////////////////////////////////////////////////////////////////////////
     ///                              EXTRAS FUNCTIONS                             ///
@@ -241,7 +256,7 @@ public class InvoiceService {
     protected void activateInvoice(ReservationDetails reservationDetails){
         // 1. Récupérer l'Invoice (doit être créée au préalable lors de la validation des nuits)
         Invoice invoice = invoiceRepository.findByReservationDetails(reservationDetails)
-                .orElseThrow(() -> new BadRequestException("Facture non trouvée"));
+                .orElseThrow(() -> new BadRequestException("Facture non trouvée ou aucune nuitée a étè validée"));
 
         // 2. Créer l'objet racine des détails
         InvoiceDetails details = new InvoiceDetails();

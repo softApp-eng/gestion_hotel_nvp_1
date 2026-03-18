@@ -1,0 +1,181 @@
+<div class="flex flex-col max-h-[90vh] md:w-240 md:min-w-240 overflow-hidden -m-6">
+    <mat-toolbar class="mat-accent h-14 min-h-14 px-2 m-0 flex-none z-10">
+        <div class="flex items-center w-full justify-between">
+            <div class="flex items-center" >
+                <mat-icon class="icon-size-5 mr-3 text-white" [svgIcon]="'heroicons_outline:information-circle'"></mat-icon>
+                <span class="text-xl font-semibold">Facture #{{invoice?.invoiceNumber}}</span>
+            </div>
+            <button mat-icon-button (click)="matDialogRef.close()" aria-label="fermer" class="text-white">
+                <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
+            </button>
+        </div>
+    </mat-toolbar>
+
+    <div class="flex-auto overflow-y-auto p-8 bg-gray-50 dark:bg-transparent">
+
+        <div class="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
+            <div>
+                <h2 class="text-3xl font-black tracking-tight text-gray-900 dark:text-white uppercase">Facture</h2>
+                <p class="text-secondary font-medium tracking-wide">Référence : {{invoice?.invoiceNumber}}</p>
+                <div class="mt-2 flex items-center gap-2">
+                <span [ngClass]="invoice?.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'"
+                      class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest border border-current opacity-80">
+                    {{invoice?.status === 'PAID' ? 'Réglée' : 'En attente'}}
+                </span>
+                    @if (invoice?.priseEnCharge) {
+                        <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest border border-purple-200">
+                        Prise en charge
+                    </span>
+                    }
+                </div>
+            </div>
+
+            <div class="text-right flex flex-col items-end">
+                <div class="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                    <div class="text-[10px] text-secondary font-bold uppercase tracking-wider">Date d'émission</div>
+                    <div class="text-sm font-semibold">{{invoice?.issuedAt | date:'dd MMM yyyy HH:mm'}}</div>
+                    @if (invoice?.paidAt) {
+                        <div class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                            <div class="text-[10px] text-secondary font-bold uppercase tracking-wider">Règlement le</div>
+                            <div class="text-sm font-semibold text-green-600">{{invoice?.paidAt | date:'dd MMM yyyy HH:mm'}}</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-secondary uppercase tracking-widest">Titulaire du dossier</h3>
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                    @if (invoice?.reservationDetails?.guests?.[0]?.person; as guest) {
+                        <div class="flex items-start gap-4">
+                            <div class="flex-none w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                {{guest.firstName?.[0]}}{{guest.lastName?.[0]}}
+                            </div>
+                            <div>
+                                <div class="text-base font-bold">
+                                    {{guest.grade?.name}} {{guest.firstName}} {{guest.lastName}}
+                                </div>
+                                <div class="text-sm text-secondary italic">
+                                    {{guest.unite}} — Mat: {{guest.matricule}}
+                                </div>
+                                <div class="mt-2 flex items-center text-xs text-gray-500">
+                                    <mat-icon class="icon-size-4 mr-1" [svgIcon]="'heroicons_outline:identification'"></mat-icon>
+                                    CIN: {{guest.identity}}
+                                </div>
+                            </div>
+                        </div>
+                    } @else {
+                        <div class="text-sm text-gray-400 italic text-center py-2">
+                            Aucun titulaire renseigné
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-secondary uppercase tracking-widest">Détails de l'hébergement</h3>
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm h-full">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <div class="text-[10px] font-bold text-secondary uppercase italic">Catégorie</div>
+                            <div class="text-sm font-medium">{{invoice?.category?.name}}</div>
+                        </div>
+                        <div>
+                            <div class="text-[10px] font-bold text-secondary uppercase italic">Pavillon</div>
+                            <div class="text-sm font-medium">{{invoice?.reservationDetails?.guests[0]?.room?.pavillon?.name}}</div>
+                        </div>
+                        <div>
+                            <div class="text-[10px] font-bold text-secondary uppercase italic">Arrivée</div>
+                            <div class="text-sm font-medium">{{invoice?.reservationDetails?.checkin}}</div>
+                        </div>
+                        <div>
+                            <div class="text-[10px] font-bold text-secondary uppercase italic">Départ</div>
+                            <div class="text-sm font-medium">{{invoice?.reservationDetails?.checkout}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-4 mb-8">
+            <h3 class="text-xs font-bold text-secondary uppercase tracking-widest">Détails des Nuitées Validées</h3>
+            <div class="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                <table class="w-full text-left bg-white dark:bg-gray-800 border-collapse">
+                    <thead>
+                    <tr class="bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300">
+                        <th class="px-6 py-3 text-[10px] font-bold uppercase tracking-wider">Date de la nuitée</th>
+                        <th class="px-6 py-3 text-[10px] font-bold uppercase tracking-wider">Chambre / Désignation</th>
+                        <th class="px-6 py-3 text-[10px] font-bold uppercase tracking-wider text-right">Prix Appliqué</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        @for (night of invoice?.validatedNights; track night.id) {
+                            <tr>
+                                <td class="px-6 py-4 text-sm font-medium">
+                                    {{night.nightDate | date:'fullDate' : '' : 'fr'}}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-bold text-gray-900 dark:text-white">{{night.roomName}}</div>
+                                    <div class="text-xs text-secondary italic">{{night.roomApplied?.roomType?.type}}</div>
+                                </td>
+                                <td class="px-6 py-4 text-right text-sm font-black text-primary">
+                                    {{night.roomPriceApplied | number:'1.2-2'}} Dhs
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="md:col-span-2">
+                <div class="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
+                    <div class="text-xs font-bold text-blue-800 dark:text-blue-300 uppercase mb-2">Notes & Observations</div>
+                    <p class="text-sm italic text-gray-600 dark:text-gray-400">
+                        {{invoice?.description || 'Aucune observation particulière.'}}
+                    </p>
+                    @if (invoice?.priseEnChargeReference) {
+                        <div class="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800 flex items-center gap-2">
+                            <mat-icon class="icon-size-4 text-blue-600" [svgIcon]="'heroicons_outline:document-text'"></mat-icon>
+                            <span class="text-xs font-bold">Réf PEC : {{invoice?.priseEnChargeReference}}</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <div class="flex justify-between text-sm">
+                    <span class="text-secondary font-medium tracking-tight">Total Hébergement</span>
+                    <span class="font-bold text-gray-900 dark:text-white">{{invoice?.totalRoomPrice | number:'1.2-2'}} Dhs</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-secondary font-medium tracking-tight">Total Prestations</span>
+                    <span class="font-bold text-gray-900 dark:text-white">{{invoice?.totalPrestationPrice | number:'1.2-2'}} Dhs</span>
+                </div>
+                <div class="pt-3 border-t border-gray-300 flex justify-between items-center">
+                    <span class="text-lg font-black uppercase text-gray-900 dark:text-white">Total Net</span>
+                    <span class="text-2xl font-black text-primary tracking-tight">
+                    {{(invoice?.totalRoomPrice + invoice?.totalPrestationPrice) | number:'1.2-2'}} <small class="text-[10px] uppercase">Dhs</small>
+                </span>
+                </div>
+                <div class="text-[10px] text-right text-secondary uppercase font-bold italic">
+                    Mode de paiement : {{invoice?.paymentMode || 'N/A'}}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="p-4 bg-gray-50 border-t flex justify-end gap-3 flex-none">
+        <button mat-stroked-button (click)="matDialogRef.close()">
+            Fermer
+        </button>
+            <button mat-flat-button color="primary" (click)="downloadInvoice()">
+                <mat-icon class="icon-size-4 mr-2" [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                Imprimer Facture
+            </button>
+    </div>
+</div>

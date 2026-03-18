@@ -11,7 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
+import med.goeasy.cmohotel.presentation.dto.invoice.request.PaymentRequestDto;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -56,4 +56,14 @@ public class InvoiceController {
                 page, size
         ));
     }
+
+    @PostMapping("/pay")
+    ResponseEntity<ApiResponse> payInvoice(
+            Authentication authentication,
+            @Valid @RequestBody PaymentRequestDto dto
+    ) {
+        invoiceService.payInvoice(authentication,dto);
+        return ResponseEntity.ok(ApiResponse.builder().message("Facture enregistrée").build());
+    }
+
 }

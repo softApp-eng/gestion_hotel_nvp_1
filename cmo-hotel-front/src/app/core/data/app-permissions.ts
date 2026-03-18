@@ -95,6 +95,7 @@ export const APP_PERMISSIONS = {
 
     // NIGHT AUDIT
     INVOICE_NIGHT_VALIDATE:'invoices:night:validate',
+    INVOICE_PAY:'invoices:invoice:pay',
     INVOICE_LIST:'invoices:invoice:list',
 
 }

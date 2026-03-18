@@ -15,7 +15,7 @@ import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 import { MatDialog } from '@angular/material/dialog';
 import { HighlightPipe } from '../../../../@fuse/pipes/HighlightPipe';
-import { DatePipe, NgClass, SlicePipe } from '@angular/common';
+import { DatePipe, DecimalPipe, NgClass, SlicePipe } from '@angular/common';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import {  MatSidenavModule } from '@angular/material/sidenav';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
@@ -30,6 +30,10 @@ import {DisableIfNoPermissionDirective} from "../../../core/auth/DisableIfNoPerm
 import { FuseConfirmationService } from '../../../../@fuse/services/confirmation';
 import { Toastr } from '../../../core/service/toastr.service';
 import { ApiInvoiceService } from '../api.invoice.service';
+import { ExtractGuestDataPipe } from '../../reservation/list/extract-guest-data-pipe';
+import { AcceptReservationModel } from '../../reservation/list/dialog-accept-reservation/accept.reservation.model';
+import { PaymentModel } from '../payment-model/payment.model';
+import {InvoiceDetailsModel} from "../details/invoice.details.model";
 
 @Component({
     selector: 'invoice-list',
@@ -58,6 +62,8 @@ import { ApiInvoiceService } from '../api.invoice.service';
         MatSelect,
         MatSelectTrigger,
         DisableIfNoPermissionDirective,
+        ExtractGuestDataPipe,
+        DecimalPipe,
     ],
 })
 export class InvoiceListComponent implements OnInit, OnDestroy {
@@ -65,11 +71,17 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
     isLoading: boolean = false;
     displayedColumns: string[] = [
         'num',
+        'room',
+        'person',
+        'period',
+        'category',
+        'prices',
+        'paymentMode',
+        'status',
         'action',
     ];
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
-
 
     @ViewChild(MatPaginator, { static: true }) _paginator: MatPaginator;
     dataSource = new MatTableDataSource<any>([]);
@@ -100,7 +112,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
         private _matDialog: MatDialog,
         private _toast: Toastr,
         private _utilsService: UtilsService,
-        private _fuseConfirmationService: FuseConfirmationService,
+        private _fuseConfirmationService: FuseConfirmationService
     ) {}
 
     get activeFiltersCount(): number {
@@ -195,6 +207,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
             )
             .subscribe({
                 next: (value: any) => {
+                    console.log(value);
                     this.dataSource.data = value?.content || [];
                     this.totalRows = value?.totalElements || 0;
 
@@ -213,37 +226,25 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
 
     getStatusStyle(status: string) {
         const statusMap: Record<string, any> = {
-            PENDING: {
-                label: 'En attente',
-                class: 'bg-amber-200 text-amber-800 dark:bg-amber-600 dark:text-amber-50',
-            },
-            CONFIRMED: {
-                label: 'Confirmée',
+            PAID: {
+                label: 'Payée',
                 class: 'bg-green-200 text-green-800 dark:bg-green-600 dark:text-green-50',
+                icon: 'heroicons_solid:check-circle',
+            },
+            UNPAID: {
+                label: 'Non payée',
+                class: 'bg-red-200 text-red-800 dark:bg-red-600 dark:text-red-50',
+                icon: 'heroicons_solid:exclamation-circle',
             },
             IN_PROGRESS: {
                 label: 'En cours',
                 class: 'bg-blue-200 text-blue-800 dark:bg-blue-600 dark:text-blue-50',
-            },
-            COMPLETED: {
-                label: 'Terminée',
-                class: 'bg-teal-200 text-teal-800 dark:bg-teal-600 dark:text-teal-50',
+                icon: 'heroicons_solid:clock',
             },
             CANCELED: {
                 label: 'Annulée',
                 class: 'bg-red-200 text-red-800 dark:bg-red-600 dark:text-red-50',
-            },
-            NO_SHOW: {
-                label: 'Non présenté',
-                class: 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-50',
-            },
-            EXPIRED: {
-                label: 'Expirée',
-                class: 'bg-orange-200 text-orange-800 dark:bg-orange-600 dark:text-orange-50',
-            },
-            CLOSED: {
-                label: 'Clôturée',
-                class: 'bg-slate-300 text-slate-900 dark:bg-slate-700 dark:text-slate-100',
+                icon: 'heroicons_solid:x-circle',
             },
         };
 
@@ -251,8 +252,36 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
             statusMap[status] || {
                 label: status,
                 class: 'bg-gray-100 text-gray-600',
+                icon: 'heroicons_solid:question-mark-circle',
             }
         );
+    }
+
+    getPaymentModeStyle(mode: string) {
+        const modes: Record<string, any> = {
+            'PRISE_EN_CHARGE': {
+                label: 'Prise en charge',
+                class: 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400 border border-purple-200',
+                icon: 'heroicons_solid:document-text'
+            },
+            'TPE': {
+                label: 'Carte Bancaire',
+                class: 'bg-slate-100 text-slate-700 dark:bg-slate-500/20 dark:text-slate-400 border border-slate-200',
+                icon: 'heroicons_solid:credit-card'
+            },
+            'ESPECE': {
+                label: 'Espèces',
+                class: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-200',
+                icon: 'heroicons_solid:banknotes'
+            },
+            'CHEQUE': {
+                label: 'Chèque',
+                class: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-200',
+                icon: 'heroicons_solid:ticket'
+            }
+        };
+
+        return modes[mode] || { label: 'Non défini', class: 'bg-gray-100 text-gray-500', icon: 'heroicons_solid:question-mark-circle' };
     }
 
     removeSpecificFilter(filter: string) {
@@ -269,7 +298,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
         this.search();
     }
 
-    getLabels(target: 'status' | 'category'| 'paymentModes'): string {
+    getLabels(target: 'status' | 'category' | 'paymentModes'): string {
         let labels;
         if (target == 'status')
             labels = this.filters.status
@@ -284,7 +313,8 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
             labels = this.filters.paymentModes
                 .map(
                     (code) =>
-                        this.paymentModes.find((item) => item.code === code)?.name
+                        this.paymentModes.find((item) => item.code === code)
+                            ?.name
                 )
                 .filter((name) => !!name)
                 .join(', ');
@@ -299,5 +329,33 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
                 .join(', ');
 
         return labels;
+    }
+
+    openPaymentModal(row) {
+        if (!row?.num)
+            return;
+        this._matDialog
+            .open(PaymentModel, {
+                data: { invoice: row},
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((result) => {
+                if (result.reload) {
+                    this.search();
+                }
+            });
+    }
+
+    openDetailsModal(row) {
+        if (!row)
+            return;
+        this._matDialog
+            .open(InvoiceDetailsModel, {
+                data: { invoice: row},
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe();
     }
 }

@@ -21,6 +21,10 @@ export class ApiInvoiceService {
         return this._httpClient.post(`${this.API_URL}/night/validate`, payload);
     }
 
+    payInvoice(payload): Observable<any>{
+        return this._httpClient.post(`${this.API_URL}/pay`, payload);
+    }
+
     search(key='',paymentModes=[],priseEnCharge=false,categories=[],status=[],start = '',end = '',page=0,size=20): Observable<any>{
         let params = new HttpParams()
             .set('key', key)

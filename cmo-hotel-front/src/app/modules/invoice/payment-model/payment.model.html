@@ -1,0 +1,87 @@
+<div class="-m-6 flex flex-col max-h-[95vh] md:w-160 md:min-w-160 overflow-hidden">
+    <mat-toolbar class=" mat-accent h-14 min-h-14 px-2 m-0 flex-none">
+        <div class="flex items-center w-full justify-between">
+            <div class="flex items-center" >
+                <mat-icon class="icon-size-5 mr-3 text-white" [svgIcon]="'heroicons_solid:filter'"></mat-icon>
+                <span class="text-xl  text-white">{{title}}</span>
+            </div>
+            <button mat-icon-button (click)="matDialogRef.close()" aria-label="fermer" class="text-white">
+                <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
+            </button>
+        </div>
+    </mat-toolbar>
+
+
+    <div class="flex-auto overflow-y-auto p-8" [formGroup]="paymentForm">
+        <div class="mb-8 p-6 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-secondary font-medium uppercase tracking-wider text-xs">Récapitulatif Facture</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 uppercase">
+                    {{invoice?.invoiceNumber}}
+                </span>
+            </div>
+            <div class="flex flex-col space-y-2">
+                <div class="flex justify-between text-sm">
+                    <span class="text-secondary">Montant Chambres</span>
+                    <span class="font-semibold">{{invoice?.totalRoomPrice | number:'1.2-2'}} Dhs</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-secondary">Montant Prestations</span>
+                    <span class="font-semibold">{{invoice?.totalPrestationPrice | number:'1.2-2'}} Dhs</span>
+                </div>
+                <div class="pt-3 mt-1 border-t flex justify-between items-center">
+                    <span class="text-base font-bold text-gray-900 dark:text-white">Total à encaisser</span>
+                    <span class="text-2xl font-black text-primary">
+                        {{(invoice?.totalRoomPrice + invoice?.totalPrestationPrice) | number:'1.2-2'}} <span class="text-sm font-medium">Dhs</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div>
+                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
+                    Mode de règlement <span class="text-red-500">*</span>
+                </label>
+                <mat-radio-group formControlName="paymentMode" class="grid grid-cols-2 gap-4">
+                    @for (p of paymentModes; track p.code){
+                        <div (click)="paymentForm.get('paymentMode').setValue(p.code)"
+                             class="relative flex items-center p-4 border rounded-xl cursor-pointer transition-all hover:bg-gray-50 select-none"
+                             [ngClass]="paymentForm.get('paymentMode').value === p.code ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-gray-200'">
+
+                            <mat-radio-button [value]="p.code" color="primary" class="mr-2">
+                                <span class="text-sm font-semibold cursor-pointer" (click)="paymentForm.get('paymentMode').setValue(p.code)">{{p.name}}</span>
+                            </mat-radio-button>
+                        </div>
+                    }
+                </mat-radio-group>
+            </div>
+
+            <mat-form-field *ngIf="paymentForm.get('paymentMode').value === 'PRISE_EN_CHARGE'"
+                            class="w-full" appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Référence du bon / Document</mat-label>
+                <input matInput formControlName="observation" placeholder="Ex: BC-2024-001">
+                <mat-icon matSuffix class="icon-size-5" [svgIcon]="'heroicons_outline:document-text'"></mat-icon>
+            </mat-form-field>
+
+            <mat-form-field class="w-full" appearance="outline">
+                <mat-label>Notes ou observations (Optionnel)</mat-label>
+                <textarea matInput formControlName="observation" rows="3" placeholder="Informations complémentaires..."></textarea>
+            </mat-form-field>
+        </div>
+    </div>
+
+    <div class="flex items-center justify-end px-8 py-5 bg-gray-50 dark:bg-gray-800/50 border-t space-x-3">
+        <button mat-button (click)="matDialogRef.close()">
+            Annuler
+        </button>
+        <button mat-flat-button
+                color="primary"
+                class="px-8 py-2 rounded-lg font-bold uppercase tracking-wide"
+                [disabled]="paymentForm.invalid || loading"
+                (click)="validate()">
+            <mat-progress-spinner *ngIf="loading" class="mr-2" [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+            Confirmer l'encaissement
+        </button>
+    </div>
+</div>

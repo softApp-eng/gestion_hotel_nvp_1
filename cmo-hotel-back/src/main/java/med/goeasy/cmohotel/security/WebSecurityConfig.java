@@ -162,6 +162,7 @@ public class WebSecurityConfig {
 
 						// Invoices
 						.requestMatchers(POST,"/v1/invoices/night/validate").hasAuthority(EPermissions.INVOICE_NIGHT_VALIDATE.getAuthority())
+						.requestMatchers(POST,"/v1/invoices/pay").hasAuthority(EPermissions.INVOICE_PAY.getAuthority())
 						.requestMatchers(GET,"/v1/invoices/search").hasAuthority(EPermissions.INVOICE_LIST.getAuthority())
 
 						//.anyRequest().authenticated()

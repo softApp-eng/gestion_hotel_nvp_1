@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import med.goeasy.cmohotel.persistence.entity.Prestation;
 import med.goeasy.cmohotel.persistence.entity.enums.EPrestationType;
-import med.goeasy.cmohotel.presentation.dto.meal.MealTypeResponseDto;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

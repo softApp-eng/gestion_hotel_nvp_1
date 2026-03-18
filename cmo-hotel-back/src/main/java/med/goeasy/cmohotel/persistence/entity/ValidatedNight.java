@@ -39,8 +39,8 @@ public class ValidatedNight {
 
     private Double roomPriceApplied;
 
-    @OneToMany(mappedBy = "validatedNight", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<GuestInfo> guests;
+    //@OneToMany(mappedBy = "validatedNight", cascade = CascadeType.ALL, orphanRemoval = true)
+    //private List<GuestInfo> guests;
 
     // audit
     @CreatedBy

@@ -171,7 +171,207 @@
                         <ng-container matColumnDef="num">
                             <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 5%"> F# </th>
                             <td mat-cell class="text-center" *matCellDef="let row">
-                                <p class="text-md font-bold cursor-pointer" [innerHTML]="''+row?.num | highlight:filters.key"></p>
+                                <p class="text-md font-bold cursor-pointer" [innerHTML]="''+row?.invoiceNumber | highlight:filters.key"></p>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="period">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 25%">
+                                Séjour (In — Out)
+                            </th>
+                            <td mat-cell *matCellDef="let row">
+                                <div class="flex items-center justify-center space-x-4 w-full font-medium">
+                                    <div class="flex flex-col items-center justify-center leading-tight">
+                                        <span class="text-gray-900 dark:text-gray-100 font-bold">
+                                            {{ row?.reservationDetails?.checkin | date:'dd/MM/yyyy' }}
+                                        </span>
+                                        <span class="text-[11px] text-secondary font-medium opacity-80">
+                                            {{ row?.reservationDetails?.checkin | date:'HH:mm' }}
+                                        </span>
+                                    </div>
+
+                                    <mat-icon class="icon-size-5 opacity-40" [svgIcon]="'heroicons_outline:arrow-long-right'"></mat-icon>
+
+                                    <div class="flex flex-col items-center justify-center leading-tight">
+                                        @if (row?.reservationDetails?.checkout) {
+                                            <span class="text-gray-900 dark:text-gray-100 font-bold">
+                                                {{ row?.reservationDetails?.checkout | date:'dd/MM/yyyy' }}
+                                            </span>
+                                            <span class="text-[11px] text-secondary font-medium opacity-80">
+                                                {{ row?.reservationDetails?.checkout | date:'HH:mm' }}
+                                            </span>
+                                        } @else {
+                                            <span class="text-blue-600 dark:text-blue-400 font-bold">
+                                                {{ row?.reservationDetails?.plannedEnd | date:'dd/MM/yyyy' }}
+                                            </span>
+                                            <span class="text-[9px] uppercase tracking-widest font-extrabold text-blue-500/80">
+                                                Prévu
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+                        </ng-container>
+
+
+                        <ng-container matColumnDef="room">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 20%"> CHAMBRES </th>
+                            <td mat-cell *matCellDef="let row" >
+                                @if (row?.reservationDetails | extractGuestData:'room'; as allRooms) {
+                                    <ul class="space-y-1">
+                                        @if (row.showAllRooms ? allRooms : (allRooms | slice:0:3); as displayList) {
+                                            <ul class="space-y-1">
+                                                @for (room of displayList; track room.id) {
+                                                    <li class="relative pl-4 mb-1.5 last:mb-0 flex items-center group whitespace-nowrap">
+                                                        <span class="absolute left-0 w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+
+                                                        <div class="flex items-baseline space-x-2">
+                                                                <span class="text-[11px] uppercase tracking-wider text-secondary font-medium"
+                                                                      [innerHTML]="(room?.roomType?.type + ' :') | highlight:filters.key">
+                                                                </span>
+
+                                                            <span class="text-sm font-bold text-gray-900 dark:text-gray-100"
+                                                                  [innerHTML]="room?.code | highlight:filters.key">
+                                                                </span>
+                                                        </div>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        }
+
+                                        @if (allRooms?.length > 3) {
+                                            <button
+                                                mat-button
+                                                color="primary"
+                                                class="mt-1 h-8 min-h-8 px-2 text-xs w-fit"
+                                                (click)="row.showAllRooms = !row.showAllRooms">
+                                                <div class="flex items-center">
+                                                    <mat-icon class="icon-size-4 mr-1" [svgIcon]="row.showAllRooms ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'"></mat-icon>
+                                                    <span>
+                                                            {{ row.showAllRooms ? 'Voir moins' : 'Voir ' + (allRooms.length - 3) + ' de plus' }}
+                                                        </span>
+                                                </div>
+                                            </button>
+                                        }
+                                    </ul>
+                                }
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="person">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 26%"> CLIENTS </th>
+                            <td mat-cell *matCellDef="let row" >
+                                <!--<p [innerHTML]="row?.person?.firstName | highlight:key"></p>-->
+                                @if (row?.reservationDetails | extractGuestData:'person'; as allPersons) {
+                                    <ul class="space-y-1">
+                                        @if (row.showAllPersons ? allPersons : (allPersons | slice:0:3); as displayPersonsList) {
+                                            <ul class="space-y-1">
+                                                @for (person of displayPersonsList; track person.id) {
+                                                    <div class="flex items-baseline space-x-2 group whitespace-nowrap">
+                                                            <span class="text-xs font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400 px-1.5 py-0.5"
+                                                                  [innerHTML]="person?.grade?.code | highlight:filters.key">
+                                                            </span>
+
+                                                        <span class="text-[15px]  text-gray-900 dark:text-gray-100"
+                                                              [innerHTML]="(person?.firstName + ' ' + person?.lastName) | highlight:filters.key">
+                                                            </span>
+                                                    </div>
+                                                }
+                                            </ul>
+                                        }
+
+                                        @if (allPersons?.length > 3) {
+                                            <button
+                                                mat-button
+                                                color="primary"
+                                                class="mt-1 h-8 min-h-8 px-2 text-xs w-fit"
+                                                (click)="row.showAllPersons = !row.showAllPersons">
+                                                <div class="flex items-center">
+                                                    <mat-icon class="icon-size-4 mr-1" [svgIcon]="row.showAllPersons ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'"></mat-icon>
+                                                    <span>
+                                                            {{ row.showAllPersons ? 'Voir moins' : 'Voir ' + (allPersons.length - 3) + ' de plus' }}
+                                                        </span>
+                                                </div>
+                                            </button>
+                                        }
+                                    </ul>
+                                }
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="category">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 10%"> CATEGORIE </th>
+                            <td mat-cell *matCellDef="let row" class="text-center">
+                                <div class="inline-flex items-center space-x-2">
+                                        <span class="text-[11px] font-bold uppercase tracking-wider leading-none"
+                                              [ngClass]="{
+                                                  'text-blue-600 dark:text-blue-400': row.category.code === 'SINGLE',
+                                                  'text-purple-600 dark:text-purple-400': row.category.code === 'FAMILY',
+                                                  'text-gray-600 dark:text-gray-400': row.category.code === 'DELEGATION'
+                                              }"
+                                              [innerHTML]="row?.category?.name | highlight:filters.key">
+                                        </span>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="prices">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 15%">
+                                Montants (Dhs)
+                            </th>
+                            <td mat-cell *matCellDef="let row">
+                                <div class="flex flex-col items-center justify-center space-y-1 py-2">
+                                    <div class="flex flex-col items-center leading-tight">
+                <span class="text-sm font-bold text-gray-900 dark:text-gray-100">
+                    {{ (row?.totalRoomPrice + row?.totalPrestationPrice) | number:'1.2-2' }}
+                </span>
+                                        <span class="text-[9px] uppercase font-extrabold text-green-600 dark:text-green-400 tracking-widest">
+                    Total
+                </span>
+                                    </div>
+
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="paymentMode">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 12%">
+                                Paiement
+                            </th>
+                            <td mat-cell *matCellDef="let row" class="text-center">
+                                @if (row?.paymentMode; as mode) {
+                                    @if (getPaymentModeStyle(mode); as config) {
+                                        <div class="flex flex-col items-center justify-center space-y-1">
+                                            <span [ngClass]="config.class"
+                                                  class="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide shadow-sm">
+                                                <mat-icon class="icon-size-3 mr-1" [svgIcon]="config.icon"></mat-icon>
+                                                {{ config.label }}
+                                            </span>
+
+                                            @if (mode === 'PRISE_EN_CHARGE' && row.priseEnChargeReference) {
+                                                <span class="text-[9px] text-secondary opacity-70 font-medium italic">
+                                                    Réf: {{ row.priseEnChargeReference }}
+                                                </span>
+                                            }
+                                        </div>
+                                    }
+                                } @else {
+                                    <span class="text-[10px] text-gray-400 italic">En attente</span>
+                                }
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="status">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 10%"> STATUT </th>
+                            <td mat-cell *matCellDef="let row" class="text-center">
+                                @if (getStatusStyle(row.status); as config) {
+                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide" [ngClass]="config?.class">
+                                        <mat-icon class="icon-size-3.5 mr-1 text-current" [svgIcon]="config?.icon"></mat-icon>
+                                        <span class="whitespace-nowrap leading-relaxed">
+                                            {{config?.label }}
+                                        </span>
+                                    </span>
+                                }
                             </td>
                         </ng-container>
 
@@ -181,12 +381,28 @@
                                 <button mat-icon-button [matMenuTriggerFor]="menuAction">
                                     <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
                                 </button>
-                                <mat-menu #menuAction="matMenu" >
-                                    <button mat-menu-item >
-                                        <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:info'"></mat-icon>
-                                        <span>Détails </span>
+                                <mat-menu #menuAction="matMenu" class="min-w-44">
+                                    <button mat-menu-item (click)="openDetailsModal(row)" >
+                                        <mat-icon class="icon-size-5 text-blue-600" [svgIcon]="'heroicons_outline:information-circle'"></mat-icon>
+                                        <span class="font-medium">Voir les détails</span>
                                     </button>
 
+                                    @if (row?.status === 'PAID') {
+                                        <button mat-menu-item >
+                                            <mat-icon class="icon-size-5 text-red-600" [svgIcon]="'heroicons_outline:document-arrow-down'"></mat-icon>
+                                            <span class="font-medium">Télécharger PDF</span>
+                                        </button>
+                                    }
+
+                                    @if (row?.status === 'UNPAID') {
+                                        <button mat-menu-item
+                                                [disableIfNoPermission]="[APP_PERMISSIONS.INVOICE_PAY]"
+                                                (click)="openPaymentModal(row)"
+                                                class="hover:bg-green-50 dark:hover:bg-green-500/10 transition-colors">
+                                            <mat-icon class="icon-size-5 text-green-600" [svgIcon]="'heroicons_outline:credit-card'"></mat-icon>
+                                            <span class="font-semibold text-green-700 dark:text-green-400">Procéder au paiement</span>
+                                        </button>
+                                    }
                                 </mat-menu>
                             </td>
                         </ng-container>

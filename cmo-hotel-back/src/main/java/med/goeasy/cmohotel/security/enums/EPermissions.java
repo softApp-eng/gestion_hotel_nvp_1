@@ -115,7 +115,8 @@ public enum EPermissions {
 
     // INVOICE,
     INVOICE_NIGHT_VALIDATE(INVOICE, "night:validate", "valider les nuitées des factures", MANAGE,true,""),
-    INVOICE_LIST(INVOICE, "invoice:list", "lister des factures", MANAGE,true,"")
+    INVOICE_LIST(INVOICE, "invoice:list", "lister des factures", MANAGE,true,""),
+    INVOICE_PAY(INVOICE, "invoice:pay", "payer une factures", MANAGE,true,"")
 
     ;
 
