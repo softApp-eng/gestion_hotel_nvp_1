@@ -31,7 +31,8 @@ public record InvoiceResponseDto(
         EInvoiceStatus status,
         String description,
         InvoiceDetailsResponseDto details,
-        List<ValidatedNightResponseDto> validatedNights
+        List<ValidatedNightResponseDto> validatedNights,
+        List<InvoicePrestationResponseDto> invoicePrestations
         ) {
     public static InvoiceResponseDto mapToDto(Invoice entity) {
         if (entity == null)
@@ -52,6 +53,10 @@ public record InvoiceResponseDto(
                 .description(entity.getDescription())
                 .validatedNights(
                         entity.getValidatedNights().stream().map(ValidatedNightResponseDto::mapToDto).toList()
+
+                )
+                .invoicePrestations(
+                        entity.getInvoicePrestations().stream().map(InvoicePrestationResponseDto::mapToDto).toList()
 
                 )
                 .details(InvoiceDetailsResponseDto.mapToDto(entity.getDetails()))

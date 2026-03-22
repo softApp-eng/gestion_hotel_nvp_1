@@ -30,6 +30,7 @@ public class InvoiceGuest {
     private String firstName;
     private String lastName;
     private String matricule;
+    private String nationality;
     private String unite;
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

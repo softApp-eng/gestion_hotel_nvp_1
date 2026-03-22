@@ -1,14 +1,12 @@
 import {
     Component,
-    OnDestroy,
     OnInit,
-    ViewChild,
-    ViewEncapsulation,
+    ViewChild, ViewEncapsulation,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { finalize, Subject } from 'rxjs';
+import { finalize } from 'rxjs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
@@ -18,19 +16,20 @@ import { MatPaginator } from '@angular/material/paginator';
 import { FormsModule } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
 import { HighlightPipe } from '../../../../@fuse/pipes/HighlightPipe';
-import { ExtractGuestDataPipe } from '../../reservation/list/extract-guest-data-pipe';
 import { DisableIfNoPermissionDirective } from '../../../core/auth/DisableIfNoPermissionDirective';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
 import { ApiReservationService } from '../../reservation/api.reservation.service';
 import { ReservationDetailsModel } from '../../reservation/dialog-reservation-details/reservation.details.model';
 import { CloseReservationModel } from '../../reservation/list/dialog-close-reservation/close.reservation.model';
 import { NightValidationModel } from '../night-validation/night-validation.model';
+import { TimeExtendModel } from '../time-extend/time-extend.model';
 
 @Component({
     selector: 'sejour-list',
     templateUrl: './sejour.list.component.html',
-    encapsulation: ViewEncapsulation.None,
+    styleUrls: ['./sejour.list.component.scss'],
     standalone: true,
+    encapsulation: ViewEncapsulation.None,
     imports: [
         MatIconModule,
         MatButtonModule,
@@ -45,7 +44,6 @@ import { NightValidationModel } from '../night-validation/night-validation.model
         FormsModule,
         MatTabsModule,
         DatePipe,
-        ExtractGuestDataPipe,
         SlicePipe,
         DisableIfNoPermissionDirective,
     ],
@@ -54,13 +52,11 @@ export class SejourListComponent implements OnInit {
     protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
     isLoading: boolean = false;
     displayedColumns: string[] = [
-        //'info',
         'code',
-        'checkin',
-        'checkout',
-        'room',
-        'person',
+        'period',
+        'nights',
         'category',
+        'roomAndGuests',
         'action',
     ];
 
@@ -74,6 +70,7 @@ export class SejourListComponent implements OnInit {
     currentPage = 0;
     pageSizeOptions: number[] = [20, 50, 70, 100];
     key = '';
+    today = new Date();
 
     /**
      * Constructor
@@ -84,7 +81,6 @@ export class SejourListComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        //this.searchPersons();
         this.dataSource.paginator = this._paginator;
         this.getSejour();
     }
@@ -157,10 +153,124 @@ export class SejourListComponent implements OnInit {
             })
             .afterClosed()
             .subscribe((result) => {
+                if (result.reload) {
+                    this.getSejour();
+                }
             });
     }
 
-    search() {
+    raiseTimeExtend(r) {
+        this._matDialog
+            .open(TimeExtendModel, {
+                data: { reservation: r },
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((result) => {
+                if (result.reload) {
+                    this.getSejour();
+                }
+            });
+    }
 
+    isOverdue(dateString: any): boolean {
+        if (!dateString) return false;
+        const dateToCheck = new Date(dateString);
+        this.today.setHours(0, 0, 0, 0);
+        dateToCheck.setHours(0, 0, 0, 0);
+        return dateToCheck < this.today;
+    }
+
+    search(key: string): void {
+        this.key = key?.trim().toLowerCase();
+
+        // Si la clé est vide, on restaure la liste complète
+        if (!this.key) {
+            this.dataSource.data = this.reservations;
+            return;
+        }
+
+        this.dataSource.data = this.reservations?.filter((res) => {
+            // 1. Recherche dans les données de base de la réservation
+            const basicInfo = [
+                res.code,
+                res.status?.name,
+                res.category?.name,
+                res.observation
+            ].join(' ').toLowerCase();
+
+            if (basicInfo.includes(this.key)) return true;
+
+            // 2. Recherche profonde dans les invités (Guests)
+            // .some() s'arrête dès qu'il trouve une correspondance
+            const guestMatch = res.guests?.some((guest: any) => {
+                const p = guest.person;
+                const r = guest.room;
+
+                const personInfo = [
+                    p?.firstName,
+                    p?.lastName,
+                    p?.identity,
+                    p?.matricule,
+                    p?.grade?.code,
+                    p?.grade?.name,
+                    r?.name,
+                    r?.roomType?.type
+                ].join(' ').toLowerCase();
+
+                return personInfo.includes(this.key);
+            });
+
+            return guestMatch;
+        });
+
+        // Retour à la première page de la pagination après filtrage
+        if (this.dataSource.paginator) {
+            this.dataSource.paginator.firstPage();
+        }
+    }
+
+    getNightsTooltip(row: any): string {
+        if (!row.validatedNights || row.validatedNights.length === 0) {
+            return "Aucune nuitée n'a encore été validée.";
+        }
+
+        const details = row.validatedNights.map(n => {
+            const date = new Date(n.nightDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+            return `• Le ${date} (${n.roomName} - ${n.roomPriceApplied} Dhs)`;
+        }).join('\n'); // Le \n sera maintenant interprété grâce au CSS global
+
+        const totalAmount = row.validatedNights.reduce((sum, n) => sum + (n.roomPriceApplied || 0), 0);
+
+        return `DÉTAIL DES NUITS :\n` +
+            `--------------------------\n` +
+            `${details}\n` +
+            `--------------------------\n` +
+            `TOTAL : ${totalAmount} Dhs`;
+    }
+
+    getUniqueNightsCount(row: any): number {
+        if (!row.validatedNights || row.validatedNights.length === 0) {
+            return 0;
+        }
+        const uniqueDates = new Set(
+            row.validatedNights.map(n => n.nightDate)
+        );
+        return uniqueDates.size;
+    }
+
+    getGroupedRooms(guests: any[]): any[] {
+        if (!guests) return [];
+
+        const groups = guests.reduce((acc, guest) => {
+            const roomId = guest.room.id;
+            if (!acc[roomId]) {
+                acc[roomId] = { room: guest.room, occupants: [] };
+            }
+            acc[roomId].occupants.push(guest);
+            return acc;
+        }, {});
+
+        return Object.values(groups);
     }
 }

@@ -8,9 +8,7 @@ import med.goeasy.cmohotel.persistence.entity.auth.AppPermission;
 import med.goeasy.cmohotel.persistence.entity.auth.AppRole;
 import med.goeasy.cmohotel.persistence.entity.auth.AppUser;
 import med.goeasy.cmohotel.persistence.entity.auth.AppUserResource;
-import med.goeasy.cmohotel.persistence.entity.enums.EGuestRole;
-import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
-import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
+import med.goeasy.cmohotel.persistence.entity.enums.*;
 import med.goeasy.cmohotel.persistence.repository.*;
 import med.goeasy.cmohotel.security.enums.EPermissions;
 import med.goeasy.cmohotel.security.enums.ERoleSystem;
@@ -23,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,12 +35,14 @@ public class Feeder {
     private final DataSource dataSource;
     private final PasswordEncoder encoder;
     private final AppUserRepository appUserRepository;
+    private Random random = new Random();
 
     private final ReservationDetailsRepository detailsRepository;
     private final PersonRepository personRepository;
     private final RoomRepository roomRepository;
     private final AppUserResourceRepository appUserResourceRepository;
     private final AppConfigurationRepository appConfigurationRepository;
+    private final InvoiceRepository invoiceRepository;
 
     private void initInitialConfiguration(){
         AppConfiguration appConfiguration = new AppConfiguration();
@@ -302,6 +303,69 @@ public class Feeder {
 
             detailsRepository.save(details);
         }
+    }
+
+    @Transactional
+    public void generateMockInvoices(int count) {
+        List<Invoice> invoices = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime threeYearsAgo = now.minusYears(3);
+
+        for (int i = 0; i < count; i++) {
+            EReservationCategory category = EReservationCategory.values()[random.nextInt(EReservationCategory.values().length)];
+            EInvoiceStatus status = EInvoiceStatus.values()[random.nextInt(EInvoiceStatus.values().length)];
+
+            long daysBetween = ChronoUnit.DAYS.between(threeYearsAgo, now);
+            LocalDateTime issuedAt = threeYearsAgo.plusDays(random.nextInt((int) daysBetween + 1))
+                    .plusHours(random.nextInt(24))
+                    .plusMinutes(random.nextInt(60));
+
+            Double roomPrice = generateRoomPrice(category);
+            Double prestationPrice = (random.nextDouble() * 200);
+
+            // Utilisation d'un timestamp pour garantir l'unicité du numéro de facture
+            String uniqueSuffix = System.nanoTime() + "-" + i;
+
+            Invoice invoice = Invoice.builder()
+                    // IMPORTANT: Ne PAS setter 'num' si c'est @GeneratedValue(strategy = GenerationType.UUID)
+                    // Laissez Hibernate le générer lui-même.
+                    .invoiceNumber("INV-" + issuedAt.getYear() + "-" + i + "-" + random.nextInt(1000))
+                    .issuedAt(issuedAt)
+                    .category(category)
+                    .status(status)
+                    .totalRoomPrice(roomPrice)
+                    .totalPrestationPrice(prestationPrice)
+                    .priseEnCharge(random.nextBoolean() && category == EReservationCategory.DELEGATION)
+                    .description("Facture test #" + i)
+                    // Si l'audit pose problème, commentez ces lignes :
+                    // .createdBy("SYSTEM_TEST")
+                    // .createdAt(issuedAt)
+                    .build();
+
+            if (status == EInvoiceStatus.PAID) {
+                invoice.setPaidAt(issuedAt.plusHours(random.nextInt(48)));
+                invoice.setPaymentMode(EPaymentMode.values()[random.nextInt(EPaymentMode.values().length)]);
+            }
+
+            if (invoice.isPriseEnCharge()) {
+                invoice.setPaymentMode(EPaymentMode.PRISE_EN_CHARGE);
+                invoice.setPriseEnChargeReference("PEC-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+            }
+
+            invoices.add(invoice);
+        }
+
+        // Utiliser saveAll sur de petits lots ou purger la session
+        invoiceRepository.saveAll(invoices);
+        invoiceRepository.flush(); // Force l'écriture pour voir l'erreur immédiatement
+    }
+
+    private Double generateRoomPrice(EReservationCategory category) {
+        return switch (category) {
+            case SINGLE -> 300.0 + (random.nextInt(200));   // 300-500
+            case FAMILY -> 600.0 + (random.nextInt(500));   // 600-1100
+            case DELEGATION -> 2000.0 + (random.nextInt(5000)); // 2000-7000
+        };
     }
 
     @Transactional

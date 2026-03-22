@@ -4,28 +4,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import med.goeasy.cmohotel.audit.ActivityLogService;
-import med.goeasy.cmohotel.audit.EAuditActionOperation;
-import med.goeasy.cmohotel.audit.EAuditActionTarget;
 import med.goeasy.cmohotel.exception.BadRequestException;
 import med.goeasy.cmohotel.exception.OperationNotPermittedException;
 import med.goeasy.cmohotel.persistence.entity.*;
-import med.goeasy.cmohotel.persistence.entity.auth.AppUser;
 import med.goeasy.cmohotel.persistence.entity.enums.*;
 import med.goeasy.cmohotel.persistence.repository.*;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
-import med.goeasy.cmohotel.presentation.dto.housekeeping.request.HousekeepingAgentRequestDto;
-import med.goeasy.cmohotel.presentation.dto.housekeeping.request.UpdateRoomCleanRequest;
-import med.goeasy.cmohotel.presentation.dto.housekeeping.response.HousekeepingAgentResponseDto;
-import med.goeasy.cmohotel.presentation.dto.housekeeping.response.RoomHousekeepingDto;
 import med.goeasy.cmohotel.presentation.dto.invoice.request.NightValidationDto;
 import med.goeasy.cmohotel.presentation.dto.invoice.request.PaymentRequestDto;
 import med.goeasy.cmohotel.presentation.dto.invoice.response.InvoiceResponseDto;
-import med.goeasy.cmohotel.presentation.dto.reservation.ReservationDetailsResponseDto;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -94,7 +84,7 @@ public class InvoiceService {
                         .roomApplied(room)
                         .roomName(room.getName())
                         .roomPriceApplied(price)
-                        //.guests(new ArrayList<>())
+                        .observation(dto.observation())
                         .build();
                 invoice.getValidatedNights().add(night);
                 // 5. Capturer l'état des invités (GuestInfo)
@@ -253,6 +243,9 @@ public class InvoiceService {
     ///                              EXTRAS FUNCTIONS                             ///
     /// /////////////////////////////////////////////////////////////////////////////
 
+    protected List<ValidatedNight> getValidatedNights(ReservationDetails reservationDetails){
+        return validatedNightRepository.getValidatedNights(reservationDetails.getCode());
+    }
     protected void activateInvoice(ReservationDetails reservationDetails){
         // 1. Récupérer l'Invoice (doit être créée au préalable lors de la validation des nuits)
         Invoice invoice = invoiceRepository.findByReservationDetails(reservationDetails)
@@ -292,6 +285,7 @@ public class InvoiceService {
                         .matricule(p.getMatricule())
                         .unite(p.getUnite())
                         .role(res.getRole())
+                        .nationality(p.getNationality())
                         .build();
 
                 invRoom.getGuests().add(invGuest);

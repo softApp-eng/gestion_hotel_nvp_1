@@ -38,9 +38,7 @@ public class ValidatedNight {
     private String roomName; // to keep history tracking
 
     private Double roomPriceApplied;
-
-    //@OneToMany(mappedBy = "validatedNight", cascade = CascadeType.ALL, orphanRemoval = true)
-    //private List<GuestInfo> guests;
+    private String observation;
 
     // audit
     @CreatedBy

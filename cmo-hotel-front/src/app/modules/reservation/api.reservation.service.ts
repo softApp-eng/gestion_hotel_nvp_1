@@ -77,6 +77,10 @@ export class ApiReservationService {
         return this._httpClient.put(`${this.API_URL}/cancel?code=${code}`,{});
     }
 
+    extendReservation(code, date): Observable<any>{
+        return this._httpClient.post(`${this.API_URL}/time/extend?code=${code}&date=${date}`,{});
+    }
+
     deleteReservation(code): Observable<any>{
         let params = new HttpParams()
             .set('code', code);

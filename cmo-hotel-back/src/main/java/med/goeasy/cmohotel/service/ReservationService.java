@@ -235,6 +235,36 @@ public class ReservationService {
     }
 
     @Transactional
+    public void prolonger(Authentication authentication,Long code, LocalDate date){
+        ReservationDetails details = getReservationDetailsByCode(code);
+        LocalDateTime oldPlannedEnd = details.getPlannedEnd();
+
+        if ( details.getStatus() != EReservationStatus.CONFIRMED ) {
+            throw new OperationNotPermittedException("Impossible de prolonger une réservation non coonfirmée ou cloturée.");
+        }
+
+        if (date.isBefore(LocalDate.now())) {
+            throw new OperationNotPermittedException(
+                    "La nouvelle date de fin doit être postérieure à la date actuelle"
+            );
+        }
+
+
+        details.setPlannedEnd(date.atTime(12, 0, 0));
+        reservationDetailsRepository.save(details);
+        activityLogService.logActivity(
+                EAuditActionTarget.RESERVATION,
+                EAuditActionOperation.UPDATE,
+                String.format("Prolongation de la réservation (#%d) de %s à %s.",
+                        code,
+                        oldPlannedEnd.toLocalDate(),
+                        date),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+    }
+
+    @Transactional
     public void switchRoom(Authentication authentication, SwitchRoomDto dto) {
         Reservation reservation = getReservationById(dto.reservationId());
         Room oldRoom = reservation.getRoom();
@@ -438,8 +468,10 @@ public class ReservationService {
 
     public List<ReservationDetailsResponseDto> getSejours() {
         List<ReservationDetails> reservations = reservationDetailsRepository.getSejours();
-        return reservations.stream().map(ReservationDetailsResponseDto::mapToDto).toList();
-        //log.info("{} get reservations", authentication.getName());
+        return reservations.stream().map(reservationDetails -> ReservationDetailsResponseDto.mapWithValidatedNightToDto(
+                reservationDetails,
+                invoiceService.getValidatedNights(reservationDetails)
+        )).toList();
     }
 
     public List<ReservationCalenderResponseDto> getReservationForCalender(Authentication authentication,LocalDate start,LocalDate end){

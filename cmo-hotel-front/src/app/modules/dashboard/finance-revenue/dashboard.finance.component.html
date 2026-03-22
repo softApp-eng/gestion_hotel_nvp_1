@@ -1,0 +1,137 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-hidden">
+    <mat-drawer-container class="h-full flex-auto">
+        <!-- Drawer -->
+        <mat-drawer
+            class="w-80"
+            [autoFocus]="false"
+            [mode]="drawerMode"
+            [opened]="drawerOpened"
+            #matDrawer
+        >
+            <div class="flex h-full flex-auto flex-col dark:bg-default">
+                <div class="flex flex-auto shrink-0 flex-col bg-gray-50 pt-6 dark:bg-transparent">
+                    <!-- Action -->
+                    <div class="flex flex-col px-6 pb-2">
+                        <mat-form-field>
+                            <mat-label>Règlement</mat-label>
+                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:credit-card'" matPrefix></mat-icon>
+                            <mat-select [(ngModel)]="filters.paymentModes" (selectionChange)="getChartData()" multiple>
+                                @for (m of paymentModes; track m){
+                                    <mat-option [value]="m.code">{{m.name}}</mat-option>
+                                }
+
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="flex flex-col px-6 pb-2">
+                        <mat-form-field>
+                            <mat-label>Catégorie</mat-label>
+                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:credit-card'" matPrefix></mat-icon>
+                            <mat-select [(ngModel)]="filters.categories" (selectionChange)="getChartData()" multiple>
+                                @for (c of categories; track c){
+                                    <mat-option [value]="c.code">{{c.name}}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="flex flex-col px-6 py-2">
+                        <mat-form-field class="w-full" subscriptSizing="dynamic">
+                            <mat-label>Année fiscale</mat-label>
+
+                            <button mat-icon-button matPrefix
+                                    type="button"
+                                    (click)="changeYear(-1)"
+                                    class="icon-size-8 ml-1">
+                                <mat-icon class="icon-size-6" [svgIcon]="'heroicons_mini:chevron-left'"></mat-icon>
+                            </button>
+
+                            <input matInput
+                                   [value]="filters.year"
+                                   class="text-center font-bold text-lg pointer-events-none"
+                                   readonly>
+
+                            <button mat-icon-button matSuffix
+                                    type="button"
+                                    [disabled]="filters.year >= maxYear"
+                                    (click)="changeYear(1)"
+                                    class="icon-size-8 mr-1">
+                                <mat-icon class="icon-size-6"
+                                          [ngClass]="{'opacity-20': filters.year >= maxYear}"
+                                          [svgIcon]="'heroicons_mini:chevron-right'"></mat-icon>
+                            </button>
+                        </mat-form-field>
+                    </div>
+                </div>
+            </div>
+        </mat-drawer>
+
+        <!-- Content -->
+        <mat-drawer-content class="flex flex-col">
+            <!-- BTC Price -->
+            <div class="bg-card flex min-h-full flex-auto flex-col dark:bg-default">
+                <div class="flex flex-wrap items-center border-b py-3 pl-4 pr-6 md:pl-6">
+                    <button
+                        class="mr-6 lg:hidden"
+                        mat-icon-button
+                        (click)="matDrawer.toggle()"
+                    >
+                        <mat-icon
+                            [svgIcon]="'heroicons_outline:bars-3'"
+                        ></mat-icon>
+                    </button>
+                    <div class="my-3 mr-6 flex flex-auto flex-col">
+                        <div class="flex items-center">
+                            <div class="text-secondary mr-2 text-2xl font-medium">
+                                Chiffre d'Affaires
+                            </div>
+                        </div>
+                        <div class="mt-1 flex items-end">
+                            <div class="mr-2 font-mono text-3xl leading-none tracking-tight">
+                                {{
+                                    (counts?.total || 0)
+                                        | currency: 'DHS' : 'symbol' : '1.2-2'
+                                }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="my-3 hidden items-center sm:flex">
+                        <div class="rounded-l-xl border border-r-0 p-4 leading-none">
+                            <div class="text-secondary text-sm font-medium">
+                                Hébergements
+                            </div>
+                            <div class="mt-2 font-mono text-xl">
+                                {{ (counts?.hosting || 0 ) | currency: '' : '' : '1.2-2' }}
+                            </div>
+                        </div>
+                        <div class="rounded-r-xl border p-4 leading-none">
+                            <div class="text-secondary text-sm font-medium">
+                                Prestations/Extras
+                            </div>
+                            <div class="mt-2 font-mono text-xl">
+                                {{ (counts?.prestation || 0 ) | currency: '' : '' : '1.2-2' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div
+                    class="relative flex flex-auto bg-gray-50 dark:bg-transparent"
+                >
+                    <apx-chart
+                        class="relative h-160 w-full overflow-hidden md:absolute md:inset-0 md:h-auto"
+                        [chart]="btcOptions.chart"
+                        [colors]="btcOptions.colors"
+                        [dataLabels]="btcOptions.dataLabels"
+                        [grid]="btcOptions.grid"
+                        [legend]="btcOptions.legend"
+                        [series]="btcOptions.series"
+                        [stroke]="btcOptions.stroke"
+                        [tooltip]="btcOptions.tooltip"
+                        [xaxis]="btcOptions.xaxis"
+                        [yaxis]="btcOptions.yaxis"
+                    ></apx-chart>
+                </div>
+            </div>
+        </mat-drawer-content>
+    </mat-drawer-container>
+</div>

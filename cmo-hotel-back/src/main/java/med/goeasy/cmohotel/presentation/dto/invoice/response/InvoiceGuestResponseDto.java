@@ -16,6 +16,7 @@ public record InvoiceGuestResponseDto(
         String lastName,
         String matricule,
         String unite,
+        String nationality,
         EGuestRole role
 ) {
     public static InvoiceGuestResponseDto mapToDto(InvoiceGuest entity) {
@@ -31,6 +32,7 @@ public record InvoiceGuestResponseDto(
                 .matricule(entity.getMatricule())
                 .unite(entity.getUnite())
                 .role(entity.getRole())
+                .nationality(entity.getNationality())
                 .build();
     }
 }

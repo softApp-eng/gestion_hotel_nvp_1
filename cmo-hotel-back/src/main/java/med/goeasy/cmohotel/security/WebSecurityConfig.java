@@ -131,6 +131,7 @@ public class WebSecurityConfig {
 						.requestMatchers(DELETE,"/v1/reservations/residents").hasAuthority(EPermissions.RESERVATION_RESIDENTS.getAuthority())
 						.requestMatchers(DELETE,"/v1/reservations/switch-room").hasAuthority(EPermissions.RESERVATION_ROOM_CHANGE.getAuthority())
 						.requestMatchers(POST,"/v1/reservations/switch-room").hasAuthority(EPermissions.RESERVATION_ROOM_CHANGE.getAuthority())
+						.requestMatchers(POST,"/v1/reservations/time/extend").hasAuthority(EPermissions.RESERVATION_TIME_EXTEND.getAuthority())
 						// House keeping
 						.requestMatchers(GET,"/v1/house-keeping/agents/all").hasAuthority(EPermissions.HOUSE_KEEPING_AGENT_LIST.getAuthority())
 						.requestMatchers(POST,"/v1/house-keeping/agents/create").hasAuthority(EPermissions.HOUSE_KEEPING_AGENT_CREATE.getAuthority())

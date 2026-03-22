@@ -6,10 +6,6 @@ be careful when room price changed (history)
 
 
 
-chambre partagé
-
-
-
 ### reservation
     - verifier le check in/out
     - verifier le calcule des prix
@@ -21,10 +17,7 @@ chambre partagé
     - probleme d'identité pour les enfants -18
     - toujours trie par grade
 
-### prestation
-
-### gouvernance
-### night audit
+refont unique
 
 
 le paiement  effectué par la reception, il selectionne la reservation et applique un mode de paiment, ilpeut aussi génerer un etat d'ecaissement d un jours donné

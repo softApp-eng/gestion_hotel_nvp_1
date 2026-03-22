@@ -1,4 +1,4 @@
-<div class="flex flex-auto flex-col">
+<div class="flex min-w-0 flex-auto flex-col">
     <!-- Header -->
     <div class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between px-6 py-6 md:px-10 border-b bg-card dark:bg-transparent transition-all duration-200">
         <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary-500/20 via-transparent to-transparent"></div>
@@ -37,8 +37,8 @@
                                 <span class="font-medium text-secondary">Filtres avancés</span>
                                 @if (activeFiltersCount > 0) {
                                     <span class="flex items-center justify-center bg-primary text-white text-[10px] rounded-full h-5 w-5">
-                                                        {{activeFiltersCount}}
-                                                    </span>
+                                        {{activeFiltersCount}}
+                                    </span>
                                 }
                             </div>
                         </button>
@@ -110,7 +110,7 @@
                             <div class="px-4 py-2 max-h-80 overflow-y-auto flex flex-col gap-4 custom-scrollbar">
                                 <mat-form-field class="w-full" [appearance]="'outline'">
                                     <mat-label>Mot clé</mat-label>
-                                    <input matInput [(ngModel)]="filters.key" placeholder="Code de réservation">
+                                    <input matInput [(ngModel)]="filters.key" placeholder="Mot clé">
                                 </mat-form-field>
 
                                 <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
@@ -149,6 +149,11 @@
                                     <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
                                     <mat-date-range-picker #picker></mat-date-range-picker>
                                 </mat-form-field>
+
+                                <div class="flex items-center justify-between px-3 py-3 border rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50/50 dark:bg-transparent">
+                                    <span class="text-sm font-semibold text-secondary uppercase tracking-wider">Prise en charge</span>
+                                    <mat-slide-toggle [(ngModel)]="filters.priseEnCharge" color="primary"></mat-slide-toggle>
+                                </div>
                             </div>
 
                             <div class="flex items-center justify-between p-4 border-t border-gray-100 bg-gray-50 dark:bg-transparent">
@@ -164,25 +169,30 @@
 
                 </div>
 
-            <div class="w-full bg-primary-50 dark:bg-transparent border rounded-xl overflow-hidden shadow-sm ">
-                <div class="overflow-x-auto">
-                    <table mat-table [dataSource]="dataSource" >
+            <div class="w-full bg-primary-50 dark:bg-transparent border rounded-xl shadow-sm overflow-x-auto ">
+                    <table mat-table [dataSource]="dataSource" class="min-w-full">
 
                         <ng-container matColumnDef="num">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 5%"> F# </th>
-                            <td mat-cell class="text-center" *matCellDef="let row">
-                                <p class="text-md font-bold cursor-pointer" [innerHTML]="''+row?.invoiceNumber | highlight:filters.key"></p>
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 8%">
+                                <span class="bg-gray-50 dark:bg-transparent text-center uppercase">Réf.</span>
+                            </th>
+                            <td mat-cell *matCellDef="let row" class="text-center">
+                                <div (click)="openDetailsModal(row)"
+                                     class="cursor-pointer group inline-flex flex-col items-center">
+                                    <span class="text-secondary whitespace-nowrap text-sm font-medium" [innerHTML]="''+row?.invoiceNumber | highlight:filters.key"></span>
+                                    <div class="h-[1.5px] w-0 bg-primary-500 transition-all duration-300 group-hover:w-full"></div>
+                                </div>
                             </td>
                         </ng-container>
 
                         <ng-container matColumnDef="period">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 25%">
-                                Séjour (In — Out)
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 20%">
+                                Séjour (In - Out)
                             </th>
-                            <td mat-cell *matCellDef="let row">
-                                <div class="flex items-center justify-center space-x-4 w-full font-medium">
+                            <td mat-cell *matCellDef="let row" >
+                                <div class="flex items-center justify-center space-x-4 w-full font-medium cursor-help" [matTooltip]="getNightsTooltip(row)" matTooltipClass="professional-tooltip" >
                                     <div class="flex flex-col items-center justify-center leading-tight">
-                                        <span class="text-gray-900 dark:text-gray-100 font-bold">
+                                        <span class="text-gray-900 dark:text-gray-100 font-bold text-md">
                                             {{ row?.reservationDetails?.checkin | date:'dd/MM/yyyy' }}
                                         </span>
                                         <span class="text-[11px] text-secondary font-medium opacity-80">
@@ -193,114 +203,83 @@
                                     <mat-icon class="icon-size-5 opacity-40" [svgIcon]="'heroicons_outline:arrow-long-right'"></mat-icon>
 
                                     <div class="flex flex-col items-center justify-center leading-tight">
-                                        @if (row?.reservationDetails?.checkout) {
-                                            <span class="text-gray-900 dark:text-gray-100 font-bold">
-                                                {{ row?.reservationDetails?.checkout | date:'dd/MM/yyyy' }}
+                                            <span class="text-md" [ngClass]="isOverdue(row?.plannedEnd) ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'">
+                                                @if (row?.reservationDetails?.checkout) {
+                                                    {{ row?.reservationDetails?.checkout | date:'dd/MM/yyyy' }}
+                                                } @else {
+                                                    {{ row?.reservationDetails?.plannedEnd | date:'dd/MM/yyyy' }}
+                                                }
+
                                             </span>
-                                            <span class="text-[11px] text-secondary font-medium opacity-80">
+                                        <span [ngClass]="isOverdue(row?.plannedEnd) ? 'text-red-500' : 'text-blue-500/80'" class="text-[9px] uppercase tracking-widest font-extrabold">
+                                            @if (row?.reservationDetails?.checkout) {
                                                 {{ row?.reservationDetails?.checkout | date:'HH:mm' }}
-                                            </span>
-                                        } @else {
-                                            <span class="text-blue-600 dark:text-blue-400 font-bold">
-                                                {{ row?.reservationDetails?.plannedEnd | date:'dd/MM/yyyy' }}
-                                            </span>
-                                            <span class="text-[9px] uppercase tracking-widest font-extrabold text-blue-500/80">
+                                            } @else {
                                                 Prévu
+                                            }
                                             </span>
-                                        }
                                     </div>
                                 </div>
                             </td>
                         </ng-container>
 
-
-                        <ng-container matColumnDef="room">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 20%"> CHAMBRES </th>
-                            <td mat-cell *matCellDef="let row" >
-                                @if (row?.reservationDetails | extractGuestData:'room'; as allRooms) {
-                                    <ul class="space-y-1">
-                                        @if (row.showAllRooms ? allRooms : (allRooms | slice:0:3); as displayList) {
-                                            <ul class="space-y-1">
-                                                @for (room of displayList; track room.id) {
-                                                    <li class="relative pl-4 mb-1.5 last:mb-0 flex items-center group whitespace-nowrap">
-                                                        <span class="absolute left-0 w-1.5 h-1.5 rounded-full bg-primary-500"></span>
-
-                                                        <div class="flex items-baseline space-x-2">
-                                                                <span class="text-[11px] uppercase tracking-wider text-secondary font-medium"
-                                                                      [innerHTML]="(room?.roomType?.type + ' :') | highlight:filters.key">
-                                                                </span>
-
-                                                            <span class="text-sm font-bold text-gray-900 dark:text-gray-100"
-                                                                  [innerHTML]="room?.code | highlight:filters.key">
-                                                                </span>
-                                                        </div>
-                                                    </li>
-                                                }
-                                            </ul>
-                                        }
-
-                                        @if (allRooms?.length > 3) {
-                                            <button
-                                                mat-button
-                                                color="primary"
-                                                class="mt-1 h-8 min-h-8 px-2 text-xs w-fit"
-                                                (click)="row.showAllRooms = !row.showAllRooms">
+                        <ng-container matColumnDef="roomAndGuests">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 35%">
+                                CHAMBRES & CLIENTS
+                            </th>
+                            <td mat-cell *matCellDef="let row">
+                                @if (getGroupedRooms(row.reservationDetails?.guests); as groupedRooms) {
+                                    <div class="space-y-2 py-1">
+                                        @for (group of (row.showAll ? groupedRooms : (groupedRooms | slice:0:2)); track group.room.id) {
+                                            <div class="relative pl-4">
                                                 <div class="flex items-center">
-                                                    <mat-icon class="icon-size-4 mr-1" [svgIcon]="row.showAllRooms ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'"></mat-icon>
-                                                    <span>
-                                                            {{ row.showAllRooms ? 'Voir moins' : 'Voir ' + (allRooms.length - 3) + ' de plus' }}
-                                                        </span>
-                                                </div>
-                                            </button>
-                                        }
-                                    </ul>
-                                }
-                            </td>
-                        </ng-container>
-
-                        <ng-container matColumnDef="person">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 26%"> CLIENTS </th>
-                            <td mat-cell *matCellDef="let row" >
-                                <!--<p [innerHTML]="row?.person?.firstName | highlight:key"></p>-->
-                                @if (row?.reservationDetails | extractGuestData:'person'; as allPersons) {
-                                    <ul class="space-y-1">
-                                        @if (row.showAllPersons ? allPersons : (allPersons | slice:0:3); as displayPersonsList) {
-                                            <ul class="space-y-1">
-                                                @for (person of displayPersonsList; track person.id) {
-                                                    <div class="flex items-baseline space-x-2 group whitespace-nowrap">
-                                                            <span class="text-xs font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400 px-1.5 py-0.5"
-                                                                  [innerHTML]="person?.grade?.code | highlight:filters.key">
+                                                    <span class="absolute left-[-5px] w-1.5 h-1.5 rounded-full bg-primary-500 shadow-[0_0_8px_rgba(var(--primary-500),0.6)]"></span>
+                                                    <div class="flex items-baseline space-x-2">
+                                                            <span class="text-[11px] uppercase tracking-wider text-secondary font-medium">
+                                                                {{ group.room?.roomType?.type }} :
                                                             </span>
-
-                                                        <span class="text-[15px]  text-gray-900 dark:text-gray-100"
-                                                              [innerHTML]="(person?.firstName + ' ' + person?.lastName) | highlight:filters.key">
+                                                        <span [innerHTML]="group.room?.name | highlight:filters.key" class="text-sm font-extrabold text-gray-900 dark:text-gray-100">
                                                             </span>
                                                     </div>
-                                                }
-                                            </ul>
+                                                </div>
+
+                                                <ul class="space-y-1.5 ml-2">
+                                                    @for (guest of group.occupants; track guest.id) {
+                                                        <li class="flex items-center space-x-2 whitespace-nowrap group">
+                                                                <span [innerHTML]="guest.person?.grade?.code | highlight:filters.key" class="text-xs font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400 px-1.5">
+                                                                </span>
+
+                                                            <span [innerHTML]="(guest.person?.firstName + ' ' + guest.person?.lastName) | highlight:filters.key" class="text-[14px] text-gray-700 dark:text-gray-300 font-medium">
+                                                                </span>
+
+                                                            @if (row?.category?.code === 'FAMILY' && guest.role) {
+                                                                <span [innerHTML]="guest.role.name | highlight:filters.key" class="px-1.5 py-0 text-[9px] font-bold uppercase tracking-tighter bg-indigo-50/80 text-indigo-600 border border-indigo-100/50 rounded-md shadow-sm">
+                                                                    </span>
+                                                            }
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
                                         }
 
-                                        @if (allPersons?.length > 3) {
-                                            <button
-                                                mat-button
-                                                color="primary"
-                                                class="mt-1 h-8 min-h-8 px-2 text-xs w-fit"
-                                                (click)="row.showAllPersons = !row.showAllPersons">
+                                        @if (groupedRooms.length > 2) {
+                                            <button mat-button color="primary" class="h-8 text-md tracking-tight"
+                                                    (click)="row.showAll = !row.showAll">
                                                 <div class="flex items-center">
-                                                    <mat-icon class="icon-size-4 mr-1" [svgIcon]="row.showAllPersons ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'"></mat-icon>
-                                                    <span>
-                                                            {{ row.showAllPersons ? 'Voir moins' : 'Voir ' + (allPersons.length - 3) + ' de plus' }}
-                                                        </span>
+                                                    <mat-icon class="icon-size-4 mr-1"
+                                                              [svgIcon]="row.showAll ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'">
+                                                    </mat-icon>
+                                                    {{ row.showAll ? 'Voir moins' : 'Voir (' + (groupedRooms.length - 2) + ') plus' }}
                                                 </div>
                                             </button>
                                         }
-                                    </ul>
+                                    </div>
                                 }
                             </td>
                         </ng-container>
 
                         <ng-container matColumnDef="category">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 10%"> CATEGORIE </th>
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 15%"> CATEGORIE </th>
                             <td mat-cell *matCellDef="let row" class="text-center">
                                 <div class="inline-flex items-center space-x-2">
                                         <span class="text-[11px] font-bold uppercase tracking-wider leading-none"
@@ -316,48 +295,21 @@
                         </ng-container>
 
                         <ng-container matColumnDef="prices">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 15%">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 10%">
                                 Montants (Dhs)
                             </th>
                             <td mat-cell *matCellDef="let row">
                                 <div class="flex flex-col items-center justify-center space-y-1 py-2">
-                                    <div class="flex flex-col items-center leading-tight">
-                <span class="text-sm font-bold text-gray-900 dark:text-gray-100">
-                    {{ (row?.totalRoomPrice + row?.totalPrestationPrice) | number:'1.2-2' }}
-                </span>
+                                    <div class="flex flex-col items-center leading-tight cursor-help" [matTooltip]="'Hébergement : ' + row?.totalRoomPrice + '\n Prestation : ' + row?.totalPrestationPrice" matTooltipClass="professional-tooltip">
+                                        <span class="text-sm font-bold text-gray-900 dark:text-gray-100">
+                                            {{ (row?.totalRoomPrice + row?.totalPrestationPrice) | number:'1.2-2' }}
+                                        </span>
                                         <span class="text-[9px] uppercase font-extrabold text-green-600 dark:text-green-400 tracking-widest">
-                    Total
-                </span>
+                                            Total
+                                        </span>
                                     </div>
 
                                 </div>
-                            </td>
-                        </ng-container>
-
-                        <ng-container matColumnDef="paymentMode">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 12%">
-                                Paiement
-                            </th>
-                            <td mat-cell *matCellDef="let row" class="text-center">
-                                @if (row?.paymentMode; as mode) {
-                                    @if (getPaymentModeStyle(mode); as config) {
-                                        <div class="flex flex-col items-center justify-center space-y-1">
-                                            <span [ngClass]="config.class"
-                                                  class="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide shadow-sm">
-                                                <mat-icon class="icon-size-3 mr-1" [svgIcon]="config.icon"></mat-icon>
-                                                {{ config.label }}
-                                            </span>
-
-                                            @if (mode === 'PRISE_EN_CHARGE' && row.priseEnChargeReference) {
-                                                <span class="text-[9px] text-secondary opacity-70 font-medium italic">
-                                                    Réf: {{ row.priseEnChargeReference }}
-                                                </span>
-                                            }
-                                        </div>
-                                    }
-                                } @else {
-                                    <span class="text-[10px] text-gray-400 italic">En attente</span>
-                                }
                             </td>
                         </ng-container>
 
@@ -365,19 +317,26 @@
                             <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 10%"> STATUT </th>
                             <td mat-cell *matCellDef="let row" class="text-center">
                                 @if (getStatusStyle(row.status); as config) {
-                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide" [ngClass]="config?.class">
+                                    @if (row.status == 'IN_PROGRESS') {
+                                        <span class="text-[10px] text-gray-400 italic">En attente</span>
+                                    } @else {
+                                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide" [ngClass]="config?.class" [matTooltip]="row?.paidAt ? 'Payée le ' + row.paidAt : ''">
                                         <mat-icon class="icon-size-3.5 mr-1 text-current" [svgIcon]="config?.icon"></mat-icon>
                                         <span class="whitespace-nowrap leading-relaxed">
                                             {{config?.label }}
+                                            @if (row?.status == 'PAID'){
+                                                ({{ row?.paymentMode?.name }})
+                                            }
                                         </span>
                                     </span>
+                                    }
                                 }
                             </td>
                         </ng-container>
 
-                        <ng-container matColumnDef="action">
+                        <ng-container matColumnDef="action" stickyEnd>
                             <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 2%">  </th>
-                            <td mat-cell *matCellDef="let row" class="text-center">
+                            <td mat-cell *matCellDef="let row" class="text-center bg-white">
                                 <button mat-icon-button [matMenuTriggerFor]="menuAction">
                                     <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
                                 </button>
@@ -423,7 +382,6 @@
                             </td>
                         </tr>
                     </table>
-                </div>
             </div>
             <mat-paginator
                 [ngClass]="{ 'pointer-events-none': isLoading }"

@@ -44,4 +44,36 @@ public interface InvoiceRepository extends JpaRepository<Invoice, String> {
             @Param("range") boolean isRange,
             Pageable pageable
     );
+
+    // counters
+    @Query("SELECT sum(i.totalRoomPrice) FROM Invoice i WHERE i.status = 'PAID'")
+    long countHostingPrice();
+
+    @Query("SELECT sum(i.totalPrestationPrice) FROM Invoice i WHERE i.status = 'PAID'")
+    long countPrestationPrice();
+
+    @Query("""
+    SELECT MONTH(i.paidAt) as month, SUM(i.totalRoomPrice + i.totalPrestationPrice) as total
+    FROM Invoice i
+    WHERE i.status = 'PAID'
+        AND YEAR(i.paidAt) = :year
+        AND (:modes IS NULL OR i.paymentMode IN :modes)
+        AND (:categories IS NULL OR i.category IN :categories)
+    GROUP BY MONTH(i.paidAt)
+    ORDER BY MONTH(i.paidAt) ASC
+""")
+    List<Object[]> getRawMonthlyRevenue(
+            @Param("year") int year,
+            @Param("modes") List<String> paymentModes,
+            @Param("categories") List<String> categories
+            );
+
+    @Query("""
+    SELECT r.roomType as type, SUM(i.totalRoomPrice + i.totalPrestationPrice) as total
+    FROM Invoice i join i.details d join d.invoiceRooms r
+    WHERE i.status = 'PAID'
+    GROUP BY r.roomType
+    ORDER BY r.roomType ASC
+""")
+    List<Object[]> getRoomTypeRevenue();
 }

@@ -45,11 +45,12 @@ public class CmoHotelBackApplication {
             //feeder.grantPermissionToRole(EPermissions.PRESTATION_UPDATE,ERoleSystem.PRESTATION_MANAGER);
             //feeder.grantPermissionToRole(EPermissions.ROOM_LIST_WITH_RESERVATION_DETAILS,ERoleSystem.ADMIN);
             //feeder.grantPermissionToRole(EPermissions.INVOICE_PAY,ERoleSystem.FRON_DESK);
-            //feeder.grantPermissionToRole(EPermissions.INVOICE_PAY,ERoleSystem.ADMIN);
+            //feeder.grantPermissionToRole(EPermissions.RESERVATION_TIME_EXTEND,ERoleSystem.ADMIN);
             //feeder.resetRolePermissions(ERoleSystem.NIGHT_AUDIT);
             /*feeder.createPrestationsAccounts(
                     r.findByName(ERoleSystem.RESERVATIONS_MANAGER.getRoleName()).get()
             );*/
+            //feeder.generateMockInvoices(800);
             //Feed database0
             if (shouldFeed)
                 feeder.feed();

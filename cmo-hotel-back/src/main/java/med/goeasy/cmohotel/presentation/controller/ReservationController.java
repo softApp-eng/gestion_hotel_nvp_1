@@ -79,6 +79,16 @@ public class ReservationController {
         return ResponseEntity.ok(ApiResponse.builder().message("reservation annulée").build());
     }
 
+    @PostMapping("/time/extend")
+    ResponseEntity<ApiResponse> prolonger(
+            Authentication authentication,
+            @Valid @NotNull(message = "code de reservation requis") @RequestParam() Long code,
+            @RequestParam() @Valid @NotNull(message = "Date checkin requise") @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate date
+    ){
+        reservationService.prolonger(authentication,code,date);
+        return ResponseEntity.ok(ApiResponse.builder().message("reservation bien modifiée").build());
+    }
+
     @PostMapping("/switch-room")
     ResponseEntity<ApiResponse> switchRoom(
             Authentication authentication,

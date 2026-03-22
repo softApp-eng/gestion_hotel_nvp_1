@@ -16,7 +16,8 @@ public record ValidatedNightResponseDto(
         LocalDate nightDate,
         RoomResponseDto roomApplied,
         String roomName,
-        Double roomPriceApplied
+        Double roomPriceApplied,
+        String observation
 ) {
     public static ValidatedNightResponseDto mapToDto(ValidatedNight entity) {
         if (entity == null)
@@ -27,6 +28,7 @@ public record ValidatedNightResponseDto(
                 .roomApplied(RoomResponseDto.mapToDto(entity.getRoomApplied()))
                 .roomName(entity.getRoomName())
                 .roomPriceApplied(entity.getRoomPriceApplied())
+                .observation(entity.getObservation())
                 .build();
     }
 }

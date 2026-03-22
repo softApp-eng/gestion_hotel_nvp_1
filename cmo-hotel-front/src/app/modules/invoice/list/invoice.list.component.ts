@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { finalize, Subject } from 'rxjs';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -22,7 +21,7 @@ import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
 import { FormsModule } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatOption } from '@angular/material/core';
-import { MatSelect, MatSelectTrigger } from '@angular/material/select';
+import { MatSelect } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { ApiCommonService } from '../../../core/service/api.common.service';
 import { UtilsService } from '../../../core/service/utils.service';
@@ -30,14 +29,15 @@ import {DisableIfNoPermissionDirective} from "../../../core/auth/DisableIfNoPerm
 import { FuseConfirmationService } from '../../../../@fuse/services/confirmation';
 import { Toastr } from '../../../core/service/toastr.service';
 import { ApiInvoiceService } from '../api.invoice.service';
-import { ExtractGuestDataPipe } from '../../reservation/list/extract-guest-data-pipe';
-import { AcceptReservationModel } from '../../reservation/list/dialog-accept-reservation/accept.reservation.model';
 import { PaymentModel } from '../payment-model/payment.model';
 import {InvoiceDetailsModel} from "../details/invoice.details.model";
+import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
 
 @Component({
     selector: 'invoice-list',
     templateUrl: './invoice.list.component.html',
+    styleUrls: ['./invoice.list.component.scss'],
     encapsulation: ViewEncapsulation.None,
     standalone: true,
     imports: [
@@ -55,30 +55,27 @@ import {InvoiceDetailsModel} from "../details/invoice.details.model";
         FormsModule,
         MatTabsModule,
         MatDatepickerModule,
-        RouterLink,
         DatePipe,
         SlicePipe,
         MatOption,
         MatSelect,
-        MatSelectTrigger,
         DisableIfNoPermissionDirective,
-        ExtractGuestDataPipe,
         DecimalPipe,
+        MatCheckboxModule,
+        MatSlideToggle,
     ],
 })
 export class InvoiceListComponent implements OnInit, OnDestroy {
     protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
     isLoading: boolean = false;
     displayedColumns: string[] = [
-        'num',
-        'room',
-        'person',
-        'period',
-        'category',
-        'prices',
-        'paymentMode',
-        'status',
-        'action',
+        'num', // 2
+        'period', // 20
+        'category', // 15
+        'roomAndGuests', // 35
+        'prices', // 10
+        'status', // 10
+        'action', // 8
     ];
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -115,8 +112,39 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
         private _fuseConfirmationService: FuseConfirmationService
     ) {}
 
+    // TODO si la facture non encore payée alors affiher les chambres et lec clients à partir de reservationDetails sinon en les recupere depuis reservationDetails
+
+    getUniqueNightsCount(row: any): number {
+        if (!row.validatedNights || row.validatedNights.length === 0) {
+            return 0;
+        }
+        const uniqueDates = new Set(
+            row.validatedNights.map((n) => n.nightDate)
+        );
+        return uniqueDates.size;
+    }
+
+    getGroupedRooms(guests: any[]): any[] {
+        if (!guests) return [];
+
+        const groups = guests.reduce((acc, guest) => {
+            const roomId = guest.room.id;
+            if (!acc[roomId]) {
+                acc[roomId] = { room: guest.room, occupants: [] };
+            }
+            acc[roomId].occupants.push(guest);
+            return acc;
+        }, {});
+
+        return Object.values(groups);
+    }
+
     get activeFiltersCount(): number {
         let count = 0;
+        if (this.filters.key !== '') count++;
+        if (this.filters.priseEnCharge) count++;
+        if (this.filters.categories.length > 0) count++;
+        if (this.filters.paymentModes.length > 0) count++;
         if (this.filters.status.length > 0) count++;
         if (this.filters.startDate || this.filters.endDate) count++;
         return count;
@@ -257,33 +285,6 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
         );
     }
 
-    getPaymentModeStyle(mode: string) {
-        const modes: Record<string, any> = {
-            'PRISE_EN_CHARGE': {
-                label: 'Prise en charge',
-                class: 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400 border border-purple-200',
-                icon: 'heroicons_solid:document-text'
-            },
-            'TPE': {
-                label: 'Carte Bancaire',
-                class: 'bg-slate-100 text-slate-700 dark:bg-slate-500/20 dark:text-slate-400 border border-slate-200',
-                icon: 'heroicons_solid:credit-card'
-            },
-            'ESPECE': {
-                label: 'Espèces',
-                class: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-200',
-                icon: 'heroicons_solid:banknotes'
-            },
-            'CHEQUE': {
-                label: 'Chèque',
-                class: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-200',
-                icon: 'heroicons_solid:ticket'
-            }
-        };
-
-        return modes[mode] || { label: 'Non défini', class: 'bg-gray-100 text-gray-500', icon: 'heroicons_solid:question-mark-circle' };
-    }
-
     removeSpecificFilter(filter: string) {
         if (filter == 'key') this.filters.key = '';
         if (filter == 'priseEnCharge') this.filters.priseEnCharge = false;
@@ -331,12 +332,40 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
         return labels;
     }
 
+    getNightsTooltip(row: any): string {
+        if (!row.validatedNights || row.validatedNights.length === 0) {
+            return "Aucune nuitée n'a encore été validée.";
+        }
+
+        const details = row.validatedNights
+            .map((n) => {
+                const date = new Date(n.nightDate).toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                });
+                return `• Le ${date} (${n.roomName} - ${n.roomPriceApplied} Dhs)`;
+            })
+            .join('\n'); // Le \n sera maintenant interprété grâce au CSS global
+
+        const totalAmount = row.validatedNights.reduce(
+            (sum, n) => sum + (n.roomPriceApplied || 0),
+            0
+        );
+
+        return (
+            `DÉTAIL DES NUITS :\n` +
+            `--------------------------\n` +
+            `${details}\n` +
+            `--------------------------\n` +
+            `TOTAL : ${totalAmount} Dhs`
+        );
+    }
+
     openPaymentModal(row) {
-        if (!row?.num)
-            return;
+        if (!row?.num) return;
         this._matDialog
             .open(PaymentModel, {
-                data: { invoice: row},
+                data: { invoice: row },
                 disableClose: true,
             })
             .afterClosed()
@@ -348,14 +377,17 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
     }
 
     openDetailsModal(row) {
-        if (!row)
-            return;
+        if (!row) return;
         this._matDialog
             .open(InvoiceDetailsModel, {
-                data: { invoice: row},
+                data: { invoice: row },
                 disableClose: true,
             })
             .afterClosed()
             .subscribe();
+    }
+
+    isOverdue(plannedEnd: any) {
+        return false;
     }
 }

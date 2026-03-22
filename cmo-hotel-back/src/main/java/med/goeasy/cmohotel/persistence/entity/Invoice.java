@@ -31,7 +31,7 @@ public class Invoice {
     private String num;
 
     @OneToOne
-    @JoinColumn(name = "reservation_details_id", unique = true)
+    @JoinColumn(name = "reservation_details_id", unique = true)// TODO add not null
     private ReservationDetails reservationDetails;
 
     private String invoiceNumber; // Ex: INV-2026-001

@@ -62,6 +62,7 @@ public enum ERoleSystem {
                     EPermissions.INVOICE_NIGHT_VALIDATE,
 
                     EPermissions.RESERVATION_LIST,
+                    EPermissions.RESERVATION_TIME_EXTEND,
                     EPermissions.RESERVATION_ONE,
                     EPermissions.RESERVATION_RESIDENTS,
                     EPermissions.PRESTATION_FOR_RESIDENTS,

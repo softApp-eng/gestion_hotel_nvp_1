@@ -90,7 +90,7 @@ export class NightValidationModel implements OnInit {
         this._apiInvoiceService.validateInvoiceNight(payload).subscribe({
             next: (res) => {
                 this._toast.success('La nuitée a été validée avec succès');
-                this.matDialogRef.close(true);
+                this.matDialogRef.close({reload:true});
             },
             error: (err) => {
                 this._toast.error(err?.error?.description || 'Erreur lors de la validation');

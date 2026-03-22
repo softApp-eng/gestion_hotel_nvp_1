@@ -70,13 +70,10 @@ export class ReservationListComponent implements OnInit, OnDestroy {
     protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
     isLoading: boolean = false;
     displayedColumns: string[] = [
-        //'info',
         'code',
-        'checkin',
-        'checkout',
-        'room',
-        'person',
+        'period',
         'category',
+        'roomAndGuests',
         'status',
         'action',
     ];
@@ -90,7 +87,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
     pageSize = 20;
     currentPage = 0;
     pageSizeOptions: number[] = [20, 50, 70, 100];
-
+    today = new Date();
     status = [];
     selectedStatus = null;
     key = '';
@@ -136,7 +133,6 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         private _matDialog: MatDialog,
         private _toast: Toastr,
         private _utilsService: UtilsService,
-        private _changeDetectorRef: ChangeDetectorRef,
         private _fuseConfirmationService: FuseConfirmationService,
     ) {}
 
@@ -432,5 +428,28 @@ export class ReservationListComponent implements OnInit, OnDestroy {
             })
             .afterClosed()
             .subscribe();
+    }
+
+    isOverdue(dateString: any): boolean {
+        if (!dateString) return false;
+        const dateToCheck = new Date(dateString);
+        this.today.setHours(0, 0, 0, 0);
+        dateToCheck.setHours(0, 0, 0, 0);
+        return dateToCheck < this.today;
+    }
+
+    getGroupedRooms(guests: any[]): any[] {
+        if (!guests) return [];
+
+        const groups = guests.reduce((acc, guest) => {
+            const roomId = guest.room.id;
+            if (!acc[roomId]) {
+                acc[roomId] = { room: guest.room, occupants: [] };
+            }
+            acc[roomId].occupants.push(guest);
+            return acc;
+        }, {});
+
+        return Object.values(groups);
     }
 }

@@ -1,4 +1,4 @@
-<div class="flex flex-auto flex-col">
+<div class="flex min-w-0 flex-auto flex-col">
     <!-- Header -->
     <div class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between px-6 py-6 md:px-10 border-b bg-card dark:bg-transparent transition-all duration-200">
         <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary-500/20 via-transparent to-transparent"></div>
@@ -199,130 +199,124 @@
                 </div>
             }
 
-            <div class="w-full bg-primary-50 dark:bg-transparent border rounded-xl overflow-hidden shadow-sm ">
-                <div class="overflow-x-auto">
-                    <table mat-table [dataSource]="dataSource" >
+            <div class="w-full bg-primary-50 dark:bg-transparent border rounded-xl shadow-sm overflow-x-auto ">
+                    <table mat-table [dataSource]="dataSource" class="min-w-full">
 
                         <ng-container matColumnDef="code">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 5%"> R# </th>
-                            <td mat-cell class="text-center" *matCellDef="let row">
-                                <p class="text-md font-bold cursor-pointer" (click)="raiseReservationDetailsDialog(row)" [innerHTML]="''+row?.code | highlight:key"></p>
-                            </td>
-                        </ng-container>
-
-                        <ng-container matColumnDef="checkin">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 12%"> CHECK-IN </th>
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 8%">
+                                <span class="bg-gray-50 dark:bg-transparent text-center uppercase">Réf.</span>
+                            </th>
                             <td mat-cell *matCellDef="let row" class="text-center">
-                                @if (row?.checkin) {
-                                    {{row?.checkin | date:'dd/MM/yyyy hh:mm':'':'en-US'}}
-                                } @else {
-                                    <span class="text-sm font-medium text-blue-400 italic">
-                                            {{'Prévu le  '+ (row?.plannedStart | date:'dd/MM/yyyy':'':'en-US')}}
-                                        </span>
-                                }
+                                <div (click)="raiseReservationDetailsDialog(row)"
+                                     class="cursor-pointer group inline-flex flex-col items-center">
+                                    <span class="text-secondary whitespace-nowrap text-sm font-medium" [innerHTML]="row?.code + '' | highlight:key"></span>
+                                    <div class="h-[1.5px] w-0 bg-primary-500 transition-all duration-300 group-hover:w-full"></div>
+                                </div>
                             </td>
                         </ng-container>
 
-                        <ng-container matColumnDef="checkout">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 12%"> CHECK-OUT </th>
-                            <td mat-cell *matCellDef="let row" class="text-center">
-                                @if (row?.checkout) {
-                                    {{row?.checkout | date:'dd/MM/yyyy hh:mm':'':'en-US'}}
-                                } @else {
-                                    <span class="text-sm font-medium text-blue-400 italic">
-                                            {{'Prévu le  '+ (row?.plannedEnd | date:'dd/MM/yyyy':'':'en-US')}}
+                        <ng-container matColumnDef="period">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center" style="width: 25%">
+                                Séjour (In - Out)
+                            </th>
+                            <td mat-cell *matCellDef="let row">
+                                <div class="flex items-center justify-center space-x-4 w-full font-medium">
+                                    <div class="flex flex-col items-center justify-center leading-tight">
+                                        <span class="text-gray-900 dark:text-gray-100 font-bold text-md">
+                                            @if (row?.checkin) {
+                                                {{ row?.checkin | date:'dd/MM/yyyy' }}
+                                            } @else {
+                                                {{ row?.plannedStart | date:'dd/MM/yyyy' }}
+                                            }
                                         </span>
-                                }
+                                        <span class="text-[11px] text-secondary font-medium opacity-80">
+                                            @if (row?.checkin) {
+                                                {{ row?.checkin | date:'HH:mm' }}
+                                            } @else {
+                                                Prévu
+                                            }
+                                        </span>
+                                    </div>
+
+                                    <mat-icon class="icon-size-5 opacity-40" [svgIcon]="'heroicons_outline:arrow-long-right'"></mat-icon>
+
+                                    <div class="flex flex-col items-center justify-center leading-tight">
+                                        <span class="text-md" [ngClass]="isOverdue(row?.plannedEnd) ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'">
+                                            @if (row?.checkout) {
+                                                {{ row?.checkout | date:'dd/MM/yyyy' }}
+                                            } @else {
+                                                {{ row?.plannedEnd | date:'dd/MM/yyyy' }}
+                                            }
+                                        </span>
+                                        <span [ngClass]="isOverdue(row?.plannedEnd) ? 'text-red-500' : 'text-blue-500/80'" class="text-[9px] uppercase tracking-widest font-extrabold">
+                                            @if (row?.checkout) {
+                                                {{ row?.checkout | date:'HH:mm' }}
+                                            } @else {
+                                                Prévu
+                                            }
+                                        </span>
+                                    </div>
+                                </div>
                             </td>
                         </ng-container>
 
-                        <ng-container matColumnDef="room">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 20%"> CHAMBRES </th>
-                            <td mat-cell *matCellDef="let row" >
-                                @if (row | extractGuestData:'room'; as allRooms) {
-                                    <ul class="space-y-1">
-                                        @if (row.showAllRooms ? allRooms : (allRooms | slice:0:3); as displayList) {
-                                            <ul class="space-y-1">
-                                                @for (room of displayList; track room.id) {
-                                                    <li class="relative pl-4 mb-1.5 last:mb-0 flex items-center group whitespace-nowrap">
-                                                        <span class="absolute left-0 w-1.5 h-1.5 rounded-full bg-primary-500"></span>
-
-                                                        <div class="flex items-baseline space-x-2">
-                                                                <span class="text-[11px] uppercase tracking-wider text-secondary font-medium"
-                                                                      [innerHTML]="(room?.roomType?.type + ' :') | highlight:key">
-                                                                </span>
-
-                                                            <span class="text-sm font-bold text-gray-900 dark:text-gray-100"
-                                                                  [innerHTML]="room?.code | highlight:key">
-                                                                </span>
-                                                        </div>
-                                                    </li>
-                                                }
-                                            </ul>
-                                        }
-
-                                        @if (allRooms?.length > 3) {
-                                            <button
-                                                mat-button
-                                                color="primary"
-                                                class="mt-1 h-8 min-h-8 px-2 text-xs w-fit"
-                                                (click)="row.showAllRooms = !row.showAllRooms">
+                        <ng-container matColumnDef="roomAndGuests">
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 40%">
+                                CHAMBRES & CLIENTS
+                            </th>
+                            <td mat-cell *matCellDef="let row">
+                                @if (getGroupedRooms(row.guests); as groupedRooms) {
+                                    <div class="space-y-2 py-1">
+                                        @for (group of (row.showAll ? groupedRooms : (groupedRooms | slice:0:2)); track group.room.id) {
+                                            <div class="relative pl-4">
                                                 <div class="flex items-center">
-                                                    <mat-icon class="icon-size-4 mr-1" [svgIcon]="row.showAllRooms ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'"></mat-icon>
-                                                    <span>
-                                                            {{ row.showAllRooms ? 'Voir moins' : 'Voir ' + (allRooms.length - 3) + ' de plus' }}
-                                                        </span>
-                                                </div>
-                                            </button>
-                                        }
-                                    </ul>
-                                }
-                            </td>
-                        </ng-container>
-
-                        <ng-container matColumnDef="person">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 26%"> CLIENTS </th>
-                            <td mat-cell *matCellDef="let row" >
-                                <!--<p [innerHTML]="row?.person?.firstName | highlight:key"></p>-->
-                                @if (row | extractGuestData:'person'; as allPersons) {
-                                    <ul class="space-y-1">
-                                        @if (row.showAllPersons ? allPersons : (allPersons | slice:0:3); as displayPersonsList) {
-                                            <ul class="space-y-1">
-                                                @for (person of displayPersonsList; track person.id) {
-                                                    <div class="flex items-baseline space-x-2 group whitespace-nowrap">
-                                                            <span class="text-xs font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400 px-1.5 py-0.5"
-                                                                  [innerHTML]="person?.grade?.code | highlight:key">
+                                                    <span class="absolute left-[-5px] w-1.5 h-1.5 rounded-full bg-primary-500 shadow-[0_0_8px_rgba(var(--primary-500),0.6)]"></span>
+                                                    <div class="flex items-baseline space-x-2">
+                                                            <span class="text-[11px] uppercase tracking-wider text-secondary font-medium">
+                                                                {{ group.room?.roomType?.type }} :
                                                             </span>
-
-                                                        <span class="text-[15px]  text-gray-900 dark:text-gray-100"
-                                                              [innerHTML]="(person?.firstName + ' ' + person?.lastName) | highlight:key">
+                                                        <span [innerHTML]="group.room?.name | highlight:key" class="text-sm font-extrabold text-gray-900 dark:text-gray-100">
                                                             </span>
                                                     </div>
-                                                }
-                                            </ul>
+                                                </div>
+
+                                                <ul class="space-y-1.5 ml-2">
+                                                    @for (guest of group.occupants; track guest.id) {
+                                                        <li class="flex items-center space-x-2 whitespace-nowrap group">
+                                                                <span [innerHTML]="guest.person?.grade?.code | highlight:key" class="text-xs font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400 px-1.5">
+                                                                </span>
+
+                                                            <span [innerHTML]="(guest.person?.firstName + ' ' + guest.person?.lastName) | highlight:key" class="text-[14px] text-gray-700 dark:text-gray-300 font-medium">
+                                                                </span>
+
+                                                            @if (row?.category?.code === 'FAMILY' && guest.role) {
+                                                                <span [innerHTML]="guest.role.name | highlight:key" class="px-1.5 py-0 text-[9px] font-bold uppercase tracking-tighter bg-indigo-50/80 text-indigo-600 border border-indigo-100/50 rounded-md shadow-sm">
+                                                                    </span>
+                                                            }
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
                                         }
 
-                                        @if (allPersons?.length > 3) {
-                                            <button
-                                                mat-button
-                                                color="primary"
-                                                class="mt-1 h-8 min-h-8 px-2 text-xs w-fit"
-                                                (click)="row.showAllPersons = !row.showAllPersons">
+                                        @if (groupedRooms.length > 2) {
+                                            <button mat-button color="primary" class="h-8 text-md tracking-tight"
+                                                    (click)="row.showAll = !row.showAll">
                                                 <div class="flex items-center">
-                                                    <mat-icon class="icon-size-4 mr-1" [svgIcon]="row.showAllPersons ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'"></mat-icon>
-                                                    <span>
-                                                            {{ row.showAllPersons ? 'Voir moins' : 'Voir ' + (allPersons.length - 3) + ' de plus' }}
-                                                        </span>
+                                                    <mat-icon class="icon-size-4 mr-1"
+                                                              [svgIcon]="row.showAll ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'">
+                                                    </mat-icon>
+                                                    {{ row.showAll ? 'Voir moins' : 'Voir (' + (groupedRooms.length - 2) + ') plus' }}
                                                 </div>
                                             </button>
                                         }
-                                    </ul>
+                                    </div>
                                 }
                             </td>
                         </ng-container>
 
                         <ng-container matColumnDef="category">
-                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 10%"> CATEGORIE </th>
+                            <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 15%"> CATEGORIE </th>
                             <td mat-cell *matCellDef="let row" class="text-center">
                                 <div class="inline-flex items-center space-x-2">
                                         <span class="text-[11px] font-bold uppercase tracking-wider leading-none"
@@ -353,9 +347,9 @@
                             </td>
                         </ng-container>
 
-                        <ng-container matColumnDef="action">
+                        <ng-container matColumnDef="action" stickyEnd>
                             <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 2%">  </th>
-                            <td mat-cell *matCellDef="let row" class="text-center">
+                            <td mat-cell *matCellDef="let row" class="text-center bg-white">
                                 <button mat-icon-button [matMenuTriggerFor]="menuAction">
                                     <mat-icon class="icon-size-5" [svgIcon]=" 'heroicons_mini:ellipsis-vertical' " ></mat-icon>
                                 </button>
@@ -407,7 +401,7 @@
                         </ng-container>
 
                         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                        <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{ 'bg-gray-100': selectedItem?.code === row.code && matDrawer.opened }"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumns;" ></tr>
 
                         <tr class="mat-row" *matNoDataRow>
                             <td class="mat-cell" [attr.colspan]="displayedColumns.length">
@@ -422,7 +416,6 @@
                             </td>
                         </tr>
                     </table>
-                </div>
             </div>
             <mat-paginator
                 [ngClass]="{ 'pointer-events-none': isLoading }"

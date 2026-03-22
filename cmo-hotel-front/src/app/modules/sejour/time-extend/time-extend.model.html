@@ -1,0 +1,61 @@
+<div class="-m-6 flex flex-col max-h-[95vh] md:w-160 md:min-w-160 overflow-hidden">
+    <mat-toolbar class=" mat-accent h-14 min-h-14 px-2 m-0 flex-none">
+        <div class="flex items-center w-full justify-between">
+            <div class="flex items-center" >
+                <mat-icon class="icon-size-5 mr-3 text-white" [svgIcon]="'heroicons_solid:filter'"></mat-icon>
+                <span class="text-xl  text-white">{{title}}</span>
+            </div>
+            <button mat-icon-button (click)="matDialogRef.close()" aria-label="fermer" class="text-white">
+                <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
+            </button>
+        </div>
+    </mat-toolbar>
+
+
+    <div class="flex-auto overflow-y-auto p-8 bg-white dark:bg-transparent">
+        <div class="flex items-start p-4 mb-8 bg-blue-50 border border-blue-100 rounded-xl dark:bg-blue-900/10 dark:border-blue-800">
+            <mat-icon class="text-blue-600 mr-3 mt-0.5 icon-size-5" [svgIcon]="'heroicons_outline:information-circle'"></mat-icon>
+            <div class="flex flex-col">
+                <span class="text-sm font-bold text-blue-900 dark:text-blue-300">Rappel du séjour</span>
+                <span class="text-xs text-blue-800/80 dark:text-blue-400">
+                    Le séjour de la reservation <b>{{data.reservation.code}}</b>
+                    est actuellement prévu jusqu'au <b>{{data.reservation.plannedEnd | date:'dd MMMM yyyy' : '' : 'fr'}}</b>.
+                </span>
+            </div>
+        </div>
+
+        <form [formGroup]="extendForm" class="flex flex-col">
+            <mat-form-field class="w-full" appearance="outline">
+                <mat-label>Nouvelle date d'échéance</mat-label>
+                <input matInput
+                       [matDatepicker]="picker"
+                       [min]="minDate"
+                       formControlName="newDate"
+                       placeholder="Choisissez une date"
+                       readonly
+                       (click)="picker.open()">
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+                <mat-error *ngIf="extendForm.get('newDate').hasError('required')">
+                    La date de prolongation est obligatoire.
+                </mat-error>
+                <mat-hint>Sélectionnez une date postérieure à l'échéance actuelle.</mat-hint>
+            </mat-form-field>
+        </form>
+    </div>
+
+    <div class="flex items-center justify-end px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-t space-x-3 flex-none">
+        <button mat-button (click)="matDialogRef.close()" [disabled]="loading">
+            Annuler
+        </button>
+        <button mat-flat-button
+                color="primary"
+                [disabled]="extendForm.invalid || loading"
+                (click)="save()">
+            @if (loading) {
+                <mat-progress-spinner class="mr-2" [diameter]="18" [mode]="'indeterminate'"></mat-progress-spinner>
+            }
+            Confirmer la prolongation
+        </button>
+    </div>
+</div>

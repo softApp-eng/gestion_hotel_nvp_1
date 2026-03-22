@@ -5,13 +5,16 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import med.goeasy.cmohotel.persistence.entity.Person;
 import med.goeasy.cmohotel.persistence.entity.ReservationDetails;
+import med.goeasy.cmohotel.persistence.entity.ValidatedNight;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
+import med.goeasy.cmohotel.presentation.dto.invoice.response.ValidatedNightResponseDto;
 import med.goeasy.cmohotel.presentation.dto.person.GradeDto;
 import med.goeasy.cmohotel.presentation.dto.person.PersonResponseDto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,7 +39,8 @@ public record ReservationDetailsResponseDto(
         String lastModifiedBy,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
-        String observation
+        String observation,
+        List<ValidatedNightResponseDto> validatedNights
 ) {
     public static ReservationDetailsResponseDto mapToDto(ReservationDetails entity){
         if (entity == null)
@@ -57,6 +61,32 @@ public record ReservationDetailsResponseDto(
                 .observation(entity.getObservation())
                 .priseEnCharge(entity.isPriseEnCharge())
                 .priseEnChargeReference(entity.getPriseEnChargeReference())
+                .build();
+    }
+
+    public static ReservationDetailsResponseDto mapWithValidatedNightToDto(ReservationDetails entity, List<ValidatedNight> nights){
+        if (entity == null)
+            return null;
+        if (nights == null) nights = new ArrayList<>();
+        return ReservationDetailsResponseDto.builder()
+                .code(entity.getCode())
+                .guests(entity.getReservations().stream().map(ReservationResponseDto::mapToDto).toList())
+                .category(entity.getCategory())
+                .plannedStart(entity.getPlannedStart())
+                .plannedEnd(entity.getPlannedEnd())
+                .checkin(entity.getCheckin())
+                .checkout(entity.getCheckout())
+                .createdBy(entity.getCreatedBy())
+                .lastModifiedBy(entity.getLastModifiedBy())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .status(entity.getStatus())
+                .observation(entity.getObservation())
+                .priseEnCharge(entity.isPriseEnCharge())
+                .priseEnChargeReference(entity.getPriseEnChargeReference())
+                .validatedNights(
+                        nights.stream().map(ValidatedNightResponseDto::mapToDto).toList()
+                )
                 .build();
     }
 
