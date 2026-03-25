@@ -46,11 +46,11 @@ public interface InvoiceRepository extends JpaRepository<Invoice, String> {
     );
 
     // counters
-    @Query("SELECT sum(i.totalRoomPrice) FROM Invoice i WHERE i.status = 'PAID'")
-    long countHostingPrice();
+    @Query("SELECT sum(i.totalRoomPrice) FROM Invoice i WHERE i.status in :status ")
+    long countHostingPrice(@Param("status") List<EInvoiceStatus> status);
 
-    @Query("SELECT sum(i.totalPrestationPrice) FROM Invoice i WHERE i.status = 'PAID'")
-    long countPrestationPrice();
+    @Query("SELECT sum(i.totalPrestationPrice) FROM Invoice i WHERE i.status in :status")
+    long countPrestationPrice(@Param("status") List<EInvoiceStatus> status);
 
     @Query("""
     SELECT MONTH(i.paidAt) as month, SUM(i.totalRoomPrice + i.totalPrestationPrice) as total

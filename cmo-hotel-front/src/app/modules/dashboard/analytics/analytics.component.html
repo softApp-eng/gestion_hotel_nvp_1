@@ -1,0 +1,312 @@
+<div class="flex w-full flex-auto flex-col">
+    <div class="mx-auto flex w-full max-w-screen-xl flex-wrap p-6 md:p-8">
+        <!-- Title and action buttons -->
+        <div class="flex w-full items-center justify-between">
+            <div>
+                <div class="text-3xl font-semibold leading-8 tracking-tight">
+                    Analytics dashboard
+                </div>
+                <div class="text-secondary font-medium tracking-tight">
+                    Monitor metrics, check reports and review performance
+                </div>
+            </div>
+            <div class="ml-6 flex items-center">
+                <button class="hidden sm:inline-flex" mat-stroked-button>
+                    <mat-icon
+                        class="icon-size-5"
+                        [svgIcon]="'heroicons_solid:cog-8-tooth'"
+                    ></mat-icon>
+                    <span class="ml-2">Settings</span>
+                </button>
+                <button
+                    class="ml-3 hidden sm:inline-flex"
+                    mat-flat-button
+                    [color]="'primary'"
+                >
+                    <mat-icon
+                        class="icon-size-5"
+                        [svgIcon]="'heroicons_solid:arrow-up-tray'"
+                    ></mat-icon>
+                    <span class="ml-2">Export</span>
+                </button>
+
+                <!-- Actions menu (visible on xs) -->
+                <div class="sm:hidden">
+                    <button [matMenuTriggerFor]="actionsMenu" mat-icon-button>
+                        <mat-icon
+                            [svgIcon]="'heroicons_outline:ellipsis-vertical'"
+                        ></mat-icon>
+                    </button>
+                    <mat-menu #actionsMenu="matMenu">
+                        <button mat-menu-item>Export</button>
+                        <button mat-menu-item>Settings</button>
+                    </mat-menu>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 grid w-full grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <!-- Visitors overview -->
+            <div class="bg-card dark flex flex-auto flex-col overflow-hidden rounded-2xl shadow sm:col-span-2 lg:col-span-3">
+                <div
+                    class="ml-10 mr-6 mt-10 flex items-center justify-between sm:mr-10"
+                >
+                    <div class="flex flex-col">
+                        <div
+                            class="mr-4 text-2xl font-semibold leading-7 tracking-tight md:text-3xl"
+                        >
+                            Volume des Réservations
+                        </div>
+                        <div class="text-secondary font-medium">
+                            Analyse mensuelle du nombre de réservations confirmées pour l'année {{ selectedYear }}.
+                        </div>
+                    </div>
+                    <div class="ml-2">
+                        <div class="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 p-1 rounded-full px-2">
+                            <button
+                                mat-icon-button
+                                class="icon-size-8"
+                                (click)="navigateYear(-1)"
+                            >
+                                <mat-icon
+                                    class="icon-size-5"
+                                    [svgIcon]="'heroicons_outline:chevron-left'"
+                                ></mat-icon>
+                            </button>
+
+                            <div class="px-4 min-w-20 text-center font-bold text-lg tracking-tight text-white">
+                                {{ selectedYear }}
+                            </div>
+
+                            <button
+                                mat-icon-button
+                                class="icon-size-8"
+                                [disabled]="selectedYear >= currentYear"
+                                (click)="navigateYear(1)"
+                                [ngClass]="{'opacity-30': selectedYear >= currentYear}"
+                            >
+                                <mat-icon
+                                    class="icon-size-5"
+                                    [svgIcon]="'heroicons_outline:chevron-right'"
+                                ></mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex h-80 flex-auto flex-col">
+                    @if (chartVisitors) {
+                        <apx-chart
+                            class="h-full w-full flex-auto"
+                            [chart]="chartVisitors.chart"
+                            [colors]="chartVisitors.colors"
+                            [series]="chartVisitors.series"
+                            [xaxis]="chartVisitors.xaxis"
+                            [yaxis]="chartVisitors.yaxis"
+                            [grid]="chartVisitors.grid"
+                            [stroke]="chartVisitors.stroke"
+                            [tooltip]="chartVisitors.tooltip"
+                            [fill]="chartVisitors.fill"
+                            [dataLabels]="chartVisitors.dataLabels"
+                        ></apx-chart>
+                    } @else {
+                        <div class="flex items-center justify-center h-full">
+                            <mat-progress-spinner mode="indeterminate" [diameter]="40"></mat-progress-spinner>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl shadow sm:col-span-2 lg:col-span-1">
+                <div class="absolute right-0 top-1/2 -translate-y-1/2 transform opacity-20 text-blue-500 dark:text-blue-400">
+                    <mat-icon
+                        class="icon-size-24 text-current"
+                        [svgIcon]="'heroicons_outline:user'">
+                    </mat-icon>
+                </div>
+                <div class="m-6 mb-0 flex items-start justify-between">
+                    <div class="flex flex-col">
+                        <div class="truncate text-md font-bold uppercase tracking-wider text-secondary">
+                            Réservations Individuelles
+                        </div>
+                        <div class="mt-1 text-xs font-medium text-blue-600 dark:text-blue-400">
+                            Catégorie : Individuel
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mx-6 mt-4 flex items-baseline">
+                    <div class="text-6xl font-bold leading-none tracking-tight">
+                        {{ counts?.singleReservations || 0 }}
+                    </div>
+                    <div class="ml-2 text-lg font-medium text-secondary">réservations</div>
+                </div>
+                <div class="h-6"></div>
+            </div>
+
+            <div class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl shadow sm:col-span-2 lg:col-span-1">
+                <div class="absolute right-0 top-1/2 -translate-y-1/2 transform opacity-20 text-indigo-600 dark:text-indigo-400">
+                    <mat-icon
+                        class="icon-size-24 text-current"
+                        [svgIcon]="'heroicons_outline:user-group'">
+                    </mat-icon>
+                </div>
+                <div class="m-6 mb-0 flex items-start justify-between">
+                    <div class="flex flex-col">
+                        <div class="truncate text-md font-bold uppercase tracking-wider text-secondary">
+                            Réservations Familiales
+                        </div>
+                        <div class="mt-1 text-xs font-medium text-blue-600 dark:text-blue-400">
+                            Catégorie : Famille
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mx-6 mt-4 flex items-baseline">
+                    <div class="text-6xl font-bold leading-none tracking-tight">
+                        {{ counts?.familyReservations || 0 }}
+                    </div>
+                    <div class="ml-2 text-lg font-medium text-secondary">réservations</div>
+                </div>
+                <div class="h-6"></div>
+            </div>
+
+            <div class="bg-card relative flex flex-auto flex-col overflow-hidden rounded-2xl shadow sm:col-span-2 lg:col-span-1">
+                <div class="absolute -right-1 top-1/2 -translate-y-1/2 transform opacity-20 text-amber-500 dark:text-amber-400">
+                    <mat-icon
+                        class="icon-size-24 text-current"
+                        [svgIcon]="'heroicons_outline:briefcase'">
+                    </mat-icon>
+                </div>
+                <div class="m-6 mb-0 flex items-start justify-between">
+                    <div class="flex flex-col">
+                        <div class="truncate text-md font-bold uppercase tracking-wider text-secondary">
+                            Réservations Délégations
+                        </div>
+                        <div class="mt-1 text-xs font-medium text-blue-600 dark:text-blue-400">
+                            Catégorie : Délégations
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mx-6 mt-4 flex items-baseline">
+                    <div class="text-6xl font-bold leading-none tracking-tight">
+                        {{ counts?.delegationReservations || 0 }}
+                    </div>
+                    <div class="ml-2 text-lg font-medium text-secondary">réservations</div>
+                </div>
+                <div class="h-6"></div>
+            </div>
+
+
+        </div>
+        <div class="bg-card mt-8 flex flex-auto flex-col overflow-hidden rounded-2xl shadow">
+            <div class="m-6 mb-0 flex items-start justify-between">
+                <div class="truncate text-lg font-medium leading-6 tracking-tight">
+                    Répartition des Réservations par catégorie pour l'année {{selectedYear2}}.
+                </div>
+                <div class="ml-2">
+                    <div class="flex items-center space-x-2 p-1 rounded-full px-2">
+                        <button
+                            mat-icon-button
+                            class="icon-size-8"
+                            (click)="navigateYear2(-1)"
+                        >
+                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:chevron-left'"></mat-icon>
+                        </button>
+
+                        <div class="px-4 min-w-20 text-center font-bold text-lg tracking-tight text-black">
+                            {{ selectedYear2 }}
+                        </div>
+
+                        <button
+                            mat-icon-button
+                            class="icon-size-8"
+                            [disabled]="selectedYear2 >= currentYear"
+                            (click)="navigateYear2(1)"
+                            [ngClass]="{'opacity-30': selectedYear2 >= currentYear}"
+                        >
+                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:chevron-right'"></mat-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="mx-6 mt-6 flex items-start">
+                <div class="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-12">
+                    <div class="flex flex-col">
+                        <div class="flex items-center">
+                            <div class="text-secondary font-medium leading-5">
+                                Individuel
+                            </div>
+                            <mat-icon
+                                class="text-hint ml-1.5 icon-size-4"
+                                [svgIcon]="'heroicons_mini:information-circle'"
+                                [matTooltip]="'Part des réservations individuelles par rapport au volume total annuel.'"
+                            ></mat-icon>
+                        </div>
+                        <div class="mt-2 flex items-start">
+                            <div class="text-4xl font-bold leading-none tracking-tight">
+                                {{ percentages.single | number:'1.2-2' }}%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <div class="flex items-center">
+                            <div class="text-secondary font-medium leading-5">
+                                Famille
+                            </div>
+                            <mat-icon
+                                class="text-hint ml-1.5 icon-size-4"
+                                [svgIcon]="'heroicons_mini:information-circle'"
+                                [matTooltip]="'Part des réservations de type familial par rapport au volume total annuel.'"
+                            ></mat-icon>
+                        </div>
+                        <div class="mt-2 flex items-start">
+                            <div class="text-4xl font-bold leading-none tracking-tight">
+                                {{ percentages.family | number:'1.2-2' }}%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <div class="flex items-center">
+                            <div class="text-secondary font-medium leading-5">
+                                Délégation
+                            </div>
+                            <mat-icon
+                                class="text-hint ml-1.5 icon-size-4"
+                                [svgIcon]="'heroicons_mini:information-circle'"
+                                [matTooltip]="'Part des réservations de groupes et délégations officielles par rapport au volume total annuel.'"
+                            ></mat-icon>
+                        </div>
+                        <div class="mt-2 flex items-start">
+                            <div class="text-4xl font-bold leading-none tracking-tight">
+                                {{ percentages.delegation | number:'1.2-2' }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 flex h-80 flex-auto flex-col">
+                @if (chartVisitorsVsPageViews) {
+                    <apx-chart
+                        class="h-full w-full flex-auto"
+                        [chart]="chartVisitorsVsPageViews.chart"
+                        [colors]="chartVisitorsVsPageViews.colors"
+                        [dataLabels]="chartVisitorsVsPageViews.dataLabels"
+                        [grid]="chartVisitorsVsPageViews.grid"
+                        [legend]="chartVisitorsVsPageViews.legend"
+                        [series]="chartVisitorsVsPageViews.series"
+                        [stroke]="chartVisitorsVsPageViews.stroke"
+                        [tooltip]="chartVisitorsVsPageViews.tooltip"
+                        [xaxis]="chartVisitorsVsPageViews.xaxis"
+                        [yaxis]="chartVisitorsVsPageViews.yaxis"
+                    ></apx-chart>
+                } @else {
+                    <div class="flex items-center justify-center h-full">
+                        <mat-progress-spinner mode="indeterminate" [diameter]="40"></mat-progress-spinner>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>

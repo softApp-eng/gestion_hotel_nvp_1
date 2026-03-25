@@ -2,6 +2,8 @@ package med.goeasy.cmohotel.persistence.repository;
 
 import med.goeasy.cmohotel.persistence.entity.Person;
 import med.goeasy.cmohotel.persistence.entity.Reservation;
+import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
+import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 import med.goeasy.cmohotel.presentation.dto.Range;
 import med.goeasy.cmohotel.presentation.dto.reservation.ReservedRoomResponseDto;
 import org.springframework.data.domain.Page;
@@ -141,5 +143,23 @@ public interface ReservationRepository extends JpaRepository<Reservation, String
                                @Param("start") LocalDateTime start,
                                @Param("end") LocalDateTime end,
                                @Param("rcode") Long code);
+
+
+    @Query("""
+        SELECT COUNT(r) FROM Reservation r join r.details rd
+            WHERE (:status IS NULL OR rd.status IN :status)
+    """)
+    long countResidents(@Param("status") List<EReservationStatus> status);
+
+    @Query("""
+    SELECT t.type, COUNT(DISTINCT rm.id)
+    FROM Reservation r 
+    JOIN r.room rm 
+    JOIN rm.roomType t
+    JOIN r.details rd
+    WHERE rd.status = 'CONFIRMED'
+    GROUP BY t.type
+""")
+    List<Object[]> countOccupiedRoomsByType();
 
 }

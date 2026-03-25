@@ -1,6 +1,7 @@
 package med.goeasy.cmohotel.persistence.repository;
 
 import med.goeasy.cmohotel.persistence.entity.ReservationDetails;
+import med.goeasy.cmohotel.persistence.entity.enums.EInvoiceStatus;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 import org.springframework.data.domain.Page;
@@ -72,6 +73,35 @@ public interface ReservationDetailsRepository extends JpaRepository<ReservationD
     //AND CURRENT_DATE >= CAST(COALESCE(rd.checkin, rd.plannedStart) AS date)
     //AND CURRENT_DATE <= CAST(COALESCE(rd.checkout, rd.plannedEnd) AS date)
     List<ReservationDetails> getSejours();
+
+    @Query("""
+    SELECT MONTH(rd.checkin) as month, count (rd.code) as total
+    FROM ReservationDetails rd
+    WHERE rd.status in ('CLOSED','CONFIRMED')
+        AND YEAR(rd.checkin) = :year
+        AND (:categories IS NULL OR rd.category IN :categories)
+    GROUP BY MONTH(rd.checkin)
+    ORDER BY MONTH(rd.checkin) ASC
+""")
+    List<Object[]> getRawMonthlyReservationsCounts(
+            @Param("year") int year,
+            @Param("categories") List<EReservationCategory> categories
+    );
+
+    @Query("SELECT count (rd.code) FROM ReservationDetails rd WHERE rd.status in :status")
+    long countReservationsByStatus(@Param("status") List<EReservationStatus> status);
+
+    @Query("SELECT count (rd.code) FROM ReservationDetails rd WHERE rd.status in ('CLOSED','CONFIRMED') and rd.category in :categories")
+    long countReservationsByCategories(@Param("categories") List<EReservationCategory> categories);
+
+    @Query("SELECT count (rd.code) FROM ReservationDetails rd WHERE rd.status in ('CLOSED','CONFIRMED') and rd.priseEnCharge is true ")
+    long countReservationsPriseEnCharge();
+
+    @Query("""
+        SELECT COUNT(rd) FROM ReservationDetails rd
+            WHERE rd.status IN :status
+    """)
+    long countTotalReservations(@Param("status") List<EReservationStatus> status);
 
 
 }

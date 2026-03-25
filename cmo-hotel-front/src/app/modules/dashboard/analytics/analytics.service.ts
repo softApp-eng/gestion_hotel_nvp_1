@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
-export class FinanceService {
+export class AnalyticsService {
     private _data: BehaviorSubject<any> = new BehaviorSubject(null);
 
     /**
@@ -30,7 +30,7 @@ export class FinanceService {
      * Get data
      */
     getData(): Observable<any> {
-        return this._httpClient.get('api/dashboards/finance').pipe(
+        return this._httpClient.get('api/dashboards/analytics').pipe(
             tap((response: any) => {
                 this._data.next(response);
             })

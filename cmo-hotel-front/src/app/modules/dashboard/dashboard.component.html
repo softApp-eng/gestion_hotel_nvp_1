@@ -48,21 +48,46 @@
                 </div>
                 <div class="mt-2 flex flex-col items-center">
                     <div class="text-7xl font-bold leading-none tracking-tight text-blue-500 sm:text-8xl">
-                        21
+                        {{ counts?.activeReservations || 0 }}
                     </div>
                     <div class="text-lg font-medium text-blue-600 dark:text-blue-500">
-                        Total
+                        Confirmées
                     </div>
                     <div class="text-secondary mt-5 flex w-full items-baseline justify-center">
                         <div class="truncate text-md font-medium">
-                            Clients:
+                            Total:
                         </div>
                         <div class="ml-1.5 text-lg font-semibold">
-                            13
+                            {{ counts?.totalReservations || 0 }}
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
+                <div class="flex items-start justify-between">
+                    <div class="truncate text-lg font-medium leading-6 tracking-tight">
+                        Résidents
+                    </div>
+                </div>
+                <div class="mt-2 flex flex-col items-center">
+                    <div class="text-7xl font-bold leading-none tracking-tight text-amber-500 sm:text-8xl">
+                        {{ counts?.residents || 0 }}
+                    </div>
+                    <div class="text-lg font-medium text-amber-600 dark:text-amber-500">
+                        En cours
+                    </div>
+                    <div class="text-secondary mt-5 flex w-full items-baseline justify-center">
+                        <div class="truncate text-md font-medium">
+                            Total:
+                        </div>
+                        <div class="ml-1.5 text-lg font-semibold">
+                            {{ counts?.totalResidents || 0 }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Overdue -->
             <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
                 <div class="flex items-start justify-between">
@@ -71,71 +96,117 @@
                     </div>
                 </div>
                 <div class="mt-2 flex flex-col items-center">
-                    <div class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl">
-                        17
+                    <div class="text-7xl font-bold leading-none tracking-tight text-green-500 sm:text-8xl">
+
+                        {{ counts?.pendingReservations || 0 }}
                     </div>
-                    <div class="text-lg font-medium text-red-600 dark:text-red-500">
-                        Séjours
-                    </div>
-                    <div class="text-secondary mt-5 flex w-full items-baseline justify-center">
-                        <div class="truncate text-md font-medium">
-                            Clients:
-                        </div>
-                        <div class="ml-1.5 text-lg font-semibold">
-                            9
-                        </div>
+                    <div class="text-lg font-medium text-green-600 dark:text-green-500">
+
+                        En attentes
                     </div>
                 </div>
             </div>
             <!-- Issues -->
-            <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
-                <div class="flex items-start justify-between">
-                    <div class="truncate text-lg font-medium leading-6 tracking-tight">
-                        Réservations
-                    </div>
-                </div>
-                <div class="mt-2 flex flex-col items-center">
-                    <div class="text-7xl font-bold leading-none tracking-tight text-amber-500 sm:text-8xl">
-                        24
-                    </div>
-                    <div class="text-lg font-medium text-amber-600 dark:text-amber-500">
-                        En attentes
-                    </div>
-                    <div class="text-secondary mt-5 flex w-full items-baseline justify-center">
-                        <div class="truncate text-md font-medium">
-                            Clients:
-                        </div>
-                        <div class="ml-1.5 text-lg font-semibold">
-                            19
-                        </div>
-                    </div>
-                </div>
-            </div>
+
             <!-- Features -->
             <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
                 <div class="flex items-start justify-between">
                     <div class="truncate text-lg font-medium leading-6 tracking-tight">
-                        Réservations
+                        Réservations Annulées
                     </div>
                 </div>
                 <div class="mt-2 flex flex-col items-center">
-                    <div class="text-7xl font-bold leading-none tracking-tight text-green-500 sm:text-8xl">
-                        2
+                    <div class="text-7xl font-bold leading-none tracking-tight text-red-500 sm:text-8xl">
+                        {{ counts?.totalCanceledReservations || 0 }}
                     </div>
-                    <div class="text-lg font-medium text-green-600 dark:text-green-500">
-                        Annulées
+                    <div class="text-lg font-medium text-red-600 dark:text-red-500">
+                        Total
                     </div>
-                    <div class="text-secondary mt-5 flex w-full items-baseline justify-center">
-                        <div class="truncate text-md font-medium">
-                            Clients:
-                        </div>
-                        <div class="ml-1.5 text-lg font-semibold">
-                            16
-                        </div>
-                    </div>
+
                 </div>
+            </div>
+
+
+        <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2 md:col-span-4 lg:col-span-2">
+            <div class="flex flex-col items-start justify-between sm:flex-row">
+                <div class="truncate text-lg font-medium leading-6 tracking-tight">
+                    Status des types de chambre
+                </div>
+            </div>
+            <div class="mt-6 flex flex-auto flex-col">
+                @if (chartBudgetDistribution) {
+                    <apx-chart
+                        class="h-80 w-full flex-auto"
+                        [chart]="chartBudgetDistribution.chart"
+                        [colors]="chartBudgetDistribution.colors"
+                        [dataLabels]="chartBudgetDistribution.dataLabels"
+                        [series]="chartBudgetDistribution.series"
+                        [fill]="chartBudgetDistribution.fill"
+                        [stroke]="chartBudgetDistribution.stroke"
+                        [xaxis]="chartBudgetDistribution.xaxis"
+                        [yaxis]="chartBudgetDistribution.yaxis"
+                        [tooltip]="chartBudgetDistribution.tooltip"
+                    ></apx-chart>
+                } @else {
+                    <div class="flex items-center justify-center h-full">
+                        <mat-progress-spinner mode="indeterminate" [diameter]="40"></mat-progress-spinner>
+                    </div>
+                }
+
             </div>
         </div>
 
+
+        <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-2 md:col-span-4 lg:col-span-2">
+            <div class="flex flex-col items-start justify-between sm:flex-row">
+                <div class="truncate text-lg font-medium leading-6 tracking-tight">
+                    Occupation par Type de Chambre
+                </div>
+            </div>
+            <div class="mt-2 flex flex-col divide-y">
+                @for (r of roomsOccupation;track r) {
+                    <div class="flex flex-row items-center justify-between px-0.5 py-4">
+                        <div class="flex flex-col">
+                            <div class="font-medium">
+                                {{ r.roomType }}
+                            </div>
+                            <div class="-ml-0.5 mt-2 flex flex-col space-y-1 sm:mt-1 sm:flex-row sm:items-center sm:space-x-3 sm:space-y-0">
+                                <div class="flex items-center">
+                                    <mat-icon
+                                        class="text-hint icon-size-5"
+                                        [svgIcon]="'heroicons_solid:users'"
+                                    ></mat-icon>
+                                    <div class="text-secondary ml-1.5 text-md">
+                                        {{ r.roomOccupied }} occupées
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center">
+                                    <mat-icon
+                                        class="text-hint icon-size-5"
+                                        [svgIcon]="'heroicons_solid:building-office'"
+                                    ></mat-icon>
+                                    <div class="text-secondary ml-1.5 text-md">
+                                        sur {{ r.roomTotal }}
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <div
+                                class="px-2 py-1 rounded-full text-xs font-bold"
+                                [ngClass]="{
+                            'bg-red-100 text-red-700': (r.roomOccupied / +r.roomTotal) > 0.9,
+                            'bg-green-100 text-green-700': (r.roomOccupied / +r.roomTotal) <= 0.9
+                        }">
+                                {{ (r.roomOccupied / +r.roomTotal) | percent:'1.0-1' }}
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        </div>
     </div>
 </div>

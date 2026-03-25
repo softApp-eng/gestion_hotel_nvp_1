@@ -2,6 +2,7 @@ package med.goeasy.cmohotel.presentation.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import med.goeasy.cmohotel.presentation.dto.statistic.RoomTypeOccupation;
 import med.goeasy.cmohotel.service.StatisticsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -19,6 +20,9 @@ public class StatisticsController {
 
     private final StatisticsService statisticsService;
 
+    /// /////////////////////////////////////////////////////////////////////////////
+    ///                          INVOICES STATISTICS                              ///
+    /// /////////////////////////////////////////////////////////////////////////////
 
     @GetMapping("/finance/counts")
     ResponseEntity<Map<String, Long>> getFinancialStatistics(
@@ -44,4 +48,50 @@ public class StatisticsController {
     ){
         return ResponseEntity.ok(statisticsService.getRoomTypeRevenue());
     }
+
+    /// /////////////////////////////////////////////////////////////////////////////
+    ///                        RESERVATIONS STATISTICS                            ///
+    /// /////////////////////////////////////////////////////////////////////////////
+
+    @GetMapping("/reservation/monthly/counts")
+    ResponseEntity<Map<Integer, Long>> getMonthlyReservations(
+            @RequestParam(required = false) Integer year
+    ){
+        if (year == null){
+            year = LocalDate.now().getYear();
+        }
+        return ResponseEntity.ok(statisticsService.getMonthlyReservations(year));
+    }
+
+    @GetMapping("/reservation/category/monthly/counts")
+    ResponseEntity<Map<String, Map<Integer, Long>>> getMonthlyReservationsByCategories(
+            @RequestParam(required = false) Integer year
+    ){
+        if (year == null){
+            year = LocalDate.now().getYear();
+        }
+        return ResponseEntity.ok(statisticsService.getMonthlyReservationsByCategories(year));
+    }
+
+    @GetMapping("/reservations/counts")
+    ResponseEntity<Map<String, Long>> getReservationsStatistics(
+            Authentication authentication
+    ){
+        return ResponseEntity.ok(statisticsService.getReservationsStatistics(authentication));
+    }
+
+    @GetMapping("/reservations/current/counts")
+    ResponseEntity<Map<String, Long>> getReservationsCurrentState(
+            Authentication authentication
+    ){
+        return ResponseEntity.ok(statisticsService.getReservationsCurrentState(authentication));
+    }
+
+    @GetMapping("/reservations/rooms/occupation")
+    ResponseEntity<List<RoomTypeOccupation>> getRoomTypeOccupationStatistics(
+            Authentication authentication
+    ){
+        return ResponseEntity.ok(statisticsService.getRoomTypeOccupationStatistics(authentication));
+    }
+
 }

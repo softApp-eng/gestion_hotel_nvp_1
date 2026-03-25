@@ -38,4 +38,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @Transactional
     @Query("update Room r set r.clean = false")
     void makeAllRoomsDirty();
+
+    @Query("SELECT r.roomType.type, COUNT(r) FROM Room r WHERE r.archived = false GROUP BY r.roomType.type")
+    List<Object[]> countTotalRoomsByType();
 }
