@@ -35,6 +35,7 @@ import { Toastr } from '../../../core/service/toastr.service';
 import { AcceptReservationModel } from './dialog-accept-reservation/accept.reservation.model';
 import { ReservationDetailsModel } from '../dialog-reservation-details/reservation.details.model';
 import { CloseReservationModel } from './dialog-close-reservation/close.reservation.model';
+import { SwitchRoomModel } from './dialog-switch-room/switch.room.model';
 
 @Component({
     selector: 'reservation-list',
@@ -58,7 +59,6 @@ import { CloseReservationModel } from './dialog-close-reservation/close.reservat
         MatDatepickerModule,
         RouterLink,
         DatePipe,
-        ExtractGuestDataPipe,
         SlicePipe,
         MatOption,
         MatSelect,
@@ -410,6 +410,23 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         this._matDialog
             .open(CloseReservationModel, {
                 data: { code: code},
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((result) => {
+                if (result.reload) {
+                    this.search();
+                }
+            });
+    }
+
+    raiseSwitchRoom(row) {
+        console.log(row);
+        if (!row)
+            return;
+        this._matDialog
+            .open(SwitchRoomModel, {
+                data: { reservation: row},
                 disableClose: true,
             })
             .afterClosed()

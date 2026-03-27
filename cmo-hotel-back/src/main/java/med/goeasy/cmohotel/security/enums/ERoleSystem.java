@@ -51,7 +51,10 @@ public enum ERoleSystem {
                     // prestation
                     EPermissions.PRESTATION_FOR_RESIDENTS,
                     // invoice
-                    EPermissions.INVOICE_PAY
+                    EPermissions.INVOICE_PAY,
+
+                    // statistics & dashboards
+                    EPermissions.STATISTICS_DASHBOARDS
 
             )),
 
@@ -71,7 +74,10 @@ public enum ERoleSystem {
                     EPermissions.ROOM_LIST,
                     EPermissions.ROOM_SELECT_ONE,
                     EPermissions.ROOM_LIST_WITH_RESERVATION_DETAILS,
-                    EPermissions.INVOICE_LIST
+                    EPermissions.INVOICE_LIST,
+
+                    // statistics & dashboards
+                    EPermissions.STATISTICS_DASHBOARDS
             )),
 
     GOVERNANCE("governance",
@@ -86,7 +92,10 @@ public enum ERoleSystem {
                     EPermissions.HOUSE_KEEPING_ROOM_DISPONIBILITY,
                     EPermissions.HOUSE_KEEPING_ROOM_CLEAN_STATUS,
                     EPermissions.HOUSE_KEEPING_HISTORY_SEARCH,
-                    EPermissions.HOUSE_KEEPING_HISTORY_UPDATE
+                    EPermissions.HOUSE_KEEPING_HISTORY_UPDATE,
+
+                    // statistics & dashboards
+                    EPermissions.STATISTICS_DASHBOARDS
 
             )),
 
@@ -101,7 +110,10 @@ public enum ERoleSystem {
                     EPermissions.PRESTATION_FOR_RESIDENTS,
                     EPermissions.PRESTATION_DELETE,
                     EPermissions.PRESTATION_UPDATE,
-                    EPermissions.RESERVATION_RESIDENTS
+                    EPermissions.RESERVATION_RESIDENTS,
+
+                    // statistics & dashboards
+                    EPermissions.STATISTICS_DASHBOARDS
             )),
 
     CHEF_CMO("chef_cmo",

@@ -23,6 +23,7 @@ public enum EAuditActionTarget{
     JOB_SYSTEM("JOB_SYSTEM","Tâches de système"),
     CONFIGURATION("CONFIGURATION","Configuration"),
     MEAL("MEAL","Repas"),
+    INVOICE("INVOICE","Facture"),
     ;
 
     private final String code;

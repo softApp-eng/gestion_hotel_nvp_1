@@ -58,3 +58,13 @@
 }
 
 
+/* Rend tous les événements cliquables visuellement */
+.fc-event {
+    cursor: pointer !important;
+}
+
+/* Optionnel : effet de surbrillance au survol */
+.fc-event:hover {
+    filter: brightness(0.9);
+    transition: filter 0.2s ease;
+}

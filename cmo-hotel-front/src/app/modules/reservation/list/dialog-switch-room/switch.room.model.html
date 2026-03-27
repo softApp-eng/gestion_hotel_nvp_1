@@ -1,0 +1,113 @@
+<div class="-m-6 flex flex-auto flex-col md:w-160 md:min-w-160 overflow-hidden">
+    <mat-toolbar class="mat-accent h-14 min-h-14 px-2 m-0 flex-none">
+        <div class="flex items-center w-full justify-between">
+            <div class="flex items-center">
+                <mat-icon class="icon-size-5 mr-3 text-white" [svgIcon]="'heroicons_solid:check-circle'"></mat-icon>
+                <span class="text-xl text-white">Clôture de Séjour (Check-out) : #{{code}}</span>
+            </div>
+            <button mat-icon-button (click)="matDialogRef.close()" class="text-white">
+                <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
+            </button>
+        </div>
+    </mat-toolbar>
+
+    <div class="m-6">
+        <mat-stepper [linear]="true" #stepper>
+
+            <mat-step  label="Sélectionner l'unité à déplacer">
+                <div class="rooms-grid">
+                    <mat-card *ngFor="let guest of reservation.guests"
+                              (click)="selectGuest(guest)"
+                              [class.selected]="selectedGuest?.id === guest.id"
+                              class="clickable-card">
+                        <mat-card-header>
+                            <div mat-card-avatar class="grade-avatar">{{guest.person.grade.code}}</div>
+                            <mat-card-title>{{guest.person.firstName}} {{guest.person.lastName}}</mat-card-title>
+                            <mat-card-subtitle>Chambre actuelle : {{guest.room.name}} ({{guest.room.pavillon.name}})</mat-card-subtitle>
+                        </mat-card-header>
+                        <mat-card-content>
+                            <p><strong>Rôle :</strong> {{guest.role.name}}</p>
+                        </mat-card-content>
+                    </mat-card>
+                </div>
+                <div class="actions">
+                    <button mat-button matStepperNext [disabled]="!selectedGuest">Suivant</button>
+                </div>
+            </mat-step>
+
+            <mat-step label="Nouvelle affectation">
+                <div class="step-container">
+                    <h3>Historique des mouvements - {{selectedGuest?.person.lastName}}</h3>
+
+                    <div class="timeline">
+                        <div class="timeline-item current">
+                            <mat-icon>location_on</mat-icon>
+                            <span>Actuellement en <b>{{selectedGuest?.room.name}}</b> depuis le {{reservation.checkin | date:'dd/MM HH:mm'}}</span>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="selection-area">
+                        <button mat-raised-button color="primary" (click)="openRoomPicker()">
+                            <mat-icon>swap_horiz</mat-icon> Choisir la nouvelle chambre
+                        </button>
+
+                        <div *ngIf="newRoom" class="new-room-info">
+                            <mat-chip-listbox>
+                                <mat-chip color="accent" selected>Nouvelle chambre : {{newRoom.name}} ({{newRoom.pavillon.name}})</mat-chip>
+                            </mat-chip-listbox>
+                        </div>
+
+                        <mat-form-field appearance="outline" class="full-width mt-2">
+                            <mat-label>Motif du changement</mat-label>
+                            <textarea matInput [(ngModel)]="changeReason" placeholder="Ex: Problème technique, surclassement..."></textarea>
+                        </mat-form-field>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button mat-button matStepperPrevious>Retour</button>
+                    <button mat-raised-button color="warn" [disabled]="!newRoom" (click)="confirmChange()">Confirmer le transfert</button>
+                </div>
+            </mat-step>
+        </mat-stepper>
+        <!--<form [formGroup]="form" class="flex flex-col">
+
+            <div class="flex flex-row items-center gap-2 w-full">
+                <mat-form-field class="flex-auto text-2xl" [appearance]="'outline'" [subscriptSizing]="'dynamic'">
+                    <mat-label>Date de départ</mat-label>
+                    <input matInput [matDatepicker]="dp3" formControlName="date">
+                    <mat-datepicker-toggle matIconSuffix [for]="dp3"></mat-datepicker-toggle>
+                    <mat-datepicker #dp3></mat-datepicker>
+                    <mat-error *ngIf="form.get('date').hasError('required')">Date requise</mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="w-44 text-2xl" [appearance]="'outline'" [subscriptSizing]="'dynamic'">
+                    <mat-label>Heure de départ</mat-label>
+                    <input matInput type="time" formControlName="time" #timeStartInput>
+                    <mat-icon matSuffix
+                              class="cursor-pointer icon-size-5"
+                              (click)="timeStartInput.showPicker()"
+                              [svgIcon]="'heroicons_outline:clock'"></mat-icon>
+                    <mat-error *ngIf="form.get('time').hasError('required')">Heure requise</mat-error>
+                </mat-form-field>
+            </div>
+
+            <mat-form-field class="w-full" appearance="outline">
+                <mat-label>Raison</mat-label>
+                <textarea matInput formControlName="reason" rows="3" placeholder="reason de changement..."></textarea>
+            </mat-form-field>
+
+            <div class="flex items-start justify-between mx-3 mt-8">
+                <button type="button" mat-stroked-button (click)="matDialogRef.close()">
+                    Annuler
+                </button>
+                <button type="submit" mat-flat-button [color]="'primary'"
+                        [disabled]="form.invalid" (click)="save()">
+                    Finaliser le Check-out
+                </button>
+            </div>
+        </form>-->
+    </div>
+</div>

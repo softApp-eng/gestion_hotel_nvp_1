@@ -15,6 +15,7 @@ import { ToastrService } from 'ngx-toastr';
 import { ApiPavillonService } from '../../pavillon/api.pavillon.service';
 import { ApiRoomService } from '../../pavillon/api.room.service';
 import { NgClass } from '@angular/common';
+import { MatStepperModule } from '@angular/material/stepper';
 
 interface RoomStatus {
     isDisabled: boolean;
@@ -42,6 +43,7 @@ interface RoomStatus {
         MatSelectModule,
         FormsModule,
         NgClass,
+        MatStepperModule,
     ],
 })
 export class AssignRoomsModel implements OnInit {

@@ -41,6 +41,7 @@ public class StatisticsService {
         long hosting = invoiceRepository.countHostingPrice(List.of(EInvoiceStatus.PAID));
         long hostingNotPaid = invoiceRepository.countHostingPrice(List.of(EInvoiceStatus.IN_PROGRESS,EInvoiceStatus.UNPAID));
         long prestationNotPaid = invoiceRepository.countPrestationPrice(List.of(EInvoiceStatus.IN_PROGRESS,EInvoiceStatus.UNPAID));
+        log.info("{} loads financial statistics", authentication.getName());
         return Map.of(
                 "hosting",hosting,
                 "prestation",prestation,
@@ -50,7 +51,8 @@ public class StatisticsService {
         );
     }
 
-    public Map<Integer, Double> getMonthlyRevenueMap(int year, List<String> paymentModes, List<String> categories) {
+    public Map<Integer, Double> getMonthlyRevenueMap(Authentication authentication, int year, List<String> paymentModes, List<String> categories) {
+        log.info("{} loads monthly financial statistics", authentication.getName());
         return invoiceRepository.getRawMonthlyRevenue(
                 year,
                         (paymentModes == null || paymentModes.isEmpty()) ? null:paymentModes,
@@ -62,7 +64,8 @@ public class StatisticsService {
                 ));
     }
 
-    public Map<String, Double> getRoomTypeRevenue() {
+    public Map<String, Double> getRoomTypeRevenue(Authentication authentication) {
+        log.info("{} loads room type financial statistics", authentication.getName());
         return invoiceRepository.getRoomTypeRevenue().stream()
                 .collect(Collectors.toMap(
                         row -> (String) row[0], // Le mois
@@ -75,7 +78,8 @@ public class StatisticsService {
     ///                        RESERVATIONS STATISTICS                            ///
     /// /////////////////////////////////////////////////////////////////////////////
 
-    public Map<Integer, Long> getMonthlyReservations(int year) {
+    public Map<Integer, Long> getMonthlyReservations(Authentication authentication, int year) {
+        log.info("{} loads monthly reservations statistics", authentication.getName());
         return reservationDetailsRepository.getRawMonthlyReservationsCounts(year,null).stream()
                 .collect(Collectors.toMap(
                         row -> (Integer) row[0], // Le mois
@@ -83,7 +87,7 @@ public class StatisticsService {
                 ));
     }
 
-    public Map<String,Map<Integer, Long>> getMonthlyReservationsByCategories(int year) {
+    public Map<String,Map<Integer, Long>> getMonthlyReservationsByCategories(Authentication authentication, int year) {
 
         Map<Integer, Long> family = reservationDetailsRepository.getRawMonthlyReservationsCounts(year, List.of(EReservationCategory.FAMILY)).stream()
                 .collect(Collectors.toMap(
@@ -100,6 +104,7 @@ public class StatisticsService {
                         row -> (Integer) row[0], // Le mois
                         row -> (Long) row[1]   // Le count
                 ));
+        log.info("{} loads monthly reservations statistics by categories", authentication.getName());
         return Map.of(
                 "family",family,
                 "single",single,
@@ -108,6 +113,8 @@ public class StatisticsService {
     }
 
     public Map<String,Long> getReservationsStatistics(Authentication authentication) {
+
+        log.info("{} loads reservations statistics", authentication.getName());
         return Map.of(
                 "canceledReservations",reservationDetailsRepository.countReservationsByStatus(List.of(EReservationStatus.CANCELED)),
                 "confirmedReservations",reservationDetailsRepository.countReservationsByStatus(List.of(EReservationStatus.CONFIRMED,EReservationStatus.CLOSED)),
@@ -120,6 +127,7 @@ public class StatisticsService {
     }
 
     public Map<String,Long> getReservationsCurrentState(Authentication authentication) {
+        log.info("{} loads reservations current statistics", authentication.getName());
         return Map.of(
                 // today
                 "pendingReservations",reservationDetailsRepository.countTotalReservations(List.of(EReservationStatus.PENDING)),
@@ -134,6 +142,7 @@ public class StatisticsService {
     }
 
     public List<RoomTypeOccupation> getRoomTypeOccupationStatistics(Authentication authentication) {
+
         // 1. Récupérer le total des chambres par type
         List<Object[]> totalResults = roomRepository.countTotalRoomsByType();
         Map<String, Long> totalMap = totalResults.stream()
@@ -150,8 +159,7 @@ public class StatisticsService {
                         res -> (Long) res[1]
                 ));
 
-        // 3. Fusionner les données dans le Record
-        // On boucle sur totalMap pour être sûr d'inclure les types de chambres vides (0 occupées)
+        log.info("{} loads room type occupation statistics", authentication.getName());
         return totalMap.entrySet().stream()
                 .map(entry -> {
                     String type = entry.getKey();

@@ -21,6 +21,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { fuseAnimations } from '../../../../@fuse/animations';
 import { APP_MODULES } from '../../../core/data/app-modules';
+import {MatTooltip} from "@angular/material/tooltip";
 
 @Component({
     selector: 'users-add',
@@ -36,7 +37,8 @@ import { APP_MODULES } from '../../../core/data/app-modules';
         RouterLink,
         FuseAlertComponent,
         MatCheckboxModule,
-        MatExpansionModule
+        MatExpansionModule,
+        MatTooltip,
     ],
 })
 export class RoleCreateComponent implements OnInit {
@@ -60,18 +62,15 @@ export class RoleCreateComponent implements OnInit {
         private _apiRolesService: ApiRolesService,
         private _router: Router,
         private _toastr: Toastr,
-        private _activeRoute: ActivatedRoute,
-    ) {
-    }
+        private _activeRoute: ActivatedRoute
+    ) {}
 
     ngOnInit(): void {
         this.loadPermissions();
-        this.form = this._formBuilder.group(
-            {
-                title: ['', [Validators.required]],
-                description: ['']
-            }
-        );
+        this.form = this._formBuilder.group({
+            title: ['', [Validators.required]],
+            description: [''],
+        });
         // initialize form if edit mode
         if (this._router.url.includes('edit')) {
             this.initializeForm();
@@ -80,16 +79,27 @@ export class RoleCreateComponent implements OnInit {
 
     loadPermissions() {
         this._apiRolesService.getPermissions().subscribe({
-            next: data => {
+            next: (data) => {
                 this.permissions = data;
-                const grouped = this.permissions.reduce((acc, curr) => {
-                    const moduleName = curr.module;
-                    if (!acc[moduleName]) {
-                        acc[moduleName] = { name: moduleName, expandedName: curr.moduleExpandedName, completed: false, subtasks: [] };
-                    }
-                    acc[moduleName].subtasks.push({ ...curr, completed: false });
-                    return acc;
-                }, {} as Record<string, any>);
+                const grouped = this.permissions.reduce(
+                    (acc, curr) => {
+                        const moduleName = curr.module;
+                        if (!acc[moduleName]) {
+                            acc[moduleName] = {
+                                name: moduleName,
+                                expandedName: curr.moduleExpandedName,
+                                completed: false,
+                                subtasks: [],
+                            };
+                        }
+                        acc[moduleName].subtasks.push({
+                            ...curr,
+                            completed: false,
+                        });
+                        return acc;
+                    },
+                    {} as Record<string, any>
+                );
 
                 this.modules.set(Object.values(grouped));
 
@@ -97,28 +107,32 @@ export class RoleCreateComponent implements OnInit {
                 if (this._tempAssignedIds.length > 0) {
                     this.applyAssignedPermissions(this._tempAssignedIds);
                 }
-            }
+            },
         });
     }
 
     isIndeterminate(module): boolean {
-        const anyChecked = module.subtasks.some(s => s.completed);
-        const allChecked = module.subtasks.every(s => s.completed);
+        const anyChecked = module.subtasks.some((s) => s.completed);
+        const allChecked = module.subtasks.every((s) => s.completed);
         return anyChecked && !allChecked;
     }
 
-    update(moduleIndex: number, completed: boolean, subtaskIndex?: number): void {
-        this.modules.update(modules => {
+    update(
+        moduleIndex: number,
+        completed: boolean,
+        subtaskIndex?: number
+    ): void {
+        this.modules.update((modules) => {
             const module = modules[moduleIndex];
 
             if (subtaskIndex === undefined) {
                 // Clicking the Parent: Toggle all children
                 module.completed = completed;
-                module.subtasks.forEach(t => t.completed = completed);
+                module.subtasks.forEach((t) => (t.completed = completed));
             } else {
                 // Clicking a Child: Update parent state based on all children
                 module.subtasks[subtaskIndex].completed = completed;
-                module.completed = module.subtasks.every(t => t.completed);
+                module.completed = module.subtasks.every((t) => t.completed);
             }
             return [...modules];
         });
@@ -126,9 +140,9 @@ export class RoleCreateComponent implements OnInit {
 
     getFinalSelection() {
         return this.modules()
-            .flatMap(m => m.subtasks)
-            .filter(s => s.completed)
-            .map(s => s.id);
+            .flatMap((m) => m.subtasks)
+            .filter((s) => s.completed)
+            .map((s) => s.id);
     }
 
     save() {
@@ -140,13 +154,16 @@ export class RoleCreateComponent implements OnInit {
         // Disable the form
         this.form.disable();
         this.isSaving = true;
-        const payload = {...this.form.value, permissions: this.getFinalSelection()};
+        const payload = {
+            ...this.form.value,
+            permissions: this.getFinalSelection(),
+        };
         // Hide the alert
         this.showAlert = false;
 
         if (this.roleId) {
             this._apiRolesService
-                .update(payload,this.roleId)
+                .update(payload, this.roleId)
                 .pipe(
                     finalize(() => {
                         // Show the alert
@@ -205,8 +222,6 @@ export class RoleCreateComponent implements OnInit {
                     },
                 });
         }
-
-
     }
 
     initializeForm() {
@@ -214,8 +229,11 @@ export class RoleCreateComponent implements OnInit {
         this.roleId = this._activeRoute.snapshot.params['roleId'];
         this._apiRolesService.one(this.roleId).subscribe({
             next: (data: any) => {
-                this.form.patchValue({ title: data?.title, description: data?.description });
-                const assignedIds = data.permissions.map(p => p.id);
+                this.form.patchValue({
+                    title: data?.title,
+                    description: data?.description,
+                });
+                const assignedIds = data.permissions.map((p) => p.id);
 
                 if (this.modules().length > 0) {
                     this.applyAssignedPermissions(assignedIds);
@@ -225,23 +243,23 @@ export class RoleCreateComponent implements OnInit {
                 this.form.enable();
             },
             error: (err) => {
-                this._toastr.error("error chargement du role");
+                this._toastr.error('error chargement du role');
             },
         });
     }
 
     applyAssignedPermissions(assignedIds: string[]): void {
-        this.modules.update(modules => {
-            modules.forEach(module => {
+        this.modules.update((modules) => {
+            modules.forEach((module) => {
                 // Check each subtask
-                module.subtasks.forEach(subtask => {
+                module.subtasks.forEach((subtask) => {
                     if (assignedIds.includes(subtask.id)) {
                         subtask.completed = true;
                     }
                 });
 
                 // Update parent "completed" state based on children
-                module.completed = module.subtasks.every(s => s.completed);
+                module.completed = module.subtasks.every((s) => s.completed);
             });
             return [...modules];
         });

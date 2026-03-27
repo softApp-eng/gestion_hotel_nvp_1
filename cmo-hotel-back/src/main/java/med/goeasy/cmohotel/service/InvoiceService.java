@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import med.goeasy.cmohotel.audit.ActivityLogService;
+import med.goeasy.cmohotel.audit.EAuditActionOperation;
+import med.goeasy.cmohotel.audit.EAuditActionTarget;
 import med.goeasy.cmohotel.exception.BadRequestException;
 import med.goeasy.cmohotel.exception.OperationNotPermittedException;
 import med.goeasy.cmohotel.persistence.entity.*;
@@ -110,6 +112,14 @@ public class InvoiceService {
             // 6. Mettre à jour les totaux de la facture
             updateInvoiceTotals(invoice);
         }
+
+        activityLogService.logActivity(
+                EAuditActionTarget.INVOICE,
+                EAuditActionOperation.MANAGEMENT,
+                String.format("Valider la nuitée de %s.", dto.nightDate()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
     private Person findReferencePersonForPricing(List<Reservation> reservations) {
@@ -217,7 +227,7 @@ public class InvoiceService {
         );
 
         List<InvoiceResponseDto> list = invoices.stream().map(InvoiceResponseDto::mapToDto).toList();
-        log.info("{} get invoices", authentication.getName());
+        log.info("{} load invoices", authentication.getName());
         return PageDto.of(
                 list,
                 invoices.getTotalElements(),
@@ -236,6 +246,18 @@ public class InvoiceService {
         invoice.setStatus(EInvoiceStatus.PAID);
         invoice.setDescription(dto.observation());
         invoiceRepository.save(invoice);
+
+        activityLogService.logActivity(
+                EAuditActionTarget.INVOICE,
+                EAuditActionOperation.MANAGEMENT,
+                String.format(
+                        "Paiement de la facture %s validé. Mode: %s.",
+                        invoice.getInvoiceNumber(),
+                        dto.paymentMode()
+                ),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
     }
 
 

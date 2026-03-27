@@ -166,6 +166,9 @@ public class WebSecurityConfig {
 						.requestMatchers(POST,"/v1/invoices/pay").hasAuthority(EPermissions.INVOICE_PAY.getAuthority())
 						.requestMatchers(GET,"/v1/invoices/search").hasAuthority(EPermissions.INVOICE_LIST.getAuthority())
 
+						// statistics & dashboards
+						.requestMatchers(GET,"/v1/statistics/**").hasAuthority(EPermissions.STATISTICS_DASHBOARDS.getAuthority())
+
 						//.anyRequest().authenticated()
 						.anyRequest().hasAuthority(EPermissions.DEFAULT.getAuthority())
 				)

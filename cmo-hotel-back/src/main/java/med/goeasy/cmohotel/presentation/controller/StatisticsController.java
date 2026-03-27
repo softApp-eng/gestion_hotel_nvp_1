@@ -33,6 +33,7 @@ public class StatisticsController {
 
     @GetMapping("/finance/monthly/revenue")
     ResponseEntity<Map<Integer, Double>> getMonthlyRevenueMap(
+            Authentication authentication,
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) List<String> paymentModes,
             @RequestParam(required = false) List<String> categories
@@ -40,13 +41,14 @@ public class StatisticsController {
         if (year == null){
             year = LocalDate.now().getYear();
         }
-        return ResponseEntity.ok(statisticsService.getMonthlyRevenueMap(year,paymentModes,categories));
+        return ResponseEntity.ok(statisticsService.getMonthlyRevenueMap(authentication, year,paymentModes,categories));
     }
 
     @GetMapping("/finance/room-types/revenue")
     ResponseEntity<Map<String, Double>> getRoomTypeRevenue(
+            Authentication authentication
     ){
-        return ResponseEntity.ok(statisticsService.getRoomTypeRevenue());
+        return ResponseEntity.ok(statisticsService.getRoomTypeRevenue(authentication));
     }
 
     /// /////////////////////////////////////////////////////////////////////////////
@@ -55,22 +57,24 @@ public class StatisticsController {
 
     @GetMapping("/reservation/monthly/counts")
     ResponseEntity<Map<Integer, Long>> getMonthlyReservations(
+            Authentication authentication,
             @RequestParam(required = false) Integer year
     ){
         if (year == null){
             year = LocalDate.now().getYear();
         }
-        return ResponseEntity.ok(statisticsService.getMonthlyReservations(year));
+        return ResponseEntity.ok(statisticsService.getMonthlyReservations(authentication, year));
     }
 
     @GetMapping("/reservation/category/monthly/counts")
     ResponseEntity<Map<String, Map<Integer, Long>>> getMonthlyReservationsByCategories(
+            Authentication authentication,
             @RequestParam(required = false) Integer year
     ){
         if (year == null){
             year = LocalDate.now().getYear();
         }
-        return ResponseEntity.ok(statisticsService.getMonthlyReservationsByCategories(year));
+        return ResponseEntity.ok(statisticsService.getMonthlyReservationsByCategories(authentication, year));
     }
 
     @GetMapping("/reservations/counts")

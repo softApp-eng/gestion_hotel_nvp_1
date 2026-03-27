@@ -137,7 +137,7 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
     filterReservationsLocally(): any[] {
         const calendarEvents = [];
         const filteredReservations = [...this.periodReservations];
-
+        console.log('filteredReservations',filteredReservations);
         filteredReservations.forEach(res => {
             const uniqueRoomsInRes = new Map();
             res.guests.forEach(g => {
@@ -155,12 +155,32 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
 
                 if (matchPavillon && matchRoom) {
                     // On compte combien de personnes de cette réservation sont dans CETTE chambre précisément
-                    const guestsInThisRoom = res.guests.filter(g => g.room.id === roomId).length;
+                    //const guestsInThisRoom = res.guests.filter(g => g.room.id === roomId).length;
+                    const guestsInThisRoom = res.guests.filter(g => g.room.id === roomId);
+
+                    // 2. Identifier le responsable (Priorité au PRINCIPAL, puis VICE)
+                    const principal = guestsInThisRoom.find(g => g.role.code === 'PRINCIPAL')
+                        || guestsInThisRoom.find(g => g.role.code === 'VICE');
+
+                    // 3. Construire le libellé du nom
+                    let guestDisplay = '';
+                    if (principal) {
+                        // Format : Grade + Nom (ex: LT Kabbaj)
+                        const grade = principal.person.grade ? principal.person.grade.code : '';
+                        guestDisplay = `${grade} ${principal.person.lastName} ${principal.person.firstName}`.trim();
+                    } else if (guestsInThisRoom.length > 0) {
+                        // Fallback si aucun rôle spécifique n'est trouvé
+                        guestDisplay = guestsInThisRoom[0].person.lastName;
+                    }
+
+                    // 4. Calculer le surplus (+X)
+                    const othersCount = guestsInThisRoom.length - 1;
+                    const suffix = othersCount > 0 ? ` +${othersCount}` : '';
 
                     calendarEvents.push({
                         id: `${res.code}`, // ID unique combiné
                         reservation: `${res}`,
-                        title: `${room.name} - ${room.roomType.type} (${guestsInThisRoom} pers.)`,
+                        title: `${room.roomType.type} (${room.name}) : ${guestDisplay}${suffix}`,
                         start: res.start,
                         end: res.end,
                         backgroundColor: this.getColorByStatus(res.status.code),
@@ -177,7 +197,6 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
     selectRoom(room: any): void {
         this.selectedRoom = room;
         let d = this.filterReservationsLocally()
-        console.log('final',d);
         if (this.fullCalendar) {
             this.fullCalendar.getApi().refetchEvents();
         }

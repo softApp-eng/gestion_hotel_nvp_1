@@ -13,6 +13,7 @@ public enum EPermissionsModule {
     ROLES("roles","Roles"),
     MANAGEMENT("managements","Management"),
     REPORTING("reporting","Generer des rapports"),
+    STATISTICS("statistics","Consulter des statistiques"),
     PERSON("persons","Gestion des personnes"),
     PAVILLON("pavillons","Gestion des pavillons"),
     ROOM("rooms","Gestion des chambres"),

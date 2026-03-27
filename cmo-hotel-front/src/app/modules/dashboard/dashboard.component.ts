@@ -79,97 +79,64 @@ export class DashboardComponent implements OnDestroy, OnInit {
     }
 
     private updateChartData(): void {
-        const labels = this.roomsOccupation.map((item) => item.roomType);
-        const occupiedData = this.roomsOccupation.map((item) => item.roomOccupied);
-        const totalData = this.roomsOccupation.map((item) => Number(item.roomTotal));
+        if (!this.roomsOccupation?.length) return;
 
-        console.log(
-            labels,
-            occupiedData,
-            totalData
-        );
-
-        // On définit le maximum absolu du radar sur la plus grande capacité existante
-        const maxCapacity = Math.max(...totalData);
+        const labels = this.roomsOccupation.map(item => item.roomType);
+        const occupied = this.roomsOccupation.map(item => item.roomOccupied);
+        const available = this.roomsOccupation.map(item => Number(item.roomTotal) - item.roomOccupied);
 
         this.chartBudgetDistribution = {
-            chart: {
-                fontFamily: 'inherit',
-                foreColor: 'inherit',
-                height: '100%',
-                type: 'radar',
-                toolbar: { show: false }
-            },
-            // Couleur 1 (Total) : Transparente ou très claire
-            // Couleur 2 (Occupied) : Indigo vif pour le radar principal
-            colors: ['#E2E8F0', '#6366F1'],
             series: [
-                {
-                    name: 'Capacité Totale',
-                    data: totalData
-                },
-                {
-                    name: 'Occupation Actuelle',
-                    data: occupiedData
-                }
+                { name: 'Occupées', data: occupied },
+                { name: 'Disponibles', data: available }
             ],
-            dataLabels: {
-                enabled: true,
-                formatter: (val: number, { seriesIndex, dataPointIndex, w }): string => {
-                    if (seriesIndex === 1) {
-                        const series0Data = w.config.series[0].data;
-                        const total = series0Data[dataPointIndex];
-
-                        // Vérification stricte du nombre et du diviseur > 0
-                        if (typeof val === 'number' && total > 0) {
-                            const pct = Math.round((val / total) * 100);
-                            return pct > 0 ? `${pct}%` : '';
-                        }
-                    }
-                    return '';
+            chart: {
+                type: 'bar',
+                height: 350,
+                stacked: true,
+                stackType: '100%',
+                toolbar: {
+                    show: false
                 },
-                style: { fontSize: '10px', fontWeight: '700' },
-                background: { enabled: true, borderRadius: 4, padding: 4, borderWidth: 0 }
+                zoom: {
+                    enabled: false
+                }
             },
             plotOptions: {
-                radar: {
-                    size: 140, // Augmentez cette valeur (essayez 140 ou 150)
-                    offsetY: 0,
-                    polygons: {
-                        strokeColors: 'var(--fuse-border)',
-                        fill: { colors: ['#F8FAFC', '#FFFFFF'] }
+                bar: {
+                    horizontal: true,
+                    barHeight: '60%',
+                    borderRadius: 4
+                }
+            },
+            xaxis: {
+                // Dans un bar horizontal, les catégories vont ici pour l'axe Y
+                categories: labels,
+                labels: {
+                    style: {
+                        colors: 'var(--fuse-text-secondary)',
+                        fontWeight: 500
                     }
                 }
             },
-            stroke: {
-                // Trait très fin pour le max (1px), trait marqué pour l'occupation (3px)
-                width: [1, 3],
-                curve: 'smooth'
-            },
-            fill: {
-                // On rend le fond (Total) presque invisible (0.1) et l'occupation bien visible (0.5)
-                opacity: [0.1, 0.5]
-            },
-            markers: {
-                size: [0, 4], // Pas de points sur le cercle total, points sur l'occupation
-                strokeWidth: 2
-            },
-            xaxis: {
-                categories: labels,
+            // Ajout d'une configuration yaxis pour s'assurer que les noms ne sont pas coupés
+            yaxis: {
                 labels: {
-                    show: true,
-                    style: { colors: 'var(--fuse-text-secondary)', fontSize: '11px', fontWeight: 500 }
+                    style: {
+                        colors: 'var(--fuse-text-secondary)',
+                        fontWeight: 500
+                    }
                 }
             },
-            yaxis: {
-                min: 0,
-                max: maxCapacity,
-                tickAmount: 5,
-                show: false
-            },
+            colors: ['#6366F1', '#E2E8F0'],
             tooltip: {
                 theme: 'dark',
-                y: { formatter: (val: number) => `${val} chambres` }
+                y: {
+                    formatter: (val) => `${val} chambres`
+                }
+            },
+            grid: {
+                show: false
             }
         };
     }

@@ -12,6 +12,8 @@ import med.goeasy.cmohotel.persistence.entity.enums.*;
 import med.goeasy.cmohotel.persistence.repository.*;
 import med.goeasy.cmohotel.security.enums.EPermissions;
 import med.goeasy.cmohotel.security.enums.ERoleSystem;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,6 +45,9 @@ public class Feeder {
     private final AppUserResourceRepository appUserResourceRepository;
     private final AppConfigurationRepository appConfigurationRepository;
     private final InvoiceRepository invoiceRepository;
+
+    @Value("${spring.profiles.active:default}")
+    private String activeProfile;
 
     private void initInitialConfiguration(){
         AppConfiguration appConfiguration = new AppConfiguration();
@@ -371,18 +376,36 @@ public class Feeder {
     @Transactional
     public void feed(){
         log.info("Feeder : start");
-        ResourceDatabasePopulator resourceDatabasePopulator =
-                new ResourceDatabasePopulator(
-                        false,
-                        false,
-                        "UTF-8",
-                        new ClassPathResource("data.sql")
-                );
-        resourceDatabasePopulator.execute(dataSource);
-        initInitialConfiguration();
-        log.info("--> data.sql file loaded");
-        roles();
-        seedMassiveReservations(100);
+        // PRODUCTION MODE
+        if ("prod".equals(activeProfile)) {
+            ResourceDatabasePopulator resourceDatabasePopulator =
+                    new ResourceDatabasePopulator(
+                            false,
+                            false,
+                            "UTF-8",
+                            new ClassPathResource("data-prod.sql")
+                    );
+            resourceDatabasePopulator.execute(dataSource);
+            initInitialConfiguration();
+            log.info("--> data-prod.sql file loaded");
+            roles();
+        }
+        // DEVELOPMENT MODE
+        else {
+            ResourceDatabasePopulator resourceDatabasePopulator =
+                    new ResourceDatabasePopulator(
+                            false,
+                            false,
+                            "UTF-8",
+                            new ClassPathResource("data.sql")
+                    );
+            resourceDatabasePopulator.execute(dataSource);
+            initInitialConfiguration();
+            log.info("--> data.sql file loaded");
+            roles();
+            seedMassiveReservations(100);
+            generateMockInvoices(800);
+        }
         log.info("Feeder : end");
     }
 }

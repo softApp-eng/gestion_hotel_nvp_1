@@ -33,7 +33,11 @@
 
                 <mat-form-field class="w-44 text-2xl" [appearance]="'outline'" [subscriptSizing]="'dynamic'">
                     <mat-label>Heure de départ</mat-label>
-                    <input matInput type="time" formControlName="time">
+                    <input matInput type="time" formControlName="time" #timeStartInput>
+                    <mat-icon matSuffix
+                              class="cursor-pointer icon-size-5"
+                              (click)="timeStartInput.showPicker()"
+                              [svgIcon]="'heroicons_outline:clock'"></mat-icon>
                     <mat-error *ngIf="form.get('time').hasError('required')">Heure requise</mat-error>
                 </mat-form-field>
             </div>

@@ -69,6 +69,14 @@ export class ApiReservationService {
         return this._httpClient.put(`${this.API_URL}/accept?code=${code}&checkin=${checkin}`, {});
     }
 
+    switchRoom(payload): Observable<any>{
+        return this._httpClient.post(`${this.API_URL}/switch-room`, payload);
+    }
+
+    removeRoomSwitch(reservationId,switchedRoomId): Observable<any>{
+        return this._httpClient.delete(`${this.API_URL}/switch-room?reservationId=${reservationId}&switchedRoomId=${switchedRoomId}`, {});
+    }
+
     closeReservation(code,checkout): Observable<any>{
         return this._httpClient.put(`${this.API_URL}/close?code=${code}&checkout=${checkout}`, {});
     }

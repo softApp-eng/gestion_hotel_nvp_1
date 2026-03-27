@@ -43,7 +43,11 @@
                                 <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript">
                                     <mat-label>Heure d'exécution</mat-label>
                                     <mat-icon matPrefix class="icon-size-5" [svgIcon]="'heroicons_outline:calendar-days'"></mat-icon>
-                                    <input matInput type="time" [(ngModel)]="scheduledTime">
+                                    <input matInput type="time" [(ngModel)]="scheduledTime" #timeStartInput>
+                                    <mat-icon matSuffix
+                                              class="cursor-pointer icon-size-5"
+                                              (click)="timeStartInput.showPicker()"
+                                              [svgIcon]="'heroicons_outline:clock'"></mat-icon>
                                 </mat-form-field>
 
                                 <div class="flex items-center space-x-4">

@@ -371,6 +371,10 @@
                                             <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:edit_calendar'"></mat-icon>
                                             <span>Cloturer</span>
                                         </button>
+                                        <button mat-menu-item (click)="raiseSwitchRoom(row)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_ROOM_CHANGE]">
+                                            <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:edit_calendar'"></mat-icon>
+                                            <span>switch room </span>
+                                        </button>
                                     }
 
                                     @if (row?.status?.code === 'PENDING') {

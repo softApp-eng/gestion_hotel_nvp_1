@@ -64,6 +64,7 @@ export const APP_PERMISSIONS = {
     RESERVATION_CANCEL:'reservations:reservation:cancel',
     RESERVATION_DELETE:'reservations:reservation:delete',
     RESERVATION_TIME_EXTEND:'reservations:reservation:time:extend',
+    RESERVATION_ROOM_CHANGE:'reservations:reservation:room:change',
 
     // HOUSE KEEPING
     HOUSE_KEEPING_AGENT_CREATE:'housekeepings:agent:create',
