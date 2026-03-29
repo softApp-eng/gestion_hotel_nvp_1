@@ -87,6 +87,8 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
     currentPage = 0;
     pageSizeOptions: number[] = [20, 50, 70, 100];
 
+    loadingFicheId: number | null = null;
+
     categories = [];
     paymentModes = [];
     status = [];
@@ -108,8 +110,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
         private _apiCommonService: ApiCommonService,
         private _matDialog: MatDialog,
         private _toast: Toastr,
-        private _utilsService: UtilsService,
-        private _fuseConfirmationService: FuseConfirmationService
+        private _utilsService: UtilsService
     ) {}
 
     // TODO si la facture non encore payée alors affiher les chambres et lec clients à partir de reservationDetails sinon en les recupere depuis reservationDetails
@@ -389,5 +390,44 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
 
     isOverdue(plannedEnd: any) {
         return false;
+    }
+
+    processInvoice(row: any, action: 'download' | 'print'): void {
+        if (!row?.num) return;
+
+        this.loadingFicheId = row.num;
+
+        this._apiInvoiceService
+            .generateInvoicePdf(row.num)
+            .subscribe({
+                next: (blob: Blob) => {
+                    const blobUrl = window.URL.createObjectURL(blob);
+
+                    if (action === 'download') {
+                        // CAS 1 : TELECHARGEMENT
+                        const link = document.createElement('a');
+                        link.href = blobUrl;
+                        link.download = `Facture_${row.invoiceNumber}.pdf`;
+                        link.click();
+                    } else {
+                        // CAS 2 : IMPRESSION (Ouverture dans un nouvel onglet)
+                        const printWindow = window.open(blobUrl, '_blank');
+                        // Note: Certains navigateurs bloquent les popups, s'assurer qu'ils sont autorisés
+                        if (printWindow) {
+                            printWindow.focus();
+                        }
+                    }
+
+                    // Nettoyage de la mémoire
+                    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+                    this.loadingFicheId = null;
+                },
+                error: (err) => {
+                    console.error('Erreur PDF:', err);
+                    this.loadingFicheId = null;
+                    this._toast.error("erreur de generation de la fiche de réservation")
+                    // Optionnel : Afficher un SnackBar d'erreur
+                },
+            });
     }
 }

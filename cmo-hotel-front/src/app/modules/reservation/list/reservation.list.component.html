@@ -398,7 +398,21 @@
                                             <span>Supprimer</span>
                                         </button>
                                     }
+                                    <button mat-menu-item [matMenuTriggerFor]="ficheMenu" [disabled]="loadingFicheId === row.code" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_FICHE_PDF]">
+                                        <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:document-text'"></mat-icon>
+                                        <span>Fiche Réservation</span>
+                                    </button>
+                                    <mat-menu #ficheMenu="matMenu" xPosition="before" class="rounded-xl shadow-lg border border-slate-100" >
+                                        <button mat-menu-item (click)="processFiche(row, 'download')" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_FICHE_PDF]">
+                                            <mat-icon class="text-blue-500 icon-size-5" [svgIcon]="'heroicons_outline:arrow-down-tray'"></mat-icon>
+                                            <span>Télécharger (PDF)</span>
+                                        </button>
 
+                                        <button mat-menu-item (click)="processFiche(row, 'print')" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_FICHE_PDF]">
+                                            <mat-icon class="text-slate-500 icon-size-5" [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                                            <span>Imprimer directement</span>
+                                        </button>
+                                    </mat-menu>
 
                                 </mat-menu>
                             </td>

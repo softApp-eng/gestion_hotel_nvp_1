@@ -36,6 +36,7 @@ import { AcceptReservationModel } from './dialog-accept-reservation/accept.reser
 import { ReservationDetailsModel } from '../dialog-reservation-details/reservation.details.model';
 import { CloseReservationModel } from './dialog-close-reservation/close.reservation.model';
 import { SwitchRoomModel } from './dialog-switch-room/switch.room.model';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
     selector: 'reservation-list',
@@ -64,6 +65,7 @@ import { SwitchRoomModel } from './dialog-switch-room/switch.room.model';
         MatSelect,
         MatSelectTrigger,
         DisableIfNoPermissionDirective,
+        MatProgressSpinner,
     ],
 })
 export class ReservationListComponent implements OnInit, OnDestroy {
@@ -79,7 +81,6 @@ export class ReservationListComponent implements OnInit, OnDestroy {
     ];
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
-
 
     @ViewChild(MatPaginator, { static: true }) _paginator: MatPaginator;
     dataSource = new MatTableDataSource<any>([]);
@@ -124,6 +125,8 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         dismissible: true,
     };
 
+    loadingFicheId: number | null = null;
+
     /**
      * Constructor
      */
@@ -133,7 +136,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         private _matDialog: MatDialog,
         private _toast: Toastr,
         private _utilsService: UtilsService,
-        private _fuseConfirmationService: FuseConfirmationService,
+        private _fuseConfirmationService: FuseConfirmationService
     ) {}
 
     get activeFiltersCount(): number {
@@ -326,8 +329,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
     }
 
     deleteReservation(reservation) {
-        if (!reservation.code)
-            return;
+        if (!reservation.code) return;
         this.actionConfigDialogue.title = `Confirmer la suppression de la reservation #${reservation.code}.`;
         this.actionConfigDialogue.message = `Êtes-vous sûr de vouloir supprimer cette reservation #${reservation.code}?<br> Cette action est irréversible. Toutes les données de cette reservation seront supprimées.`;
         const dialogRef = this._fuseConfirmationService.open(
@@ -335,30 +337,32 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         );
         dialogRef.afterClosed().subscribe((result) => {
             if (result === 'confirmed')
-                this._apiReservationService.deleteReservation(reservation.code).subscribe({
-                    next: (value) => {
-                        this._toast.success('reservation supprimée');
-                        let data = this.dataSource.data;
-                        data = data.filter((s) => s.code !== reservation.code);
-                        this.dataSource.data = data;
+                this._apiReservationService
+                    .deleteReservation(reservation.code)
+                    .subscribe({
+                        next: (value) => {
+                            this._toast.success('reservation supprimée');
+                            let data = this.dataSource.data;
+                            data = data.filter(
+                                (s) => s.code !== reservation.code
+                            );
+                            this.dataSource.data = data;
 
-                        if (this.dataSource.paginator) {
-                            this.dataSource.paginator.length =
-                                data.length;
-                        }
-                    },
-                    error: (err) =>
-                        this._toast.error(
-                            err?.error?.description ||
-                            "Une erreur s'est produit"
-                        ),
-                });
+                            if (this.dataSource.paginator) {
+                                this.dataSource.paginator.length = data.length;
+                            }
+                        },
+                        error: (err) =>
+                            this._toast.error(
+                                err?.error?.description ||
+                                    "Une erreur s'est produit"
+                            ),
+                    });
         });
     }
 
     cancelReservation(reservation) {
-        if (!reservation.code)
-            return;
+        if (!reservation.code) return;
         this.actionConfigDialogue.title = `Confirmer l'annulation de la reservation #${reservation.code}.`;
         this.actionConfigDialogue.message = `Êtes-vous sûr de vouloir annuler cette reservation #${reservation.code} ?`;
         const dialogRef = this._fuseConfirmationService.open(
@@ -366,34 +370,35 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         );
         dialogRef.afterClosed().subscribe((result) => {
             if (result === 'confirmed')
-                this._apiReservationService.cancelReservation(reservation.code).subscribe({
-                    next: (value) => {
-                        this._toast.success('reservation annulée');
-                        let data = this.dataSource.data;
-                        data = data.map((s) => {
-                            if (s.code === reservation.code){
-                                reservation.status.code = 'CANCELED';
-                                reservation.status.name = 'Annulée';
-                            }
-                            return s;
-                        });
-                        this.dataSource.data = data;
-                    },
-                    error: (err) =>
-                        this._toast.error(
-                            err?.error?.description ||
-                            "Une erreur s'est produit"
-                        ),
-                });
+                this._apiReservationService
+                    .cancelReservation(reservation.code)
+                    .subscribe({
+                        next: (value) => {
+                            this._toast.success('reservation annulée');
+                            let data = this.dataSource.data;
+                            data = data.map((s) => {
+                                if (s.code === reservation.code) {
+                                    reservation.status.code = 'CANCELED';
+                                    reservation.status.name = 'Annulée';
+                                }
+                                return s;
+                            });
+                            this.dataSource.data = data;
+                        },
+                        error: (err) =>
+                            this._toast.error(
+                                err?.error?.description ||
+                                    "Une erreur s'est produit"
+                            ),
+                    });
         });
     }
 
     raiseAcceptReservation(code) {
-        if (!code)
-            return;
+        if (!code) return;
         this._matDialog
             .open(AcceptReservationModel, {
-                data: { code: code},
+                data: { code: code },
                 disableClose: true,
             })
             .afterClosed()
@@ -405,11 +410,10 @@ export class ReservationListComponent implements OnInit, OnDestroy {
     }
 
     raiseCloseReservation(code) {
-        if (!code)
-            return;
+        if (!code) return;
         this._matDialog
             .open(CloseReservationModel, {
-                data: { code: code},
+                data: { code: code },
                 disableClose: true,
             })
             .afterClosed()
@@ -422,11 +426,10 @@ export class ReservationListComponent implements OnInit, OnDestroy {
 
     raiseSwitchRoom(row) {
         console.log(row);
-        if (!row)
-            return;
+        if (!row) return;
         this._matDialog
             .open(SwitchRoomModel, {
-                data: { reservation: row},
+                data: { reservation: row },
                 disableClose: true,
             })
             .afterClosed()
@@ -440,7 +443,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
     raiseReservationDetailsDialog(reservation) {
         this._matDialog
             .open(ReservationDetailsModel, {
-                data: { reservation: reservation},
+                data: { reservation: reservation },
                 disableClose: true,
             })
             .afterClosed()
@@ -468,5 +471,44 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         }, {});
 
         return Object.values(groups);
+    }
+
+    processFiche(row: any, action: 'download' | 'print'): void {
+        if (!row?.code) return;
+
+        this.loadingFicheId = row.code;
+
+        this._apiReservationService
+            .generateRegistrationCard(row.code)
+            .subscribe({
+                next: (blob: Blob) => {
+                    const blobUrl = window.URL.createObjectURL(blob);
+
+                    if (action === 'download') {
+                        // CAS 1 : TELECHARGEMENT
+                        const link = document.createElement('a');
+                        link.href = blobUrl;
+                        link.download = `Fiche_Reservation_${row.code}.pdf`;
+                        link.click();
+                    } else {
+                        // CAS 2 : IMPRESSION (Ouverture dans un nouvel onglet)
+                        const printWindow = window.open(blobUrl, '_blank');
+                        // Note: Certains navigateurs bloquent les popups, s'assurer qu'ils sont autorisés
+                        if (printWindow) {
+                            printWindow.focus();
+                        }
+                    }
+
+                    // Nettoyage de la mémoire
+                    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+                    this.loadingFicheId = null;
+                },
+                error: (err) => {
+                    console.error('Erreur PDF:', err);
+                    this.loadingFicheId = null;
+                    this._toast.error("erreur de generation de la fiche de réservation")
+                    // Optionnel : Afficher un SnackBar d'erreur
+                },
+            });
     }
 }

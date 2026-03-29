@@ -8,7 +8,7 @@ import { AnalyticsService } from './analytics/analytics.service';
 
 export default [
     {
-        path     : '',
+        path     : 'home',
         component: DashboardComponent,
     },{
         path     : 'finance/total',

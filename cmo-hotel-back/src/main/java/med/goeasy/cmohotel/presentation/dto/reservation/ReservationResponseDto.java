@@ -8,6 +8,7 @@ import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 import med.goeasy.cmohotel.presentation.dto.person.PersonResponseDto;
 import med.goeasy.cmohotel.presentation.dto.room.RoomResponseDto;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -19,7 +20,8 @@ public record ReservationResponseDto(
         LocalDateTime exceptionalCheckin,
         LocalDateTime exceptionalCheckout,
         EReservationStatus exceptionPersonStatus,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        List<SwitchRoomResponseDto> switchRooms
 ) {
     public static ReservationResponseDto mapToDto(Reservation entity){
         if (entity == null)
@@ -27,6 +29,10 @@ public record ReservationResponseDto(
         return ReservationResponseDto.builder()
                 .id(entity.getId())
                 .person(PersonResponseDto.mapToDto(entity.getPerson()))
+                .switchRooms(
+                        entity.getSwitchedRooms() == null ? null :
+                                entity.getSwitchedRooms().stream().map(SwitchRoomResponseDto::mapToDto).toList()
+                )
                 .role(entity.getRole())
                 .room(RoomResponseDto.mapToDto(entity.getRoom()))
                 .exceptionalCheckin(entity.getExceptionalCheckin())

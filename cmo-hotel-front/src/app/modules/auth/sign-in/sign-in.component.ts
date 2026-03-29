@@ -25,7 +25,6 @@ import { AuthService } from 'app/core/auth/auth.service';
     animations: fuseAnimations,
     standalone: true,
     imports: [
-        RouterLink,
         FuseAlertComponent,
         FormsModule,
         ReactiveFormsModule,
@@ -95,7 +94,7 @@ export class AuthSignInComponent implements OnInit {
         this._authService.signIn(this.signInForm.value)
             .subscribe({
                 next: (data:any) => {
-                    this._router.navigateByUrl('/dashboard');
+                    this._router.navigateByUrl('/dashboard/home');
                 },
                 error: err => {
                     // Re-enable the form

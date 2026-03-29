@@ -1,5 +1,6 @@
 package med.goeasy.cmohotel.persistence.repository;
 
+import med.goeasy.cmohotel.persistence.entity.Invoice;
 import med.goeasy.cmohotel.persistence.entity.ReservationDetails;
 import med.goeasy.cmohotel.persistence.entity.enums.EInvoiceStatus;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
@@ -102,6 +103,12 @@ public interface ReservationDetailsRepository extends JpaRepository<ReservationD
             WHERE rd.status IN :status
     """)
     long countTotalReservations(@Param("status") List<EReservationStatus> status);
+
+    @Query("SELECT rd FROM ReservationDetails rd WHERE rd.paidAt >= :startOfDay AND i.paidAt <= :endOfDay AND i.status = 'PAID'")
+    List<ReservationDetails> getReservationsByDay(
+            @Param("startOfDay") LocalDateTime startOfDay,
+            @Param("endOfDay") LocalDateTime endOfDay
+    );
 
 
 }

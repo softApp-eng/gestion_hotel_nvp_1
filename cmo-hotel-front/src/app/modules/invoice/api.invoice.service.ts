@@ -51,4 +51,21 @@ export class ApiInvoiceService {
         return this._httpClient.get(`${this.API_URL}/search`, { params });
     }
 
+    getEncaissement(day = ''): Observable<any>{
+        let params = new HttpParams()
+            .set('day', day);
+        return this._httpClient.get(`${this.API_URL}/encaissement`, { params });
+    }
+
+    generateInvoicePdf(num): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/download/invoice?num=${num}`, {
+            responseType: 'blob'
+        });
+    }
+
+    generateEncaissementPdf(day): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/download/encaissement?day=${day}`, {
+            responseType: 'blob'
+        });
+    }
 }

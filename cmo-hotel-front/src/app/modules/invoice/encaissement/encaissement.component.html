@@ -1,0 +1,314 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between px-6 py-6 md:px-10 border-b bg-card dark:bg-transparent transition-all duration-200">
+        <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary-500/20 via-transparent to-transparent"></div>
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center space-x-2 text-secondary font-medium text-sm mb-2">
+                <a class="hover:text-primary transition-colors cursor-pointer">Gestion</a>
+                <mat-icon class="icon-size-4" [svgIcon]="'heroicons_mini:chevron-right'"></mat-icon>
+                <span class="text-primary-600 dark:text-primary-400">Facturation</span>
+            </div>
+            <div class="flex items-center">
+                <div class="flex items-center justify-center p-3 mr-4 rounded-xl bg-primary-50 dark:bg-primary-500/10 text-primary shadow-sm">
+                    <mat-icon class="icon-size-10" [svgIcon]="'heroicons_outline:clipboard-document'"></mat-icon>
+                </div>
+                <div class="flex flex-col">
+                    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-none text-slate-900 dark:text-white">
+                        Encaissement
+                    </h2>
+                    <p class="text-secondary font-medium mt-1 text-md hidden sm:block">
+                        Suivi en temps réel vos encaissements.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-6">
+        <div class="w-full bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+
+            <div class="flex items-center justify-end gap-2">
+
+                <mat-form-field class="w-full sm:w-64" [appearance]="'outline'" [subscriptSizing]="'dynamic'">
+                    <mat-label>Date d'encaissement</mat-label>
+                    <input matInput
+                           [matDatepicker]="dp3"
+                           [formControl]="dateControl"
+                           (dateChange)="onDateChange($event)"
+                           class="font-medium">
+                    <mat-datepicker-toggle matIconSuffix [for]="dp3"></mat-datepicker-toggle>
+                    <mat-datepicker #dp3></mat-datepicker>
+                </mat-form-field>
+
+                <button mat-icon-button
+                        class="text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors rounded-xl"
+                        [matMenuTriggerFor]="ficheMenu"
+                        matTooltip="Exporter le rapport"
+                        [disableIfNoPermission]="[APP_PERMISSIONS.INVOICE_ENCAISSEMENT_PDF]">
+                    <mat-icon [svgIcon]="'heroicons_outline:arrow-down-tray'"></mat-icon>
+                </button>
+
+                <mat-menu #ficheMenu="matMenu" xPosition="before" class="rounded-xl shadow-xl border border-slate-100">
+                    <button mat-menu-item (click)="processDownloadEncassement('download')">
+                        <mat-icon class="text-blue-500" [svgIcon]="'heroicons_outline:document-text'"></mat-icon>
+                        <span>Télécharger (PDF)</span>
+                    </button>
+
+                    <button mat-menu-item (click)="processDownloadEncassement('print')">
+                        <mat-icon class="text-slate-500" [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                        <span>Imprimer le rapport</span>
+                    </button>
+                </mat-menu>
+            </div>
+
+            @for (encaissement of encaissements;track encaissement){
+                @if (encaissement.data && encaissement.data.length > 0) {
+                <div class="w-full border rounded-xl overflow-hidden shadow-sm mt-2">
+                    <h2 class="text-2xl m-5 font-bold tracking-tight">
+                        Mode de règlement : {{encaissement.title}}
+                    </h2>
+                    <div class="overflow-x-auto">
+                        <table mat-table [dataSource]="encaissement.data" class="min-w-full">
+
+                            <ng-container matColumnDef="num">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center">
+                                    <span class="bg-gray-50 dark:bg-transparent text-center uppercase">N° Facture</span>
+                                </th>
+                                <td mat-cell *matCellDef="let row" class="text-center">
+                                    <div (click)="openDetailsModal(row)"
+                                         class="cursor-pointer group inline-flex flex-col items-center">
+                                        <span class="text-secondary whitespace-nowrap text-sm font-medium" [innerHTML]="''+row?.invoiceNumber"></span>
+                                        <div class="h-[1.5px] w-0 bg-primary-500 transition-all duration-300 group-hover:w-full"></div>
+                                    </div>
+                                </td>
+                                <td mat-footer-cell *matFooterCellDef [attr.colspan]="5" class="bg-gray-100 dark:bg-gray-800 text-right pr-10 font-bold text-lg border-t-2 text-slate-600">
+                                    SOUS-TOTAL
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="period">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center">
+                                    Séjour (In - Out)
+                                </th>
+                                <td mat-cell *matCellDef="let row" >
+                                    <div class="flex items-center justify-center space-x-4 w-full font-medium cursor-help" [matTooltip]="getNightsTooltip(row)" matTooltipClass="professional-tooltip" >
+                                        <div class="flex flex-col items-center justify-center leading-tight">
+                                            <span class="text-gray-900 dark:text-gray-100 text-md">
+                                                {{ row?.checkin | date:'dd/MM/yyyy' }}
+                                            </span>
+                                                <span class="text-[11px] text-secondary font-medium opacity-80">
+                                                {{ row?.checkin | date:'HH:mm' }}
+                                            </span>
+                                        </div>
+
+                                        <mat-icon class="icon-size-5 opacity-40" [svgIcon]="'heroicons_outline:arrow-long-right'"></mat-icon>
+
+                                        <div class="flex flex-col items-center justify-center leading-tight">
+                                            <span class="text-gray-900 dark:text-gray-100 text-md">
+                                                {{ row?.checkout | date:'dd/MM/yyyy' }}
+                                            </span>
+                                            <span class="text-[11px] text-secondary font-medium opacity-80">
+                                                {{ row?.checkout | date:'HH:mm' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td mat-footer-cell *matFooterCellDef [style.display]="'none'"></td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="roomAndGuests">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent">
+                                    CHAMBRES & CLIENTS
+                                </th>
+                                <td mat-cell *matCellDef="let row">
+                                    @if (getGroupedRooms(row.details?.invoiceRooms); as groupedRooms) {
+                                        <div class="space-y-2 py-1">
+                                            @for (group of (row.showAll ? groupedRooms : (groupedRooms | slice:0:2)); track group.room.id) {
+                                                <div class="relative pl-4">
+                                                    <div class="flex items-center">
+                                                        <span class="absolute left-[-5px] w-1.5 h-1.5 rounded-full bg-primary-500 shadow-[0_0_8px_rgba(var(--primary-500),0.6)]"></span>
+                                                        <div class="flex items-baseline space-x-2">
+                                                            <span class="text-[11px] uppercase tracking-wider text-secondary font-medium">
+                                                                {{ group.room?.roomType?.type }} :
+                                                            </span>
+                                                            <span [innerHTML]="group.room?.name" class="text-sm font-extrabold text-gray-900 dark:text-gray-100">
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <ul class="space-y-1.5 ml-2">
+                                                        @for (guest of group.occupants; track guest.id) {
+                                                            <li class="flex items-center space-x-2 whitespace-nowrap group">
+                                                                <span [innerHTML]="guest.gradeCode" class="text-xs font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400 px-1.5">
+                                                                </span>
+
+                                                                <span [innerHTML]="(guest.firstName + ' ' + guest.lastName)" class="text-[14px] text-gray-700 dark:text-gray-300 font-medium">
+                                                                </span>
+
+                                                                @if (row?.category?.code === 'FAMILY' && guest.role) {
+                                                                    <span [innerHTML]="guest.role.name" class="px-1.5 py-0 text-[9px] font-bold uppercase tracking-tighter bg-indigo-50/80 text-indigo-600 border border-indigo-100/50 rounded-md shadow-sm">
+                                                                    </span>
+                                                                }
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                </div>
+                                            }
+
+                                            @if (groupedRooms.length > 2) {
+                                                <button mat-button color="primary" class="h-8 text-md tracking-tight"
+                                                        (click)="row.showAll = !row.showAll">
+                                                    <div class="flex items-center">
+                                                        <mat-icon class="icon-size-4 mr-1"
+                                                                  [svgIcon]="row.showAll ? 'heroicons_mini:chevron-up' : 'heroicons_mini:chevron-down'">
+                                                        </mat-icon>
+                                                        {{ row.showAll ? 'Voir moins' : 'Voir (' + (groupedRooms.length - 2) + ') plus' }}
+                                                    </div>
+                                                </button>
+                                            }
+                                        </div>
+                                    }
+                                </td>
+                                <td mat-footer-cell *matFooterCellDef [style.display]="'none'"></td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="category">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center"> CATEGORIE </th>
+                                <td mat-cell *matCellDef="let row" class="text-center">
+                                    <div class="inline-flex items-center space-x-2">
+                                        <span class="text-[11px] font-bold uppercase tracking-wider leading-none"
+                                              [ngClass]="{
+                                                  'text-blue-600 dark:text-blue-400': row.category.code === 'SINGLE',
+                                                  'text-purple-600 dark:text-purple-400': row.category.code === 'FAMILY',
+                                                  'text-gray-600 dark:text-gray-400': row.category.code === 'DELEGATION'
+                                              }"
+                                              [innerHTML]="row?.category?.name">
+                                        </span>
+                                    </div>
+                                </td>
+                                <td mat-footer-cell *matFooterCellDef [style.display]="'none'"></td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="paidAt">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center">
+                                    Date règlement
+                                </th>
+                                <td mat-cell *matCellDef="let row" class="text-center">
+                                    <div class="flex flex-col items-center justify-center leading-tight">
+                                        <span class=" text-md">
+                                            {{ row?.paidAt | date:'dd/MM/yyyy' }}
+                                        </span>
+                                        <span class="text-[11px] text-secondary font-medium opacity-80">
+                                            {{ row?.paidAt | date:'HH:mm' }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td mat-footer-cell *matFooterCellDef [style.display]="'none'"></td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="prices">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center">
+                                    Montants (Dhs)
+                                </th>
+                                <td mat-cell *matCellDef="let row">
+                                    <div class="flex flex-col items-center justify-center space-y-1 py-2">
+                                        <div class="flex flex-col items-center leading-tight cursor-help" [matTooltip]="'Hébergement : ' + (row?.totalRoomPrice | number:'1.2-2') + '\n Prestation : ' + (row?.totalPrestationPrice | number:'1.2-2')" matTooltipClass="professional-tooltip">
+                                        <span class="text-sm font-bold text-gray-900 dark:text-gray-100">
+                                            {{ (row?.totalRoomPrice + row?.totalPrestationPrice) | number:'1.2-2' }}
+                                        </span>
+                                            <span class="text-[9px] uppercase font-extrabold text-green-600 dark:text-green-400 tracking-widest">
+                                            Total
+                                        </span>
+                                        </div>
+
+                                    </div>
+                                </td>
+                                <td mat-footer-cell *matFooterCellDef class="bg-gray-100 dark:bg-gray-800 text-center font-black text-blue-600 text-xl border-t-2">
+                                    <!--{{ getTotalMontant('TPE') | number:'1.2-2' }}-->
+                                    {{getTotalMontantByMode(encaissement.mode) | number:'1.2-2'}} Dhs
+                                </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns2"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns2;" ></tr>
+                            <tr mat-footer-row *matFooterRowDef="displayedColumns2"
+                                class="font-bold"
+                                [hidden]="encaissement.data.length === 0">
+                            </tr>
+                            <tr class="mat-row" *matNoDataRow>
+                                <td class="mat-cell" [attr.colspan]="displayedColumns2.length">
+
+                                    <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                                        @if (!isLoading){
+                                            Aucune ligne trouvée
+                                        } @else {
+                                            Chargement...
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                }
+            }
+
+            @if (grandTotalEncaissement === 0 && !isLoading) {
+                <div class="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-2xl border-2 border-dashed mt-4">
+                    <mat-icon class="icon-size-16 text-secondary opacity-50 mb-4" [svgIcon]="'heroicons_outline:banknotes'"></mat-icon>
+                    <span class="text-2xl font-semibold text-secondary">Aucun encaissement enregistré pour cette date</span>
+                </div>
+            } @else {
+                <div class="flex justify-end w-full mt-5">
+                    <div class="w-full sm:w-1/2 lg:w-1/2 mb-8 border rounded-2xl overflow-hidden shadow-sm bg-white dark:bg-gray-800">
+                    <div class="bg-gray-50 dark:bg-gray-700/50 px-6 py-4 border-b">
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center">
+                            <mat-icon class="mr-2 text-primary" [svgIcon]="'heroicons_outline:chart-pie'"></mat-icon>
+                            Résumé des Encaissements
+                        </h3>
+                    </div>
+
+                    <table mat-table [dataSource]="summaryData" class="w-full">
+
+                        <ng-container matColumnDef="mode">
+                            <th mat-header-cell *matHeaderCellDef class="font-bold uppercase text-xs"> Mode </th>
+                            <td mat-cell *matCellDef="let row" class="font-medium text-slate-600 dark:text-slate-300">
+                                {{row.mode}}
+                            </td>
+                            <td mat-footer-cell *matFooterCellDef class="font-black text-slate-900 dark:text-white border-t-2"> TOTAL GLOBAL </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="count">
+                            <th mat-header-cell *matHeaderCellDef class="text-center font-bold uppercase text-xs"> Factures </th>
+                            <td mat-cell *matCellDef="let row" class="text-center">
+                                <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs font-bold">
+                                    {{row.count}}
+                                </span>
+                            </td>
+                            <td mat-footer-cell *matFooterCellDef class="border-t-2"> </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="total">
+                            <th mat-header-cell *matHeaderCellDef class="text-right pr-6 font-bold uppercase text-xs"> Montant (Dhs) </th>
+                            <td mat-cell *matCellDef="let row" class="text-right pr-6 font-semibold text-primary">
+                                {{row.total | number:'1.2-2'}}
+                            </td>
+                            <td mat-footer-cell *matFooterCellDef class="text-right pr-6 font-black text-blue-600 text-lg border-t-2">
+                                {{grandTotalEncaissement | number:'1.2-2'}}
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="summaryDisplayedColumns"></tr>
+                        <tr mat-row *matRowDef="let row; columns: summaryDisplayedColumns"></tr>
+                        <tr mat-footer-row *matFooterRowDef="summaryDisplayedColumns" [hidden]="summaryData.length === 0"></tr>
+                    </table>
+                </div>
+                </div>
+            }
+
+
+
+        </div>
+    </div>
+</div>

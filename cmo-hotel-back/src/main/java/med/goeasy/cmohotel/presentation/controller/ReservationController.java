@@ -204,9 +204,9 @@ public class ReservationController {
         return ResponseEntity.ok(reservations);
     }
 
-    @GetMapping("/invoice")
-    public ResponseEntity<byte[]> downloadInvoice( Authentication authentication,@Valid @NotNull(message = "code de reservation requis") @RequestParam() Long code) throws Exception {
-        byte[] pdf = reservationService.generateInvoice(authentication,code);
+    @GetMapping("/download/fiche")
+    public ResponseEntity<byte[]> generateRegistrationCard( Authentication authentication,@Valid @NotNull(message = "code de reservation requis") @RequestParam() Long code) throws Exception {
+        byte[] pdf = reservationService.generateRegistrationCard(authentication,code);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);

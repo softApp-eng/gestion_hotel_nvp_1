@@ -21,7 +21,15 @@ public record InvoiceResponseDto(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
         LocalDateTime issuedAt,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+        LocalDateTime createdAt,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
         LocalDateTime paidAt,
+
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+        LocalDateTime checkin,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+        LocalDateTime checkout,
+
         EPaymentMode paymentMode,
         Double totalRoomPrice,
         Double totalPrestationPrice,
@@ -40,8 +48,11 @@ public record InvoiceResponseDto(
         return InvoiceResponseDto.builder()
                 .num(entity.getNum())
                 .reservationDetails(ReservationDetailsResponseDto.mapToDto(entity.getReservationDetails()))
+                .checkin(entity.getCheckin())
+                .checkout(entity.getCheckout())
                 .invoiceNumber(entity.getInvoiceNumber())
                 .issuedAt(entity.getIssuedAt())
+                .createdAt(entity.getCreatedAt())
                 .paidAt(entity.getPaidAt())
                 .paymentMode(entity.getPaymentMode())
                 .totalRoomPrice(entity.getTotalRoomPrice())

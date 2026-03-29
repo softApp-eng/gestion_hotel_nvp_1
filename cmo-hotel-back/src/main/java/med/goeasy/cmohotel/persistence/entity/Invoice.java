@@ -38,6 +38,10 @@ public class Invoice {
     private LocalDateTime issuedAt;
     private LocalDateTime paidAt;
 
+    // to keep tracking history
+    private LocalDateTime checkin;
+    private LocalDateTime checkout;
+
     @Enumerated(EnumType.STRING)
     private EPaymentMode paymentMode;
 

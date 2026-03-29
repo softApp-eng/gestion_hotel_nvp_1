@@ -132,6 +132,7 @@ public class WebSecurityConfig {
 						.requestMatchers(DELETE,"/v1/reservations/switch-room").hasAuthority(EPermissions.RESERVATION_ROOM_CHANGE.getAuthority())
 						.requestMatchers(POST,"/v1/reservations/switch-room").hasAuthority(EPermissions.RESERVATION_ROOM_CHANGE.getAuthority())
 						.requestMatchers(POST,"/v1/reservations/time/extend").hasAuthority(EPermissions.RESERVATION_TIME_EXTEND.getAuthority())
+						.requestMatchers(GET,"/v1/reservations/download/fiche").hasAuthority(EPermissions.RESERVATION_FICHE_PDF.getAuthority())
 						// House keeping
 						.requestMatchers(GET,"/v1/house-keeping/agents/all").hasAuthority(EPermissions.HOUSE_KEEPING_AGENT_LIST.getAuthority())
 						.requestMatchers(POST,"/v1/house-keeping/agents/create").hasAuthority(EPermissions.HOUSE_KEEPING_AGENT_CREATE.getAuthority())
@@ -165,6 +166,9 @@ public class WebSecurityConfig {
 						.requestMatchers(POST,"/v1/invoices/night/validate").hasAuthority(EPermissions.INVOICE_NIGHT_VALIDATE.getAuthority())
 						.requestMatchers(POST,"/v1/invoices/pay").hasAuthority(EPermissions.INVOICE_PAY.getAuthority())
 						.requestMatchers(GET,"/v1/invoices/search").hasAuthority(EPermissions.INVOICE_LIST.getAuthority())
+						.requestMatchers(GET,"/v1/invoices/download/invoice").hasAuthority(EPermissions.INVOICE_INVOICE_PDF.getAuthority())
+						.requestMatchers(GET,"/v1/invoices/encaissement").hasAuthority(EPermissions.INVOICE_ENCAISSEMENT.getAuthority())
+						.requestMatchers(GET,"/v1/invoices/download/encaissement").hasAuthority(EPermissions.INVOICE_ENCAISSEMENT_PDF.getAuthority())
 
 						// statistics & dashboards
 						.requestMatchers(GET,"/v1/statistics/**").hasAuthority(EPermissions.STATISTICS_DASHBOARDS.getAuthority())

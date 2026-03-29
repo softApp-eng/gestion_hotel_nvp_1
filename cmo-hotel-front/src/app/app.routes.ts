@@ -174,10 +174,10 @@ export const appRoutes: Route[] = [
             initialData: initialDataResolver
         },
         children: [
-            {path: 'accueil', loadChildren: () => import('app/modules/dashboard/dashboard.routes')},
+            {path: 'dashboard', loadChildren: () => import('app/modules/dashboard/dashboard.routes')},
         ]
     },
 
     //match other urls
-    { path: '**', redirectTo: '/accueil' }
+    { path: '**', redirectTo: '/dashboard/home' }
 ];

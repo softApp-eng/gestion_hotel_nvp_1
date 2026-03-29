@@ -18,10 +18,13 @@ import { DatePipe, NgIf } from '@angular/common';
 import { MatStep, MatStepper } from '@angular/material/stepper';
 import { MatCard, MatCardContent, MatCardHeader, MatCardSubtitle, MatCardTitle } from '@angular/material/card';
 import { MatChip, MatChipListbox } from '@angular/material/chips';
+import { MatRipple } from '@angular/material/core';
+import { MatTableModule } from '@angular/material/table';
 
 @Component({
     selector: 'switch-room',
     templateUrl: './switch.room.model.html',
+    styleUrls: ['./switch.room.model.scss'],
     encapsulation: ViewEncapsulation.None,
     standalone: true,
     imports: [
@@ -31,6 +34,7 @@ import { MatChip, MatChipListbox } from '@angular/material/chips';
         MatInputModule,
         ReactiveFormsModule,
         MatToolbarModule,
+        MatTableModule,
         MatDatepicker,
         MatDatepickerInput,
         MatDatepickerToggle,
@@ -46,16 +50,22 @@ import { MatChip, MatChipListbox } from '@angular/material/chips';
         MatChipListbox,
         MatChip,
         FormsModule,
+        MatRipple,
     ],
 })
 export class SwitchRoomModel implements OnInit {
+    step = 0;
+    reservation: any;
+    displayedColumns: string[] = ['previous', 'new', 'pavillon', 'reason'];
+    selectedGuest: any;
+
     code;
     date;
     time;
     form: UntypedFormGroup;
 
-    reservation: any; // Charger votre JSON ici
-    selectedGuest: any;
+     // Charger votre JSON ici
+
     newRoom: any;
     changeReason: string = '';
 
@@ -72,6 +82,7 @@ export class SwitchRoomModel implements OnInit {
         public data: { reservation: any }
     ) {
         this.reservation = data.reservation;
+        console.log('passed res', this.reservation);
     }
 
     ngOnInit(): void {
@@ -82,6 +93,10 @@ export class SwitchRoomModel implements OnInit {
             time: ['12:00', [Validators.required]],
             reason: [''],
         });
+    }
+
+    stepTo(step: number) {
+        this.step += step;
     }
 
     save(): void {

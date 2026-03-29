@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"></meta>
+    <style>
+        body { font-family: 'Helvetica', sans-serif; color: #1e293b; margin: 0; padding: 20px; font-size: 11px; }
+        .platform-name { font-size: 20px; font-weight: bold; color: #3f51b5; }
+        .doc-title { font-size: 16px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+
+        .user-info { background: #f8fafc; padding: 8px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+
+        .section-title { background: #3f51b5; color: white; padding: 5px 10px; font-weight: bold; margin-bottom: 10px; border-radius: 4px; }
+
+        .grid { display: table; width: 100%; margin-bottom: 15px; }
+        .grid-row { display: table-row; }
+        .grid-cell { display: table-cell; padding: 5px; width: 50%; }
+        .label { font-weight: bold; color: #64748b; width: 120px; display: inline-block; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background-color: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px; text-align: left; font-size: 10px; color: #475569; }
+        td { border: 1px solid #e2e8f0; padding: 8px; }
+
+        .price-summary { margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+        .total-row { font-size: 14px; font-weight: bold; text-align: right; color: #3f51b5; }
+
+        .footer { margin-top: 40px; text-align: center; font-size: 9px; color: #94a3b8; }
+        .signature-box { margin-top: 30px; display: table; width: 100%; }
+        .sig { display: table-cell; width: 50%; height: 80px; border: 1px dashed #cbd5e1; text-align: center; vertical-align: top; padding-top: 5px; }
+        .font-bold { font-weight: bold; }
+        .text-primary { color: #3f51b5; }
+        .header {
+            display: table;
+            width: 100%;
+            border-bottom: 3px solid #3f51b5;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .logo-section {
+            display: table-cell;
+            vertical-align: middle; /* Aligne le logo avec le texte du milieu */
+        }
+
+        .title-section {
+            display: table-cell;
+            text-align: right;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="logo-section">
+        <div style="display: flex; align-items: center;">
+            <img th:src="${logoBase64}" style="height: 50px; width: auto;" />
+
+            <div>
+                <div class="platform-name text-primary">CMO-HOTEL MANAGER</div>
+                <div style="font-size: 10px; color: #64748b;">Système de Gestion de l'Hébergement</div>
+            </div>
+        </div>
+    </div>
+    <div class="title-section">
+        <div class="doc-title">Fiche de Réservation</div>
+        <div style="font-size: 12px; font-weight: bold;">N° <span th:text="${details.code}">000</span></div>
+    </div>
+</div>
+
+<div class="user-info">
+    Généré par : <strong th:text="${generatedBy}">Admin</strong> |
+    Le : <span th:text="${#temporals.format(now, 'dd/MM/yyyy HH:mm')}">27/03/2026</span>
+</div>
+
+<div class="section-title">DÉTAILS DU SÉJOUR</div>
+<div class="grid">
+    <div class="grid-row">
+        <div class="grid-cell"><span class="label">Catégorie :</span> <span th:text="${details.category}">MISSION</span></div>
+        <div class="grid-cell"><span class="label">Statut :</span> <span th:text="${details.status}">EN ATTENTE</span></div>
+    </div>
+    <div class="grid-row">
+        <div class="grid-cell"><span class="label">Arrivée prévue :</span> <span th:text="${#temporals.format(details.plannedStart, 'dd/MM/yyyy HH:mm')}">--</span></div>
+        <div class="grid-cell"><span class="label">Départ prévu :</span> <span th:text="${#temporals.format(details.plannedEnd, 'dd/MM/yyyy HH:mm')}">--</span></div>
+    </div>
+</div>
+
+<div class="section-title">OCCUPANTS ET ATTRIBUTIONS</div>
+<table>
+    <thead>
+    <tr>
+        <th>Nom</th>
+        <th>Rôle / Lien</th>
+        <th>Identité / Matricule</th>
+        <th>Pavillon / Chambre</th>
+        <th>Type</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="res : ${details.reservations}">
+        <td>
+            <strong th:text="${res.person.grade.name}">Grade</strong>
+            <span th:text="${res.person.firstName + ' ' + res.person.lastName}">Nom</span>
+        </td>
+        <td>
+            <span th:class="${res.role.name() == 'PRINCIPAL' ? 'font-bold text-primary' : ''}"
+                  th:text="${res.role.name}">
+                Rôle
+            </span>
+        </td>
+        <td>
+            <span th:text="${res.person.identity}">CIN</span> /
+            <span th:text="${res.person.matricule}">MAT</span>
+        </td>
+        <td>
+            <span th:text="${res.room.pavillon.name}">Pavillon</span> -
+            <strong th:text="${res.room.code}">101</strong>
+        </td>
+        <td th:text="${res.room.roomType.type}">Double</td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="section-title" style="margin-top: 20px;">ESTIMATION FINANCIÈRE</div>
+<div class="price-summary">
+    <div class="grid">
+        <div class="grid-row" th:each="roomEst : ${estimation.details}">
+            <div class="grid-cell" style="width: 70%;">
+                <span th:text="${roomEst.roomName}">Chambre</span>
+                (<span th:text="${estimation.durationInDays}">0</span> nuits x <span th:text="${roomEst.unitPrice}">0</span> MAD)
+            </div>
+            <div class="grid-cell" style="text-align: right; width: 30%;">
+                <span th:text="${roomEst.totalPrice}">0</span> MAD
+            </div>
+        </div>
+    </div>
+    <div class="total-row">
+        MONTANT TOTAL ESTIMÉ : <span th:text="${estimation.totalAmount}">0.00</span> MAD
+    </div>
+    <div th:if="${details.priseEnCharge}" style="color: #15803d; font-weight: bold; font-size: 10px; margin-top: 5px;">
+        * Dossier avec Prise en Charge Administrative (Réf: <span th:text="${details.priseEnChargeReference}">--</span>)
+    </div>
+</div>
+
+<div class="section-title" style="margin-top: 20px;" th:if="${details.observation}">OBSERVATIONS</div>
+<p th:text="${details.observation}" style="padding: 10px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 4px;"></p>
+
+<div class="signature-box">
+    <div class="sig" style="border-right: none;">
+        <strong>Signature du Client</strong><br/>
+        <span style="font-size: 8px; color: #94a3b8;">(Lu et approuvé)</span>
+    </div>
+    <div class="sig">
+        <strong>Cachet et Signature Réception</strong>
+    </div>
+</div>
+
+<div class="footer">
+    Document officiel généré par CMO-Hotel Manager.
+    L'hébergement est soumis au règlement intérieur de l'établissement.
+</div>
+
+</body>
+</html>

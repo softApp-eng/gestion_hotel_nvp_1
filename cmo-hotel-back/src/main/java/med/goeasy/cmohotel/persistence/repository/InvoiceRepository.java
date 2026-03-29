@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -30,8 +31,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, String> {
                AND (:priseEnCharge IS FALSE OR i.priseEnCharge = :priseEnCharge)
                AND (:category IS NULL OR i.category IN :category)
                AND (:status IS NULL OR i.status IN :status)
-               AND ( :range IS FALSE OR (i.issuedAt <= :end AND i.issuedAt >= :start))
-        ORDER BY i.issuedAt DESC
+               AND ( :range IS FALSE OR (i.createdAt <= :end AND i.createdAt >= :start))
+        ORDER BY i.createdAt DESC
         """)
     Page<Invoice> search(
             @Param("key") String key,
@@ -43,6 +44,12 @@ public interface InvoiceRepository extends JpaRepository<Invoice, String> {
             @Param("end") LocalDateTime end,
             @Param("range") boolean isRange,
             Pageable pageable
+    );
+
+    @Query("SELECT i FROM Invoice i WHERE i.paidAt >= :startOfDay AND i.paidAt <= :endOfDay AND i.status = 'PAID'")
+    List<Invoice> findPaidInvoicesBetween(
+            @Param("startOfDay") LocalDateTime startOfDay,
+            @Param("endOfDay") LocalDateTime endOfDay
     );
 
     // counters

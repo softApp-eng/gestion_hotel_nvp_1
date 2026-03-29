@@ -65,6 +65,7 @@ export const APP_PERMISSIONS = {
     RESERVATION_DELETE:'reservations:reservation:delete',
     RESERVATION_TIME_EXTEND:'reservations:reservation:time:extend',
     RESERVATION_ROOM_CHANGE:'reservations:reservation:room:change',
+    RESERVATION_FICHE_PDF:'reservations:reservation:pdf',
 
     // HOUSE KEEPING
     HOUSE_KEEPING_AGENT_CREATE:'housekeepings:agent:create',
@@ -99,5 +100,8 @@ export const APP_PERMISSIONS = {
     INVOICE_NIGHT_VALIDATE:'invoices:night:validate',
     INVOICE_PAY:'invoices:invoice:pay',
     INVOICE_LIST:'invoices:invoice:list',
+    INVOICE_ENCAISSEMENT:'invoices:invoice:encaissement',
+    INVOICE_ENCAISSEMENT_PDF:'invoices:invoice:encaissement:pdf',
+    INVOICE_INVOICE_PDF:'invoices:invoice:pdf',
 
 }

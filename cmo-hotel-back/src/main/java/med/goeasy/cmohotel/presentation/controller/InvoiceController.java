@@ -1,6 +1,7 @@
 package med.goeasy.cmohotel.presentation.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import med.goeasy.cmohotel.presentation.dto.ApiResponse;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
@@ -8,6 +9,9 @@ import med.goeasy.cmohotel.presentation.dto.invoice.request.NightValidationDto;
 import med.goeasy.cmohotel.presentation.dto.invoice.response.InvoiceResponseDto;
 import med.goeasy.cmohotel.service.InvoiceService;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -57,6 +61,17 @@ public class InvoiceController {
         ));
     }
 
+    @GetMapping("/encaissement")
+    ResponseEntity<List<InvoiceResponseDto>> paidInvoices(
+            Authentication authentication,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate day
+    ){
+        if (day == null) day = LocalDate.now();
+        return ResponseEntity.ok(invoiceService.getEncaissement(
+                authentication,day
+        ));
+    }
+
     @PostMapping("/pay")
     ResponseEntity<ApiResponse> payInvoice(
             Authentication authentication,
@@ -64,6 +79,28 @@ public class InvoiceController {
     ) {
         invoiceService.payInvoice(authentication,dto);
         return ResponseEntity.ok(ApiResponse.builder().message("Facture enregistrée").build());
+    }
+
+    @GetMapping("/download/invoice")
+    public ResponseEntity<byte[]> generateInvoicePdf( Authentication authentication,@Valid @NotNull(message = "numero de facture requis") @RequestParam() String num) throws Exception {
+        byte[] pdf = invoiceService.generateInvoicePdf(authentication,num);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "Facture_" + num + ".pdf");
+
+        return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/download/encaissement")
+    public ResponseEntity<byte[]> generateEncaissementPdf( Authentication authentication,@RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate day) throws Exception {
+        byte[] pdf = invoiceService.generateEncaissementPdf(authentication,day);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "Encaissement.pdf");
+
+        return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
     }
 
 }

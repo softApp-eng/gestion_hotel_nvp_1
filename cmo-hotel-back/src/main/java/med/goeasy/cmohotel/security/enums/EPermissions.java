@@ -85,6 +85,8 @@ public enum EPermissions {
     RESERVATION_RESIDENTS(RESERVATION, "reservation:residents", "Consulter l'historique résidents", READ,true,"Autorise l'accès au registre des séjours passés et en cours pour l'ensemble des occupants."),
     RESERVATION_ROOM_CHANGE(RESERVATION, "reservation:room:change", "Gérer les transferts de chambre", MANAGE,true,"Autorise le changement de chambre d'un résident durant son séjour."),
     RESERVATION_TIME_EXTEND(RESERVATION, "reservation:time:extend", "Prolonger le séjour", MANAGE,true,"Autorise la modification de la date de départ et l'extension de la durée de séjour."),
+    RESERVATION_FICHE_PDF(RESERVATION, "reservation:pdf", "Imprimer la fiche de reservation", MANAGE,true,"Autorise le téléchargement des fiches de reservation."),
+
 
     //HOUSE KEEPING
     HOUSE_KEEPING_AGENT_CREATE(HOUSE_KEEPING, "agent:create", "Enregistrer un nouvel intervenant", CREATE,true,"Autorise la création d'une fiche collaborateur pour le personnel d'entretien et de maintenance."),
@@ -116,8 +118,11 @@ public enum EPermissions {
 
     // INVOICE,
     INVOICE_NIGHT_VALIDATE(INVOICE, "night:validate", "valider les nuitées des reservations", MANAGE,true,"Autorise la validation comptable des nuitées pour la facturation finale."),
-    INVOICE_LIST(INVOICE, "invoice:list", "Accéder au registre des factures", MANAGE,true,"Autorise la consultation de l'historique et de l'état des factures émises."),
+    INVOICE_LIST(INVOICE, "invoice:list", "Accéder au registre des factures", READ,true,"Autorise la consultation de l'historique et de l'état des factures émises."),
     INVOICE_PAY(INVOICE, "invoice:pay", "Encaisser les règlements", MANAGE,true,"Autorise l'enregistrement des paiements et le passage des factures au statut <Payé>."),
+    INVOICE_INVOICE_PDF(INVOICE, "invoice:pdf", "Imprimer la facture", READ,true,"Autorise le téléchargement des factures payées."),
+    INVOICE_ENCAISSEMENT(INVOICE, "invoice:encaissement", "Candulter l'encaissement journalier", READ,true,"Autorise le consultation de l'encaissement journalier."),
+    INVOICE_ENCAISSEMENT_PDF(INVOICE, "invoice:encaissement:pdf", "Télécharger l'encaissement journalier", READ,true,"Autorise le téléchargement de l'encaissement journalier."),
 
     // statistics & dashboards
     STATISTICS_DASHBOARDS(STATISTICS, "consulting", "Piloter les tableaux de bord", READ,true,"Autorise l'accès aux indicateurs clés de performance, aux statistiques d'occupation et aux analyses financières de l'établissement.")

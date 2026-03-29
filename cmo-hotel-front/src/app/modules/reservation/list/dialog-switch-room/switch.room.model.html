@@ -3,7 +3,7 @@
         <div class="flex items-center w-full justify-between">
             <div class="flex items-center">
                 <mat-icon class="icon-size-5 mr-3 text-white" [svgIcon]="'heroicons_solid:check-circle'"></mat-icon>
-                <span class="text-xl text-white">Clôture de Séjour (Check-out) : #{{code}}</span>
+                <span class="text-xl text-white">Clôture de Séjour (Check-out) : #{{reservation?.code}}</span>
             </div>
             <button mat-icon-button (click)="matDialogRef.close()" class="text-white">
                 <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
@@ -11,103 +11,116 @@
         </div>
     </mat-toolbar>
 
-    <div class="m-6">
-        <mat-stepper [linear]="true" #stepper>
-
-            <mat-step  label="Sélectionner l'unité à déplacer">
-                <div class="rooms-grid">
-                    <mat-card *ngFor="let guest of reservation.guests"
-                              (click)="selectGuest(guest)"
-                              [class.selected]="selectedGuest?.id === guest.id"
-                              class="clickable-card">
-                        <mat-card-header>
-                            <div mat-card-avatar class="grade-avatar">{{guest.person.grade.code}}</div>
-                            <mat-card-title>{{guest.person.firstName}} {{guest.person.lastName}}</mat-card-title>
-                            <mat-card-subtitle>Chambre actuelle : {{guest.room.name}} ({{guest.room.pavillon.name}})</mat-card-subtitle>
-                        </mat-card-header>
-                        <mat-card-content>
-                            <p><strong>Rôle :</strong> {{guest.role.name}}</p>
-                        </mat-card-content>
-                    </mat-card>
-                </div>
-                <div class="actions">
-                    <button mat-button matStepperNext [disabled]="!selectedGuest">Suivant</button>
-                </div>
-            </mat-step>
-
-            <mat-step label="Nouvelle affectation">
-                <div class="step-container">
-                    <h3>Historique des mouvements - {{selectedGuest?.person.lastName}}</h3>
-
-                    <div class="timeline">
-                        <div class="timeline-item current">
-                            <mat-icon>location_on</mat-icon>
-                            <span>Actuellement en <b>{{selectedGuest?.room.name}}</b> depuis le {{reservation.checkin | date:'dd/MM HH:mm'}}</span>
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    <div class="selection-area">
-                        <button mat-raised-button color="primary" (click)="openRoomPicker()">
-                            <mat-icon>swap_horiz</mat-icon> Choisir la nouvelle chambre
-                        </button>
-
-                        <div *ngIf="newRoom" class="new-room-info">
-                            <mat-chip-listbox>
-                                <mat-chip color="accent" selected>Nouvelle chambre : {{newRoom.name}} ({{newRoom.pavillon.name}})</mat-chip>
-                            </mat-chip-listbox>
-                        </div>
-
-                        <mat-form-field appearance="outline" class="full-width mt-2">
-                            <mat-label>Motif du changement</mat-label>
-                            <textarea matInput [(ngModel)]="changeReason" placeholder="Ex: Problème technique, surclassement..."></textarea>
-                        </mat-form-field>
-                    </div>
-                </div>
-
-                <div class="actions">
-                    <button mat-button matStepperPrevious>Retour</button>
-                    <button mat-raised-button color="warn" [disabled]="!newRoom" (click)="confirmChange()">Confirmer le transfert</button>
-                </div>
-            </mat-step>
-        </mat-stepper>
-        <!--<form [formGroup]="form" class="flex flex-col">
-
-            <div class="flex flex-row items-center gap-2 w-full">
-                <mat-form-field class="flex-auto text-2xl" [appearance]="'outline'" [subscriptSizing]="'dynamic'">
-                    <mat-label>Date de départ</mat-label>
-                    <input matInput [matDatepicker]="dp3" formControlName="date">
-                    <mat-datepicker-toggle matIconSuffix [for]="dp3"></mat-datepicker-toggle>
-                    <mat-datepicker #dp3></mat-datepicker>
-                    <mat-error *ngIf="form.get('date').hasError('required')">Date requise</mat-error>
-                </mat-form-field>
-
-                <mat-form-field class="w-44 text-2xl" [appearance]="'outline'" [subscriptSizing]="'dynamic'">
-                    <mat-label>Heure de départ</mat-label>
-                    <input matInput type="time" formControlName="time" #timeStartInput>
-                    <mat-icon matSuffix
-                              class="cursor-pointer icon-size-5"
-                              (click)="timeStartInput.showPicker()"
-                              [svgIcon]="'heroicons_outline:clock'"></mat-icon>
-                    <mat-error *ngIf="form.get('time').hasError('required')">Heure requise</mat-error>
-                </mat-form-field>
+    <div class="m-6 flex flex-col h-full">
+        <div class="flex-auto  pr-2">
+            <div class="selection-header mb-6">
+                <h3 class="text-secondary text-lg font-medium tracking-tight">Mouvements de chambre</h3>
+                <p class="text-md text-hint">Sélectionnez l'unité ou le résident concerné par le transfert :</p>
             </div>
 
-            <mat-form-field class="w-full" appearance="outline">
-                <mat-label>Raison</mat-label>
-                <textarea matInput formControlName="reason" rows="3" placeholder="reason de changement..."></textarea>
-            </mat-form-field>
+            <div class="guest-grid flex flex-col gap-4 overflow-y-auto">
+                @if (step == 0) {
+                    @for (guest of reservation.guests; track guest.id) {
+                        <div class="guest-card"
+                             [class.is-selected]="selectedGuest?.id === guest.id"
+                             (click)="selectGuest(guest)"
+                             matRipple>
+                            <div class="selection-indicator"></div>
+                            <div class="flex items-center p-4 w-full">
+                                <div class="avatar-container">
+                                    <span class="grade-label">{{ guest.person.grade.code }}</span>
+                                </div>
+                                <div class="flex flex-col ml-4 flex-auto">
+                                    <div class="flex items-center justify-between">
+                                        <span class="name-label">{{ guest.person.firstName }} {{ guest.person.lastName }}</span>
+                                        <span class="role-badge" [class.principal]="guest.role.code === 'PRINCIPAL'">
+                                    {{ guest.role.name }}
+                                </span>
+                                    </div>
+                                    <div class="flex items-center mt-1 text-secondary">
+                                        <span class="text-sm font-medium">{{ guest.room.pavillon.name }}</span>
+                                        <span class="mx-2 text-hint">|</span>
+                                        <span class="text-sm">{{ guest.room.roomType.type }} — <strong class="text-primary">{{ guest.room.code }}</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                @if (step == 1) {
+                    <div class="flex items-center justify-between p-4 bg-slate-50 border-b border-slate-200">
 
-            <div class="flex items-start justify-between mx-3 mt-8">
-                <button type="button" mat-stroked-button (click)="matDialogRef.close()">
+                        <button mat-flat-button color="primary" [disabled]="!selectedGuest">
+                            Nouveau transfert
+                        </button>
+                    </div>
+                    <table mat-table [dataSource]="selectedGuest?.switchRooms || []" class="w-full">
+
+                        <ng-container matColumnDef="previous">
+                            <th mat-header-cell *matHeaderCellDef> Ancienne Chambre </th>
+                            <td mat-cell *matCellDef="let element">
+                                <div class="flex flex-col py-2">
+                                    <span class="font-semibold text-slate-700">{{ element.previousRoom.code }}</span>
+                                    <span class="text-xs text-slate-500">{{ element.previousRoom.roomType.type }}</span>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="new">
+                            <th mat-header-cell *matHeaderCellDef> Nouvelle Chambre </th>
+                            <td mat-cell *matCellDef="let element">
+                                <div class="flex flex-col">
+                                    <span class="font-semibold text-primary">{{ element.newRoom.code }}</span>
+                                    <span class="text-xs text-slate-500">{{ element.newRoom.roomType.type }}</span>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="pavillon">
+                            <th mat-header-cell *matHeaderCellDef> Pavillon </th>
+                            <td mat-cell *matCellDef="let element">
+                    <span class="px-2 py-1 rounded bg-slate-100 text-xs font-medium text-slate-600">
+                        {{ element.newRoom.pavillon.name }}
+                    </span>
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="reason">
+                            <th mat-header-cell *matHeaderCellDef> Motif du changement </th>
+                            <td mat-cell *matCellDef="let element">
+                                <span class="text-sm italic text-slate-600">"{{ element.reason }}"</span>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="['previous', 'new', 'pavillon', 'reason']"></tr>
+                        <tr mat-row *matRowDef="let row; columns: ['previous', 'new', 'pavillon', 'reason'];"
+                            class="hover:bg-slate-50 transition-colors"></tr>
+
+                        <tr class="mat-row" *matNoDataRow>
+                            <td class="mat-cell p-8 text-center text-slate-400" colspan="4">
+                                <mat-icon class="icon-size-10 mb-2 opacity-20">history_toggle_off</mat-icon>
+                                <p>Aucun historique de transfert pour cet occupant.</p>
+                            </td>
+                        </tr>
+                    </table>
+                }
+
+            </div>
+            <div class="footer-actions flex justify-end items-center mt-8 pt-4 border-t border-slate-100">
+                <button mat-button (click)="matDialogRef.close()" class="mr-2">
                     Annuler
                 </button>
-                <button type="submit" mat-flat-button [color]="'primary'"
-                        [disabled]="form.invalid" (click)="save()">
-                    Finaliser le Check-out
+                <button mat-flat-button
+                        color="primary"
+                        [disabled]="!selectedGuest"
+                        (click)="stepTo(1)"
+                        class="px-8 py-2 rounded-lg font-bold tracking-wide">
+                    <span>Suivant</span>
                 </button>
             </div>
-        </form>-->
+
+        </div>
+
+
     </div>
 </div>

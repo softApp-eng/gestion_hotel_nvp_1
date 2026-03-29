@@ -1,5 +1,6 @@
 package med.goeasy.cmohotel.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,16 +16,23 @@ import med.goeasy.cmohotel.presentation.dto.PageDto;
 import med.goeasy.cmohotel.presentation.dto.invoice.request.NightValidationDto;
 import med.goeasy.cmohotel.presentation.dto.invoice.request.PaymentRequestDto;
 import med.goeasy.cmohotel.presentation.dto.invoice.response.InvoiceResponseDto;
+import med.goeasy.cmohotel.presentation.dto.prices.PriceEstimationResponse;
+import med.goeasy.cmohotel.utils.UtilsService;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -41,7 +49,8 @@ public class InvoiceService {
     private final PrestationRepository prestationRepository;
     private final ReservationDetailsRepository reservationDetailsRepository;
     private final InvoiceDetailsRepository invoiceDetailsRepository;
-
+    private final UtilsService utilsService;
+    private final TemplateEngine templateEngine;
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
 
@@ -122,7 +131,7 @@ public class InvoiceService {
         );
     }
 
-    private Person findReferencePersonForPricing(List<Reservation> reservations) {
+    protected Person findReferencePersonForPricing(List<Reservation> reservations) {
         List<Person> persons = reservations.stream()
                 .map(Reservation::getPerson)
                 .toList();
@@ -145,7 +154,7 @@ public class InvoiceService {
                 .orElse(persons.getFirst());
     }
 
-    private boolean isEligibleForPricing(Person p) {
+    protected boolean isEligibleForPricing(Person p) {
         // Militaire = Toujours payant selon sa catégorie
         if (p.getGrade() != null && p.getGrade().getCategory() != EGradeCategory.CIVIL) {
             return true;
@@ -162,7 +171,7 @@ public class InvoiceService {
         return age >= 18;
     }
 
-    private Double findPriceForRoom(Room room, EGradeCategory category) {
+    protected Double findPriceForRoom(Room room, EGradeCategory category) {
         // On cherche le prix dans RoomType correspondant à la catégorie du grade
         return room.getRoomType().getPrices().stream()
                 .filter(p -> p.getCategory() == category)
@@ -235,6 +244,64 @@ public class InvoiceService {
         );
     }
 
+    public List<InvoiceResponseDto> getEncaissement(Authentication authentication, LocalDate day) {
+        LocalDateTime start = day.atStartOfDay();
+        LocalDateTime end = day.atTime(LocalTime.MAX);
+        log.info("{} load paid invoices", authentication.getName());
+        return invoiceRepository.findPaidInvoicesBetween(start, end).stream()
+                .map(InvoiceResponseDto::mapToDto).toList();
+    }
+
+    public byte[] generateEncaissementPdf(Authentication authentication, LocalDate day) throws Exception {
+        // 1. Définition de la plage horaire pour la journée
+        LocalDateTime start = day.atStartOfDay();
+        LocalDateTime end = day.atTime(LocalTime.MAX);
+
+        // 2. Récupération et groupement des données
+        List<Invoice> invoices = invoiceRepository.findPaidInvoicesBetween(start, end);
+
+        // Groupement par mode de paiement
+        Map<EPaymentMode, List<Invoice>> groupedInvoices = invoices.stream()
+                .collect(Collectors.groupingBy(Invoice::getPaymentMode));
+
+        // Calcul du grand total (Utilisation de BigDecimal recommandée pour la précision)
+        double grandTotal = invoices.stream()
+                .mapToDouble(i -> i.getTotalRoomPrice() + i.getTotalPrestationPrice())
+                .sum();
+
+        // 3. Préparation du contexte Thymeleaf
+        Context context = new Context();
+        context.setVariable("groupedInvoices", groupedInvoices);
+        context.setVariable("grandTotal", grandTotal);
+        context.setVariable("reportDate", day);
+        context.setVariable("generatedBy", authentication.getName());
+        context.setVariable("now", LocalDateTime.now());
+
+        // Gestion du Logo
+        String logoBase64 = utilsService.getAppLogoAs64();
+        if (logoBase64 != null) {
+            context.setVariable("logoBase64", "data:image/png;base64," + logoBase64);
+        }
+
+        // 4. Génération du HTML
+        String htmlContent = templateEngine.process("encaissement", context);
+
+        // 5. Rendu PDF
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            ITextRenderer renderer = new ITextRenderer();
+
+            // Support pour les caractères spéciaux et formatage correct
+            renderer.setDocumentFromString(htmlContent);
+            renderer.layout();
+            renderer.createPDF(outputStream);
+
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            log.error("Erreur technique lors de la génération du PDF : {}", e.getMessage(), e);
+            throw new BadRequestException("Impossible de générer le rapport d'encaissement pour le moment.");
+        }
+    }
+
     public void payInvoice(Authentication authentication, PaymentRequestDto dto) {
         Invoice invoice = invoiceRepository.findById(dto.num())
                 .orElseThrow(()-> new BadRequestException("Numero de facture invalide."));
@@ -245,6 +312,9 @@ public class InvoiceService {
         invoice.setPaymentMode(EPaymentMode.valueOf(dto.paymentMode()));
         invoice.setStatus(EInvoiceStatus.PAID);
         invoice.setDescription(dto.observation());
+        ReservationDetails reservationDetails = invoice.getReservationDetails();
+        invoice.setCheckin(reservationDetails.getCheckin());
+        invoice.setCheckout(reservationDetails.getCheckout());
         invoiceRepository.save(invoice);
 
         activityLogService.logActivity(
@@ -260,7 +330,46 @@ public class InvoiceService {
         );
     }
 
+    public byte[] generateInvoicePdf(Authentication authentication, String num) throws Exception {
+        // 1. Récupération de la facture (Invoice)
+        Invoice invoice = invoiceRepository.findById(num)
+                .orElseThrow(() -> new BadRequestException("Numéro de facture invalide."));
 
+        if (invoice.getStatus() != EInvoiceStatus.PAID)
+            throw new BadRequestException("Facture pas encore payée.");
+
+        Context context = new Context();
+        context.setVariable("invoice", invoice);
+        context.setVariable("generatedBy", authentication.getName());
+        context.setVariable("now", LocalDateTime.now());
+        String logoBase64 = utilsService.getAppLogoAs64();
+        context.setVariable("logoBase64", "data:image/png;base64," + logoBase64);
+
+        String htmlContent = templateEngine.process("invoice", context);
+
+        // 2. Audit de l'action
+        activityLogService.logActivity(
+                EAuditActionTarget.INVOICE,
+                EAuditActionOperation.SELECT,
+                String.format("Génération de la facture numéro %s.", invoice.getInvoiceNumber()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            ITextRenderer renderer = new ITextRenderer();
+
+            // Support des caractères spéciaux (Optionnel mais recommandé pour le français)
+            renderer.setDocumentFromString(htmlContent);
+            renderer.layout();
+            renderer.createPDF(outputStream);
+
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            log.error("Erreur lors de la génération du PDF : {}", e.getMessage());
+            throw new BadRequestException("Échec de la génération du PDF de la facture.");
+        }
+    }
     /// /////////////////////////////////////////////////////////////////////////////
     ///                              EXTRAS FUNCTIONS                             ///
     /// /////////////////////////////////////////////////////////////////////////////

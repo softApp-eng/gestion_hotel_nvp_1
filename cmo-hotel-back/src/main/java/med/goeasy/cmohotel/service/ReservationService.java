@@ -22,6 +22,7 @@ import med.goeasy.cmohotel.presentation.dto.person.PersonResponseDto;
 import med.goeasy.cmohotel.presentation.dto.prices.PriceEstimationResponse;
 import med.goeasy.cmohotel.presentation.dto.prices.RoomPriceDetail;
 import med.goeasy.cmohotel.presentation.dto.reservation.*;
+import med.goeasy.cmohotel.utils.UtilsService;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,13 +34,12 @@ import org.thymeleaf.context.Context;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -56,6 +56,7 @@ public class ReservationService {
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
     private final InvoiceService invoiceService;
+    private final UtilsService utilsService;
 
     @Transactional
     public void create(Authentication authentication, ReservationRequestDto dto) {
@@ -273,7 +274,7 @@ public class ReservationService {
         SwitchedRoom history = SwitchedRoom.builder()
                 .previousRoom(oldRoom)
                 .newRoom(nextRoom)
-                .switchTime(dto.switchTime())
+                .switchTime(LocalDateTime.now())
                 .reason(dto.reason())
                 .build();
 
@@ -499,20 +500,43 @@ public class ReservationService {
         return reservationRepository.findResidentReservations().stream().map(ReservationResponseDto::mapToDto).toList();
     }
 
-    public byte[] generateInvoice(Authentication authentication, Long code) throws Exception {
+    public byte[] generateRegistrationCard(Authentication authentication, Long code) throws Exception {
         ReservationDetails details = reservationDetailsRepository.findById(code)
-                .orElseThrow(() -> new EntityNotFoundException("Réservation non trouvée pour le code: " + code));
-        if (details.getStatus() != EReservationStatus.CLOSED)
-            throw new BadRequestException("La reservation doit être cloturée pour générer la facture");
+                .orElseThrow(() -> new EntityNotFoundException("Réservation non trouvée"));
 
+        PriceEstimationResponse estimation = calculateEstimationByCode(details);
+
+        Context context = new Context();
+        context.setVariable("details", details);
+        context.setVariable("estimation", estimation);
+        context.setVariable("generatedBy", authentication.getName());
+        context.setVariable("now", LocalDateTime.now());
+        context.setVariable("logoBase64", "data:image/png;base64," + utilsService.getAppLogoAs64());
+        String htmlContent = templateEngine.process("reservation-card", context);
+        // Log de l'action (Consultation/Génération de fiche)
         activityLogService.logActivity(
                 EAuditActionTarget.RESERVATION,
                 EAuditActionOperation.SELECT,
-                String.format("Génération de la facture pour la réservation #%d.", details.getCode()),
+                String.format("Génération de la fiche de réservation pour le code #%d.", details.getCode()),
                 activityLogService.getClientIp(request),
                 authentication.getName()
         );
-        return generateReservationInvoice(details);
+
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            ITextRenderer renderer = new ITextRenderer();
+            renderer.setDocumentFromString(htmlContent);
+            renderer.layout();
+            renderer.createPDF(outputStream);
+            return outputStream.toByteArray();
+        }catch (Exception e) {
+            log.error("Erreur lors de la génération du PDF : {}", e.getMessage());
+            throw new BadRequestException("Échec de la génération du PDF de la reservation.");
+        }
+    }
+
+    public void getMainCourante(Authentication authentication, LocalDate day){
+        LocalDateTime start = day.atStartOfDay();
+        LocalDateTime end = day.atTime(LocalTime.MAX);
     }
 
     /// /////////////////////////////////////////////////////////////////////////////
@@ -528,12 +552,14 @@ public class ReservationService {
         return reservationRepository.findById(id)
                 .orElseThrow(()-> new BadRequestException("reservation n'existe pas"));
     }
-    protected PriceEstimationResponse calculateEstimationByCode(ReservationDetails details) {
 
+    protected PriceEstimationResponse calculateEstimationByCode(ReservationDetails details) {
+        // 1. Déterminer la période (Priorité au réel, sinon prévu)
         LocalDateTime start = details.getCheckin() != null ? details.getCheckin() : details.getPlannedStart();
         LocalDateTime end = details.getCheckout() != null ? details.getCheckout() : details.getPlannedEnd();
 
-        long duration = java.time.temporal.ChronoUnit.DAYS.between(start, end);
+        // 2. Calculer la durée (Minimum 1 nuit)
+        long duration = java.time.temporal.ChronoUnit.DAYS.between(start.toLocalDate(), end.toLocalDate());
         if (duration <= 0) duration = 1;
 
         // 3. Groupement des réservations par Chambre
@@ -546,54 +572,28 @@ public class ReservationService {
 
         for (Map.Entry<Room, List<Reservation>> entry : roomGroups.entrySet()) {
             Room room = entry.getKey();
-            List<Reservation> guests = entry.getValue();
+            List<Reservation> guestsInRoom = entry.getValue();
 
-            // 4. Trouver le "Payer" (Grade avec le rating le plus bas)
-            Reservation payer = guests.stream()
-                    .min(Comparator.comparingInt(r -> r.getPerson().getGrade().getRating()))
-                    .orElseThrow();
+            // 4. Trouver la personne de référence selon la logique métier (Militaire le plus gradé > Civil)
+            Person referencePerson = invoiceService.findReferencePersonForPricing(guestsInRoom);
 
-            EGradeCategory categoryToCharge = payer.getPerson().getGrade().getCategory();
-
-            // 5. Trouver le prix correspondant dans le RoomType
-            double unitPrice = room.getRoomType().getPrices().stream()
-                    .filter(rp -> rp.getCategory().equals(categoryToCharge))
-                    .map(RoomPrice::getPrice)
-                    .findFirst()
-                    .orElse(0.0);
+            // 5. Calculer le prix unitaire selon l'éligibilité (ex: gratuit pour mineurs)
+            Double unitPrice = 0.0;
+            if (invoiceService.isEligibleForPricing(referencePerson)) {
+                // Utilise la catégorie de la personne de référence pour chercher dans les prix de la chambre
+                unitPrice = invoiceService.findPriceForRoom(room, referencePerson.getGrade().getCategory());
+            }
 
             double roomTotalPrice = unitPrice * duration;
             totalGlobal += roomTotalPrice;
 
             priceDetails.add(new RoomPriceDetail(
-                    room.getRoomType().getType() + " / " + room.getName(),
+                    room.getRoomType().getType() + " / " + room.getCode(),
                     unitPrice,
                     roomTotalPrice
             ));
         }
 
         return new PriceEstimationResponse(priceDetails, totalGlobal, duration);
-    }
-
-    protected byte[] generateReservationInvoice(ReservationDetails details) throws Exception {
-
-        PriceEstimationResponse estimation = calculateEstimationByCode(details);
-
-        // 2. Préparer le contexte Thymeleaf
-        Context context = new Context();
-        context.setVariable("details", details);
-        context.setVariable("estimation", estimation);
-
-        // 3. Rendre le HTML en String
-        String htmlContent = templateEngine.process("reservation-invoice", context);
-
-        // 4. Convertir HTML en PDF
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            ITextRenderer renderer = new ITextRenderer();
-            renderer.setDocumentFromString(htmlContent);
-            renderer.layout();
-            renderer.createPDF(outputStream);
-            return outputStream.toByteArray();
-        }
     }
 }

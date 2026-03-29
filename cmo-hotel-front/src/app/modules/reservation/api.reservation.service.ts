@@ -101,4 +101,10 @@ export class ApiReservationService {
         });
     }
 
+    generateRegistrationCard(code): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/download/fiche?code=${code}`, {
+            responseType: 'blob'
+        });
+    }
+
 }

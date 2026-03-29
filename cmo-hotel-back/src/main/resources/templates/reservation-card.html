@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"></meta>
+    <style>
+        @page { size: A4; margin: 0.5cm; }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #334155;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.4;
+        }
+
+        /* --- LOGO  HEADER --- */
+        .header-table { width: 100%; border-bottom: 2px solid #3f51b5; padding-bottom: 15px; margin-bottom: 20px; }
+        .logo-img { height: 55px; width: auto; }
+        .platform-info { padding-left: 15px; }
+        .platform-name { font-size: 18px; font-weight: 800; color: #1e1b4b; letter-spacing: -0.5px; }
+        .platform-sub { font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 600; }
+        .doc-info { text-align: right; }
+        .doc-title { font-size: 14px; font-weight: 700; color: #3f51b5; text-transform: uppercase; }
+        .doc-ref { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+
+        /* --- BARRE METADATA --- */
+        .meta-bar {
+            background: #f1f5f9;
+            padding: 8px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 9px;
+            color: #475569;
+        }
+
+        /* --- STRUCTURE SECTIONS --- */
+        .section { margin-bottom: 25px; clear: both; }
+        .section-header {
+            border-left: 3px solid #3f51b5;
+            padding-left: 10px;
+            margin-bottom: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #1e293b;
+            text-transform: uppercase;
+        }
+
+        /* --- GRILLE DE DONNÉES (Détails séjour) --- */
+        .data-grid { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
+        .data-label { font-size: 8px; color: #64748b; text-transform: uppercase; font-weight: 700; }
+        .data-value { font-size: 11px; color: #1e293b; font-weight: 600; padding-top: 2px; }
+
+        /* --- TABLES PRINCIPALES (Occupants  Estimation) --- */
+        .main-table { width: 100%; border-collapse: collapse; border: 1px solid #e2e8f0; }
+        .main-table th {
+            background: #f8fafc;
+            color: #475569;
+            text-transform: uppercase;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 8px 10px;
+            border-bottom: 2px solid #e2e8f0;
+            text-align: left;
+        }
+        .main-table td { padding: 8px 10px; font-size: 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+
+        /* Badges */
+        .role-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 700;
+            background: #e0e7ff;
+            color: #4338ca;
+            display: inline-block;
+        }
+        .role-principal { background: #3f51b5; color: white; }
+
+        /* --- BLOC TOTAL --- */
+        .total-container { width: 100%; margin-top: 15px; }
+        .total-box {
+            background: #1e1b4b;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            text-align: right;
+            min-width: 200px;
+        }
+        .total-label { font-size: 9px; text-transform: uppercase; opacity: 0.8; }
+        .total-amount { font-size: 18px; font-weight: 800; display: block; }
+
+        /* --- SIGNATURES --- */
+        .signature-section { margin-top: 40px; width: 100%; }
+        .sig-card {
+            width: 48%;
+            height: 90px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            font-size: 10px;
+            color: #475569;
+        }
+
+        .footer {
+            margin-top: 50px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 10px;
+            text-align: center;
+            font-size: 8px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+<table class="header-table">
+    <tr>
+        <td width="65%">
+            <table border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td><img th:src="${logoBase64}" class="logo-img" /></td>
+                    <td class="platform-info">
+                        <div class="platform-name">CMO-HOTEL MANAGER</div>
+                        <div class="platform-sub">Direction de l'Hébergement et Services</div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+        <td class="doc-info">
+            <div class="doc-title">Fiche de Réservation</div>
+            <div class="doc-ref">Référence: #<strong th:text="${details.code}">000</strong></div>
+        </td>
+    </tr>
+</table>
+
+<div class="meta-bar">
+    Opérateur : <strong th:text="${generatedBy}">Admin</strong> &nbsp; | &nbsp;
+    Édition du : <span th:text="${#temporals.format(now, 'dd/MM/yyyy HH:mm')}">28/03/2026</span>
+</div>
+
+<div class="section">
+    <div class="section-header">Détails du Séjour</div>
+    <table class="data-grid">
+        <tr>
+            <td width="25%">
+                <div class="data-label">Catégorie</div>
+                <div class="data-value" th:text="${details.category}">MISSION</div>
+            </td>
+            <td width="25%">
+                <div class="data-label">Statut Dossier</div>
+                <div class="data-value" style="color: #3f51b5;" th:text="${details.status.name}">Confirmée</div>
+            </td>
+            <td width="25%">
+                <div class="data-label">Arrivée (Effectif/Prévu)</div>
+                <div class="data-value" th:text="${details.checkin != null ? #temporals.format(details.checkin, 'dd/MM/yyyy HH:mm') : #temporals.format(details.plannedStart, 'dd/MM/yyyy HH:mm')}">--</div>
+            </td>
+            <td width="25%">
+                <div class="data-label">Départ (Effectif/Prévu)</div>
+                <div class="data-value" th:text="${details.checkout != null ? #temporals.format(details.checkout, 'dd/MM/yyyy HH:mm') : #temporals.format(details.plannedEnd, 'dd/MM/yyyy HH:mm')}">--</div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="section">
+    <div class="section-header">Occupants / Affectations</div>
+    <table class="main-table">
+        <thead>
+        <tr>
+            <th>Résident</th>
+            <th>Qualité / Rôle</th>
+            <th>Identité / Matricule</th>
+            <th>Hébergement</th>
+            <th>Type</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="res : ${details.reservations}">
+            <td>
+                <div style="font-weight: 700; color: #1e1b4b;" th:text="${res.person.grade.name}">Grade</div>
+                <div style="font-size: 9px; color: #64748b;" th:text="${res.person.firstName + ' ' + res.person.lastName}">Nom</div>
+            </td>
+            <td>
+                <span th:class="${res.role.name() == 'PRINCIPAL' ? 'role-badge role-principal' : 'role-badge'}"
+                      th:text="${res.role.name}">Rôle</span>
+            </td>
+            <td th:text="${res.person.identity + ' / ' + res.person.matricule}">CIN / MAT</td>
+            <td>
+                <div th:text="${res.room.pavillon.name}">Pavillon</div>
+                <div style="font-weight: 700; color: #3f51b5;" th:text="${'Chambre ' + res.room.code}">101</div>
+            </td>
+            <td th:text="${res.room.roomType.type}">Type</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="section">
+    <div class="section-header">Estimation Financière</div>
+    <table class="main-table">
+        <thead>
+        <tr>
+            <th>Désignation du Logement</th>
+            <th style="text-align: center;">Nuits</th>
+            <th style="text-align: right;">Tarif Journalier</th>
+            <th style="text-align: right;">Total Partiel</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="roomEst : ${estimation.details}">
+            <td th:text="${roomEst.roomName}">Chambre 101</td>
+            <td style="text-align: center;" th:text="${estimation.durationInDays}">1</td>
+            <td style="text-align: right;" th:text="${#numbers.formatDecimal(roomEst.unitPrice, 1, 2) + ' MAD'}">0.00 MAD</td>
+            <td style="text-align: right; font-weight: 700;" th:text="${#numbers.formatDecimal(roomEst.totalPrice, 1, 2) + ' MAD'}">0.00 MAD</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <table class="total-container">
+        <tr>
+            <td width="60%" style="vertical-align: top; padding-top: 10px; font-size: 9px; color: #64748b;">
+                <strong>Note :</strong> Cette estimation est calculée selon le grade du titulaire.<br/>
+                Elle ne comprend pas les taxes éventuelles ou extras.
+            </td>
+            <td width="40%" align="right">
+                <div class="total-box">
+                    <span class="total-label">Montant Total Estimé</span>
+                    <span class="total-amount"><span th:text="${#numbers.formatDecimal(estimation.totalAmount, 1, 2)}">0.00</span> MAD</span>
+                    <div th:if="${details.priseEnCharge}" style="font-size: 8px; margin-top: 5px; color: #4ade80; font-weight: bold;">
+                        PRIS EN CHARGE (Ref: <span th:text="${details.priseEnChargeReference}">--</span>)
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="signature-section">
+    <table width="100%">
+        <tr>
+            <td class="sig-card">
+                <strong style="color: #1e293b;">SIGNATURE DU RÉSIDENT</strong><br/>
+                <span style="font-size: 7px;">"Lu et approuvé"</span>
+            </td>
+            <td width="4%"></td>
+            <td class="sig-card">
+                <strong style="color: #1e293b;">RÉCEPTION / ADMINISTRATION</strong><br/>
+                <span style="font-size: 7px;">Cachet et Signature</span>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="footer">
+    CMO-HOTEL MANAGER - Document officiel généré le <span th:text="${#temporals.format(now, 'dd/MM/yyyy HH:mm')}">--</span>.<br/>
+    L'hébergement est régi par le règlement intérieur de l'établissement.
+</div>
+
+</body>
+</html>
