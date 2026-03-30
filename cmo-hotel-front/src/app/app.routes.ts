@@ -151,6 +151,11 @@ export const appRoutes: Route[] = [
                     module:[APP_MODULES.RESERVATION]
                 },},
             {
+                path: 'main/courante', loadChildren: () => import('app/modules/main-courante/main-courante.routes'),
+                data: {
+                    module:[APP_MODULES.RESERVATION]
+                },},
+            {
                 path: 'calender', loadChildren: () => import('app/modules/planning-calender/planning-calender.routes'),
                 data: {
                     module:[APP_MODULES.RESERVATION]

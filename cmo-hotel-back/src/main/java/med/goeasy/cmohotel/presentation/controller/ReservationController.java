@@ -186,6 +186,11 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.getSejours());
     }
 
+    @GetMapping("/main-courante")
+    ResponseEntity<List<MainCourante>> getMainCourante(Authentication authentication){
+        return ResponseEntity.ok(reservationService.getMainCourante(authentication));
+    }
+
     @GetMapping("/planning/{type}")
     ResponseEntity<List<ReservationCalenderResponseDto>> getRangReservations(
             Authentication authentication,

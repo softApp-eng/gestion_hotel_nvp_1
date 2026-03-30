@@ -104,11 +104,11 @@ public interface ReservationDetailsRepository extends JpaRepository<ReservationD
     """)
     long countTotalReservations(@Param("status") List<EReservationStatus> status);
 
-    @Query("SELECT rd FROM ReservationDetails rd WHERE rd.paidAt >= :startOfDay AND i.paidAt <= :endOfDay AND i.status = 'PAID'")
+    /*@Query("SELECT rd FROM ReservationDetails rd WHERE rd.paidAt >= :startOfDay AND i.paidAt <= :endOfDay AND i.status = 'PAID'")
     List<ReservationDetails> getReservationsByDay(
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay
-    );
+    );*/
 
 
 }

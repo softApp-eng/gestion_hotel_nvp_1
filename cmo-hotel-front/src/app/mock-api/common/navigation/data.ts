@@ -72,6 +72,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 icon: 'heroicons_outline:calendar-days',
                 link: '/managements/calender',
                 data: { permissions: [APP_PERMISSIONS.RESERVATION_LIST] },
+            },{
+                id: 'reservations.mainc',
+                title: 'Main courante',
+                type: 'basic',
+                icon: 'heroicons_outline:calendar-days',
+                link: '/managements/main/courante/list',
+                data: { permissions: [APP_PERMISSIONS.RESERVATION_MAIN_COURANTE] },
             },
         ],
     },

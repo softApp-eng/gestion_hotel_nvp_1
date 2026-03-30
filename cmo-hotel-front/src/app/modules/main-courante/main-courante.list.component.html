@@ -1,0 +1,137 @@
+<div class="flex min-w-0 flex-auto flex-col">
+        <!-- Header -->
+        <div class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between px-6 py-6 md:px-10 border-b bg-card dark:bg-transparent transition-all duration-200">
+            <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary-500/20 via-transparent to-transparent"></div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center space-x-2 text-secondary font-medium text-sm mb-2">
+                    <a class="hover:text-primary transition-colors cursor-pointer">Gestion</a>
+                    <mat-icon class="icon-size-4" [svgIcon]="'heroicons_mini:chevron-right'"></mat-icon>
+                    <span class="text-primary-600 dark:text-primary-400">Réservations</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="flex items-center justify-center p-3 mr-4 rounded-xl bg-primary-50 dark:bg-primary-500/10 text-primary shadow-sm">
+                        <mat-icon class="icon-size-10" [svgIcon]="'heroicons_outline:clipboard-document'"></mat-icon>
+                    </div>
+                    <div class="flex flex-col">
+                        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-none text-slate-900 dark:text-white">
+                            Main courante
+                        </h2>
+                        <p class="text-secondary font-medium mt-1 text-md hidden sm:block">
+                            Suivi en temps réel de l'occupation, des prestations et des détails de la réservation active.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items list -->
+        <div class="space-y-8 p-6 md:p-8">
+            <div class="bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                        <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded w-full sm:max-w-xs">
+                            <mat-icon class="icon-size-5" matPrefix [svgIcon]="'search'"></mat-icon>
+                            <input
+                                matInput
+                                #inputKey
+                                matTooltip="Recherche : Personne, Chambre ou Code Réservation"
+                                [autocomplete]="'off'"
+                                [placeholder]="'Chercher...'">
+                        </mat-form-field>
+                    </div>
+
+                </div>
+
+
+                <div class="w-full bg-primary-50 dark:bg-transparent border rounded-xl shadow-sm overflow-x-auto ">
+                        <table mat-table [dataSource]="dataSource" class="min-w-full">
+
+                            <ng-container matColumnDef="reservationCode">
+                                <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700"> Ref </th>
+                                <td mat-cell *matCellDef="let row" class="text-slate-500 font-mono"> #{{row.reservationCode}} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="client">
+                                <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700"> Occupant / Grade </th>
+                                <td mat-cell *matCellDef="let row">
+                                    <div class="flex flex-col">
+                                        <span class="font-semibold text-slate-900">{{row.client}}</span>
+                                        <span class="text-xs text-blue-600 font-medium">{{row.grade}}</span>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="room">
+                                <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700"> Localisation </th>
+                                <td mat-cell *matCellDef="let row">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-1 bg-slate-100 rounded text-xs font-bold text-slate-600">{{row.roomCode}}</span>
+                                        <span class="text-slate-500">{{row.pavillon}}</span>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="categ">
+                                <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700"> Categorie </th>
+                                <td mat-cell *matCellDef="let row"> {{ row.category }} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="checkin">
+                                <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700"> Arrivée </th>
+                                <td mat-cell *matCellDef="let row"> {{ row.checkin | date:'dd/MM/yyyy' }} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="unite">
+                                <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700"> unité </th>
+                                <td mat-cell *matCellDef="let row"> {{ row.unite }} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="nights">
+                                <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700 text-center"> Nuits </th>
+                                <td mat-cell *matCellDef="let row" class="text-center">
+                                    {{row.validatedNightsNumber}}
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="roomPrice">
+                                <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700 text-right"> Prix (MAD) </th>
+                                <td mat-cell *matCellDef="let row" class="text-right text-slate-900">
+                                    {{row.roomPrice | number:'1.2-2'}}
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="pc">
+                                <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700 text-right"> PC (MAD) </th>
+                                <td mat-cell *matCellDef="let row" class="text-right font-bold text-slate-900">
+                                    {{(row.roomPrice * row.validatedNightsNumber) | number:'1.2-2'}}
+                                </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns" ></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns;" ></tr>
+
+                            <tr class="mat-row" *matNoDataRow>
+                                <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+
+                                    <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                                        @if (!isLoading){
+                                            Aucune ligne trouvée
+                                        } @else {
+                                            Chargement...
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                </div>
+                <mat-paginator
+                    [ngClass]="{ 'pointer-events-none': isLoading }"
+                    showFirstLastButtons="true"
+                    [length]="totalRows"
+                    [pageIndex]="currentPage"
+                    [pageSize]="pageSize"
+                    [pageSizeOptions]="pageSizeOptions"
+                ></mat-paginator>
+            </div>
+        </div>
+</div>

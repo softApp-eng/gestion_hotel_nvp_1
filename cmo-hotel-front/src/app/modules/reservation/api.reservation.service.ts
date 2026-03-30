@@ -49,6 +49,11 @@ export class ApiReservationService {
         return this._httpClient.get(`${this.API_URL}/sejours`);
     }
 
+
+    getMainCourante(): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/main-courante`);
+    }
+
     getResidentReservations(): Observable<any>{
         return this._httpClient.get(`${this.API_URL}/residents`);
     }

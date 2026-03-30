@@ -109,6 +109,7 @@ public class Feeder {
                                             .module(p.getModule())
                                             .groupe(p.getGroup())
                                             .affectable(p.isAffectable())
+                                            .description(p.getDescription())
                                             .build())
                     );
                 });

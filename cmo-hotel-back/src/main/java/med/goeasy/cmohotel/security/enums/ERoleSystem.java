@@ -36,6 +36,7 @@ public enum ERoleSystem {
                     EPermissions.RESERVATION_RESIDENTS,
                     EPermissions.RESERVATION_ROOM_CHANGE,
                     EPermissions.RESERVATION_FICHE_PDF,
+                    EPermissions.RESERVATION_MAIN_COURANTE,
                     // rooms and pavillon
                     EPermissions.PAVILLON_LIST,
                     EPermissions.PAVILLON_SELECT_ONE,
@@ -82,6 +83,7 @@ public enum ERoleSystem {
                     EPermissions.INVOICE_LIST,
                     EPermissions.INVOICE_ENCAISSEMENT,
                     EPermissions.INVOICE_ENCAISSEMENT_PDF,
+                    EPermissions.RESERVATION_MAIN_COURANTE,
 
                     // statistics & dashboards
                     EPermissions.STATISTICS_DASHBOARDS

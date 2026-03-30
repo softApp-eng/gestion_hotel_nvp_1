@@ -42,7 +42,7 @@ public class CmoHotelBackApplication {
             //feeder.seedMassiveReservations(500);
             //feeder.grantPermissionToRole(EPermissions.RESERVATION_UPDATE,ERoleSystem.ADMIN);
             //feeder.grantPermissionToRole(EPermissions.PRESTATION_UPDATE,ERoleSystem.ADMIN);
-            //feeder.grantPermissionToRole(EPermissions.INVOICE_ENCAISSEMENT_PDF,ERoleSystem.ADMIN);
+            //feeder.grantPermissionToRole(EPermissions.RESERVATION_MAIN_COURANTE,ERoleSystem.ADMIN);
             //feeder.grantPermissionToRole(EPermissions.ROOM_LIST_WITH_RESERVATION_DETAILS,ERoleSystem.ADMIN);
             //feeder.grantPermissionToRole(EPermissions.INVOICE_INVOICE_PDF,ERoleSystem.ADMIN);
             //feeder.grantPermissionToRole(EPermissions.RESERVATION_FICHE_PDF,ERoleSystem.ADMIN);

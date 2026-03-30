@@ -133,6 +133,7 @@ public class WebSecurityConfig {
 						.requestMatchers(POST,"/v1/reservations/switch-room").hasAuthority(EPermissions.RESERVATION_ROOM_CHANGE.getAuthority())
 						.requestMatchers(POST,"/v1/reservations/time/extend").hasAuthority(EPermissions.RESERVATION_TIME_EXTEND.getAuthority())
 						.requestMatchers(GET,"/v1/reservations/download/fiche").hasAuthority(EPermissions.RESERVATION_FICHE_PDF.getAuthority())
+						.requestMatchers(GET,"/v1/reservations/main-courante").hasAuthority(EPermissions.RESERVATION_MAIN_COURANTE.getAuthority())
 						// House keeping
 						.requestMatchers(GET,"/v1/house-keeping/agents/all").hasAuthority(EPermissions.HOUSE_KEEPING_AGENT_LIST.getAuthority())
 						.requestMatchers(POST,"/v1/house-keeping/agents/create").hasAuthority(EPermissions.HOUSE_KEEPING_AGENT_CREATE.getAuthority())

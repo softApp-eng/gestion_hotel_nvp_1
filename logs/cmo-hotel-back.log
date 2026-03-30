@@ -1,21 +1,21 @@
-2026-03-26 12:49:46.209  INFO 49596 --- [main] m.g.cmohotel.CmoHotelBackApplication     : Starting CmoHotelBackApplication vv1.0 using Java 22.0.2 with PID 49596 (C:\Users\moham\Desktop\projet-CMO\cmo-hotel\cmo-hotel-back\target\classes started by Developpement in C:\Users\moham\Desktop\projet-CMO\cmo-hotel)
--2026-03-26 12:49:46.211  INFO 49596 --- [main] m.g.cmohotel.CmoHotelBackApplication     : The following 1 profile is active: "prod"
--2026-03-26 12:49:46.884  INFO 49596 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
--2026-03-26 12:49:46.988  INFO 49596 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 97 ms. Found 27 JPA repository interfaces.
--2026-03-26 12:49:47.436  INFO 49596 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8888 (http)
--2026-03-26 12:49:47.448  INFO 49596 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
--2026-03-26 12:49:47.449  INFO 49596 --- [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
--2026-03-26 12:49:47.509  INFO 49596 --- [main] o.a.c.c.C.[.[localhost].[/cmo-api]       : Initializing Spring embedded WebApplicationContext
--2026-03-26 12:49:47.509  INFO 49596 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1248 ms
--2026-03-26 12:49:47.586  INFO 49596 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
--2026-03-26 12:49:47.770  INFO 49596 --- [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7a358613
--2026-03-26 12:49:47.772  INFO 49596 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
--2026-03-26 12:49:47.843  INFO 49596 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
--2026-03-26 12:49:47.898  INFO 49596 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.5.Final
--2026-03-26 12:49:47.939  INFO 49596 --- [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
--2026-03-26 12:49:48.171  INFO 49596 --- [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
--2026-03-26 12:49:48.219  WARN 49596 --- [main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
--2026-03-26 12:49:48.231  INFO 49596 --- [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+2026-03-30 09:11:47.550  INFO 84232 --- [main] m.g.cmohotel.CmoHotelBackApplication     : Starting CmoHotelBackApplication vv1.0 using Java 22.0.2 with PID 84232 (C:\Users\moham\Desktop\projet-CMO\cmo-hotel\cmo-hotel-back\target\classes started by Developpement in C:\Users\moham\Desktop\projet-CMO\cmo-hotel)
+-2026-03-30 09:11:47.556  INFO 84232 --- [main] m.g.cmohotel.CmoHotelBackApplication     : The following 1 profile is active: "prod"
+-2026-03-30 09:11:48.148  INFO 84232 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+-2026-03-30 09:11:48.248  INFO 84232 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 94 ms. Found 27 JPA repository interfaces.
+-2026-03-30 09:11:48.706  INFO 84232 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8888 (http)
+-2026-03-30 09:11:48.717  INFO 84232 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+-2026-03-30 09:11:48.717  INFO 84232 --- [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
+-2026-03-30 09:11:48.764  INFO 84232 --- [main] o.a.c.c.C.[.[localhost].[/cmo-api]       : Initializing Spring embedded WebApplicationContext
+-2026-03-30 09:11:48.764  INFO 84232 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1161 ms
+-2026-03-30 09:11:48.833  INFO 84232 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+-2026-03-30 09:11:49.095  INFO 84232 --- [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@8f2e3e6
+-2026-03-30 09:11:49.097  INFO 84232 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+-2026-03-30 09:11:49.175  INFO 84232 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+-2026-03-30 09:11:49.215  INFO 84232 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.5.Final
+-2026-03-30 09:11:49.244  INFO 84232 --- [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+-2026-03-30 09:11:49.447  INFO 84232 --- [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+-2026-03-30 09:11:49.482  WARN 84232 --- [main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+-2026-03-30 09:11:49.490  INFO 84232 --- [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
 	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
 	Database driver: undefined/unknown
 	Database version: 17.5
@@ -23,245 +23,67 @@
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
--2026-03-26 12:49:49.414  INFO 49596 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
--2026-03-26 12:49:50.415  INFO 49596 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
--2026-03-26 12:49:50.610  INFO 49596 --- [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
--2026-03-26 12:49:53.024  INFO 49596 --- [main] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
--2026-03-26 12:49:53.024  WARN 49596 --- [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
--2026-03-26 12:49:54.047  WARN 49596 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
--2026-03-26 12:49:54.268  WARN 49596 --- [main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore DispatcherTypeRequestMatcher{dispatcherType=ERROR, httpMethod=null}. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
--2026-03-26 12:49:54.481  INFO 49596 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8888 (http) with context path '/cmo-api'
--2026-03-26 12:49:54.510 DEBUG 49596 --- [main] org.hibernate.SQL                        : select ac1_0.id,ac1_0.auto_cleaning_room_time_cron_expression,ac1_0.checkout_time from app_configuration ac1_0 where ac1_0.id=?
--2026-03-26 12:49:54.532  INFO 49596 --- [main] m.g.cmohotel.utils.DynamicJobService     : Prochaine exécution planifiée auto cleaning room à : 0 1 1 * * ?
--2026-03-26 12:49:54.533  INFO 49596 --- [main] m.g.cmohotel.CmoHotelBackApplication     : Started CmoHotelBackApplication in 8.671 seconds (process running for 9.286)
--2026-03-26 12:50:00.242  INFO 49596 --- [http-nio-8888-exec-1] o.a.c.c.C.[.[localhost].[/cmo-api]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
--2026-03-26 12:50:00.243  INFO 49596 --- [http-nio-8888-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
--2026-03-26 12:50:00.247  INFO 49596 --- [http-nio-8888-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 4 ms
--2026-03-26 12:50:00.568 DEBUG 49596 --- [http-nio-8888-exec-3] org.hibernate.SQL                        : select at1_0.id,at1_0.created_at,at1_0.revoked,at1_0.token,at1_0.user_id from app_token at1_0 where at1_0.token=?
--2026-03-26 12:50:00.574 DEBUG 49596 --- [http-nio-8888-exec-3] org.hibernate.SQL                        : select au1_0.id,au1_0.account_status,au1_0.avatar,au1_0.created_at,au1_0.first_name,au1_0.is_system,au1_0.last_name,au1_0.password,r1_0.user_id,r1_1.id,r1_1.created_at,r1_1.created_by,r1_1.description,r1_1.is_system,r1_1.last_modified_by,r1_1.name,p1_0.role_id,p1_1.id,p1_1.affectable,p1_1.description,p1_1.groupe,p1_1.module,p1_1.name,p1_1.title,r1_1.title,r1_1.updated_at,au1_0.updated_at,au1_0.username from app_user au1_0 left join app_user_roles r1_0 on au1_0.id=r1_0.user_id left join app_role r1_1 on r1_1.id=r1_0.role_id left join role_permissions p1_0 on r1_1.id=p1_0.role_id left join app_permission p1_1 on p1_1.id=p1_0.permission_id where au1_0.id=?
--2026-03-26 12:50:00.679 DEBUG 49596 --- [http-nio-8888-exec-3] org.hibernate.SQL                        : select au1_0.id,au1_0.account_status,au1_0.avatar,au1_0.created_at,au1_0.first_name,au1_0.is_system,au1_0.last_name,au1_0.password,au1_0.updated_at,au1_0.username from app_user au1_0 where au1_0.username=? and au1_0.account_status
--2026-03-26 12:50:00.684 DEBUG 49596 --- [http-nio-8888-exec-3] org.hibernate.SQL                        : select r1_0.user_id,r1_1.id,r1_1.created_at,r1_1.created_by,r1_1.description,r1_1.is_system,r1_1.last_modified_by,r1_1.name,p1_0.role_id,p1_1.id,p1_1.affectable,p1_1.description,p1_1.groupe,p1_1.module,p1_1.name,p1_1.title,r1_1.title,r1_1.updated_at from app_user_roles r1_0 join app_role r1_1 on r1_1.id=r1_0.role_id left join role_permissions p1_0 on r1_1.id=p1_0.role_id left join app_permission p1_1 on p1_1.id=p1_0.permission_id where r1_0.user_id=?
--2026-03-26 12:50:00.719  INFO 49596 --- [http-nio-8888-exec-3] m.g.cmohotel.service.ProfileService      : get profile infos for admin
--2026-03-26 12:50:01.217 DEBUG 49596 --- [http-nio-8888-exec-6] org.hibernate.SQL                        : select at1_0.id,at1_0.created_at,at1_0.revoked,at1_0.token,at1_0.user_id from app_token at1_0 where at1_0.token=?
--2026-03-26 12:50:01.219 DEBUG 49596 --- [http-nio-8888-exec-6] org.hibernate.SQL                        : select au1_0.id,au1_0.account_status,au1_0.avatar,au1_0.created_at,au1_0.first_name,au1_0.is_system,au1_0.last_name,au1_0.password,r1_0.user_id,r1_1.id,r1_1.created_at,r1_1.created_by,r1_1.description,r1_1.is_system,r1_1.last_modified_by,r1_1.name,p1_0.role_id,p1_1.id,p1_1.affectable,p1_1.description,p1_1.groupe,p1_1.module,p1_1.name,p1_1.title,r1_1.title,r1_1.updated_at,au1_0.updated_at,au1_0.username from app_user au1_0 left join app_user_roles r1_0 on au1_0.id=r1_0.user_id left join app_role r1_1 on r1_1.id=r1_0.role_id left join role_permissions p1_0 on r1_1.id=p1_0.role_id left join app_permission p1_1 on p1_1.id=p1_0.permission_id where au1_0.id=?
--2026-03-26 12:50:01.219 DEBUG 49596 --- [http-nio-8888-exec-5] org.hibernate.SQL                        : select at1_0.id,at1_0.created_at,at1_0.revoked,at1_0.token,at1_0.user_id from app_token at1_0 where at1_0.token=?
--2026-03-26 12:50:01.223 DEBUG 49596 --- [http-nio-8888-exec-5] org.hibernate.SQL                        : select au1_0.id,au1_0.account_status,au1_0.avatar,au1_0.created_at,au1_0.first_name,au1_0.is_system,au1_0.last_name,au1_0.password,r1_0.user_id,r1_1.id,r1_1.created_at,r1_1.created_by,r1_1.description,r1_1.is_system,r1_1.last_modified_by,r1_1.name,p1_0.role_id,p1_1.id,p1_1.affectable,p1_1.description,p1_1.groupe,p1_1.module,p1_1.name,p1_1.title,r1_1.title,r1_1.updated_at,au1_0.updated_at,au1_0.username from app_user au1_0 left join app_user_roles r1_0 on au1_0.id=r1_0.user_id left join app_role r1_1 on r1_1.id=r1_0.role_id left join role_permissions p1_0 on r1_1.id=p1_0.role_id left join app_permission p1_1 on p1_1.id=p1_0.permission_id where au1_0.id=?
--2026-03-26 12:50:01.231 DEBUG 49596 --- [http-nio-8888-exec-6] org.hibernate.SQL                        : select au1_0.id,au1_0.account_status,au1_0.avatar,au1_0.created_at,au1_0.first_name,au1_0.is_system,au1_0.last_name,au1_0.password,au1_0.updated_at,au1_0.username from app_user au1_0 where au1_0.username=? and au1_0.account_status
--2026-03-26 12:50:01.233 DEBUG 49596 --- [http-nio-8888-exec-6] org.hibernate.SQL                        : select r1_0.user_id,r1_1.id,r1_1.created_at,r1_1.created_by,r1_1.description,r1_1.is_system,r1_1.last_modified_by,r1_1.name,p1_0.role_id,p1_1.id,p1_1.affectable,p1_1.description,p1_1.groupe,p1_1.module,p1_1.name,p1_1.title,r1_1.title,r1_1.updated_at from app_user_roles r1_0 join app_role r1_1 on r1_1.id=r1_0.role_id left join role_permissions p1_0 on r1_1.id=p1_0.role_id left join app_permission p1_1 on p1_1.id=p1_0.permission_id where r1_0.user_id=?
--2026-03-26 12:50:01.244 DEBUG 49596 --- [http-nio-8888-exec-5] org.hibernate.SQL                        : select au1_0.id,au1_0.account_status,au1_0.avatar,au1_0.created_at,au1_0.first_name,au1_0.is_system,au1_0.last_name,au1_0.password,au1_0.updated_at,au1_0.username from app_user au1_0 where au1_0.username=? and au1_0.account_status
--2026-03-26 12:50:01.245 DEBUG 49596 --- [http-nio-8888-exec-5] org.hibernate.SQL                        : select r1_0.user_id,r1_1.id,r1_1.created_at,r1_1.created_by,r1_1.description,r1_1.is_system,r1_1.last_modified_by,r1_1.name,p1_0.role_id,p1_1.id,p1_1.affectable,p1_1.description,p1_1.groupe,p1_1.module,p1_1.name,p1_1.title,r1_1.title,r1_1.updated_at from app_user_roles r1_0 join app_role r1_1 on r1_1.id=r1_0.role_id left join role_permissions p1_0 on r1_1.id=p1_0.role_id left join app_permission p1_1 on p1_1.id=p1_0.permission_id where r1_0.user_id=?
--2026-03-26 12:50:01.253  INFO 49596 --- [http-nio-8888-exec-5] m.g.cmohotel.service.StatisticsService   : admin loads reservations current statistics
--2026-03-26 12:50:01.255 DEBUG 49596 --- [http-nio-8888-exec-6] org.hibernate.SQL                        : select rt1_0.type,count(r1_0.id) from room r1_0 join room_type rt1_0 on rt1_0.id=r1_0.room_type_id where r1_0.archived=false group by rt1_0.type
--2026-03-26 12:50:01.258 DEBUG 49596 --- [http-nio-8888-exec-5] org.hibernate.SQL                        : select count(rd1_0.code) from reservation_details rd1_0 where rd1_0.status in (?)
--2026-03-26 12:50:01.260 DEBUG 49596 --- [http-nio-8888-exec-6] org.hibernate.SQL                        : select rt1_0.type,count(distinct r2_0.id) from reservation r1_0 join room r2_0 on r2_0.id=r1_0.room_id join room_type rt1_0 on rt1_0.id=r2_0.room_type_id join reservation_details d1_0 on d1_0.code=r1_0.details_code where d1_0.status='CONFIRMED' group by rt1_0.type
--2026-03-26 12:50:01.265  INFO 49596 --- [http-nio-8888-exec-6] m.g.cmohotel.service.StatisticsService   : admin loads room type occupation statistics
--2026-03-26 12:50:01.268 DEBUG 49596 --- [http-nio-8888-exec-5] org.hibernate.SQL                        : select count(rd1_0.code) from reservation_details rd1_0 where rd1_0.status in (?)
--2026-03-26 12:50:01.278 DEBUG 49596 --- [http-nio-8888-exec-5] org.hibernate.SQL                        : select count(r1_0.id) from reservation r1_0 join reservation_details d1_0 on d1_0.code=r1_0.details_code where (? is null or d1_0.status in (?))
--2026-03-26 12:50:01.288 DEBUG 49596 --- [http-nio-8888-exec-5] org.hibernate.SQL                        : select count(rd1_0.code) from reservation_details rd1_0 where rd1_0.status in (?,?)
--2026-03-26 12:50:01.290 DEBUG 49596 --- [http-nio-8888-exec-5] org.hibernate.SQL                        : select count(rd1_0.code) from reservation_details rd1_0 where rd1_0.status in (?)
--2026-03-26 12:50:01.295 DEBUG 49596 --- [http-nio-8888-exec-5] org.hibernate.SQL                        : select count(r1_0.id) from reservation r1_0 join reservation_details d1_0 on d1_0.code=r1_0.details_code where (? is null or d1_0.status in (?))
--2026-03-26 12:50:37.725  INFO 49596 --- [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
--2026-03-26 12:50:37.730  INFO 49596 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
--2026-03-26 12:50:37.736  INFO 49596 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
--2026-03-26 12:50:37.737  INFO 49596 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
--2026-03-26 12:50:37.739  INFO 49596 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
--2026-03-26 12:50:40.129  INFO 54116 --- [main] m.g.cmohotel.CmoHotelBackApplication     : Starting CmoHotelBackApplication vv1.0 using Java 22.0.2 with PID 54116 (C:\Users\moham\Desktop\projet-CMO\cmo-hotel\cmo-hotel-back\target\classes started by Developpement in C:\Users\moham\Desktop\projet-CMO\cmo-hotel)
--2026-03-26 12:50:40.131  INFO 54116 --- [main] m.g.cmohotel.CmoHotelBackApplication     : The following 1 profile is active: "prod"
--2026-03-26 12:50:40.758  INFO 54116 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
--2026-03-26 12:50:40.858  INFO 54116 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 94 ms. Found 27 JPA repository interfaces.
--2026-03-26 12:50:41.280  INFO 54116 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8888 (http)
--2026-03-26 12:50:41.289  INFO 54116 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
--2026-03-26 12:50:41.289  INFO 54116 --- [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
--2026-03-26 12:50:41.338  INFO 54116 --- [main] o.a.c.c.C.[.[localhost].[/cmo-api]       : Initializing Spring embedded WebApplicationContext
--2026-03-26 12:50:41.338  INFO 54116 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1156 ms
--2026-03-26 12:50:41.383  INFO 54116 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
--2026-03-26 12:50:41.536  INFO 54116 --- [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@59328218
--2026-03-26 12:50:41.537  INFO 54116 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
--2026-03-26 12:50:41.594  INFO 54116 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
--2026-03-26 12:50:41.622  INFO 54116 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.5.Final
--2026-03-26 12:50:41.641  INFO 54116 --- [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
--2026-03-26 12:50:41.820  INFO 54116 --- [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
--2026-03-26 12:50:41.854  WARN 54116 --- [main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
--2026-03-26 12:50:41.862  INFO 54116 --- [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
-	Database driver: undefined/unknown
-	Database version: 17.5
-	Autocommit mode: undefined/unknown
-	Isolation level: undefined/unknown
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
--2026-03-26 12:50:42.960  INFO 54116 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
--2026-03-26 12:50:43.885  INFO 54116 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
--2026-03-26 12:50:44.075  INFO 54116 --- [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
--2026-03-26 12:50:46.435  INFO 54116 --- [main] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
--2026-03-26 12:50:46.436  WARN 54116 --- [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
--2026-03-26 12:50:47.440  WARN 54116 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
--2026-03-26 12:50:47.752  WARN 54116 --- [main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore DispatcherTypeRequestMatcher{dispatcherType=ERROR, httpMethod=null}. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
--2026-03-26 12:50:48.022  INFO 54116 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8888 (http) with context path '/cmo-api'
--2026-03-26 12:50:48.062 DEBUG 54116 --- [main] org.hibernate.SQL                        : select ac1_0.id,ac1_0.auto_cleaning_room_time_cron_expression,ac1_0.checkout_time from app_configuration ac1_0 where ac1_0.id=?
--2026-03-26 12:50:48.087  INFO 54116 --- [main] m.g.cmohotel.utils.DynamicJobService     : Prochaine exécution planifiée auto cleaning room à : 0 1 1 * * ?
--2026-03-26 12:50:48.088  INFO 54116 --- [main] m.g.cmohotel.CmoHotelBackApplication     : Started CmoHotelBackApplication in 8.41 seconds (process running for 9.283)
--2026-03-26 12:50:51.239  INFO 54116 --- [http-nio-8888-exec-1] o.a.c.c.C.[.[localhost].[/cmo-api]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
--2026-03-26 12:50:51.239  INFO 54116 --- [http-nio-8888-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
--2026-03-26 12:50:51.241  INFO 54116 --- [http-nio-8888-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
--2026-03-26 12:50:51.733 DEBUG 54116 --- [http-nio-8888-exec-2] org.hibernate.SQL                        : select at1_0.id,at1_0.created_at,at1_0.revoked,at1_0.token,at1_0.user_id from app_token at1_0 where at1_0.token=?
--2026-03-26 12:50:51.740 DEBUG 54116 --- [http-nio-8888-exec-2] org.hibernate.SQL                        : select au1_0.id,au1_0.account_status,au1_0.avatar,au1_0.created_at,au1_0.first_name,au1_0.is_system,au1_0.last_name,au1_0.password,r1_0.user_id,r1_1.id,r1_1.created_at,r1_1.created_by,r1_1.description,r1_1.is_system,r1_1.last_modified_by,r1_1.name,p1_0.role_id,p1_1.id,p1_1.affectable,p1_1.description,p1_1.groupe,p1_1.module,p1_1.name,p1_1.title,r1_1.title,r1_1.updated_at,au1_0.updated_at,au1_0.username from app_user au1_0 left join app_user_roles r1_0 on au1_0.id=r1_0.user_id left join app_role r1_1 on r1_1.id=r1_0.role_id left join role_permissions p1_0 on r1_1.id=p1_0.role_id left join app_permission p1_1 on p1_1.id=p1_0.permission_id where au1_0.id=?
--2026-03-26 12:50:51.817 DEBUG 54116 --- [http-nio-8888-exec-2] org.hibernate.SQL                        : select au1_0.id,au1_0.account_status,au1_0.avatar,au1_0.created_at,au1_0.first_name,au1_0.is_system,au1_0.last_name,au1_0.password,au1_0.updated_at,au1_0.username from app_user au1_0 where au1_0.username=? and au1_0.account_status
--2026-03-26 12:50:51.821 DEBUG 54116 --- [http-nio-8888-exec-2] org.hibernate.SQL                        : select r1_0.user_id,r1_1.id,r1_1.created_at,r1_1.created_by,r1_1.description,r1_1.is_system,r1_1.last_modified_by,r1_1.name,p1_0.role_id,p1_1.id,p1_1.affectable,p1_1.description,p1_1.groupe,p1_1.module,p1_1.name,p1_1.title,r1_1.title,r1_1.updated_at from app_user_roles r1_0 join app_role r1_1 on r1_1.id=r1_0.role_id left join role_permissions p1_0 on r1_1.id=p1_0.role_id left join app_permission p1_1 on p1_1.id=p1_0.permission_id where r1_0.user_id=?
--2026-03-26 12:50:51.859  INFO 54116 --- [http-nio-8888-exec-2] m.g.cmohotel.service.ProfileService      : get profile infos for admin
--2026-03-26 12:50:52.083 DEBUG 54116 --- [http-nio-8888-exec-7] org.hibernate.SQL                        : select at1_0.id,at1_0.created_at,at1_0.revoked,at1_0.token,at1_0.user_id from app_token at1_0 where at1_0.token=?
--2026-03-26 12:50:52.084 DEBUG 54116 --- [http-nio-8888-exec-7] org.hibernate.SQL                        : select au1_0.id,au1_0.account_status,au1_0.avatar,au1_0.created_at,au1_0.first_name,au1_0.is_system,au1_0.last_name,au1_0.password,r1_0.user_id,r1_1.id,r1_1.created_at,r1_1.created_by,r1_1.description,r1_1.is_system,r1_1.last_modified_by,r1_1.name,p1_0.role_id,p1_1.id,p1_1.affectable,p1_1.description,p1_1.groupe,p1_1.module,p1_1.name,p1_1.title,r1_1.title,r1_1.updated_at,au1_0.updated_at,au1_0.username from app_user au1_0 left join app_user_roles r1_0 on au1_0.id=r1_0.user_id left join app_role r1_1 on r1_1.id=r1_0.role_id left join role_permissions p1_0 on r1_1.id=p1_0.role_id left join app_permission p1_1 on p1_1.id=p1_0.permission_id where au1_0.id=?
--2026-03-26 12:50:52.086 DEBUG 54116 --- [http-nio-8888-exec-3] org.hibernate.SQL                        : select at1_0.id,at1_0.created_at,at1_0.revoked,at1_0.token,at1_0.user_id from app_token at1_0 where at1_0.token=?
--2026-03-26 12:50:52.089 DEBUG 54116 --- [http-nio-8888-exec-3] org.hibernate.SQL                        : select au1_0.id,au1_0.account_status,au1_0.avatar,au1_0.created_at,au1_0.first_name,au1_0.is_system,au1_0.last_name,au1_0.password,r1_0.user_id,r1_1.id,r1_1.created_at,r1_1.created_by,r1_1.description,r1_1.is_system,r1_1.last_modified_by,r1_1.name,p1_0.role_id,p1_1.id,p1_1.affectable,p1_1.description,p1_1.groupe,p1_1.module,p1_1.name,p1_1.title,r1_1.title,r1_1.updated_at,au1_0.updated_at,au1_0.username from app_user au1_0 left join app_user_roles r1_0 on au1_0.id=r1_0.user_id left join app_role r1_1 on r1_1.id=r1_0.role_id left join role_permissions p1_0 on r1_1.id=p1_0.role_id left join app_permission p1_1 on p1_1.id=p1_0.permission_id where au1_0.id=?
--2026-03-26 12:50:52.094 DEBUG 54116 --- [http-nio-8888-exec-7] org.hibernate.SQL                        : select au1_0.id,au1_0.account_status,au1_0.avatar,au1_0.created_at,au1_0.first_name,au1_0.is_system,au1_0.last_name,au1_0.password,au1_0.updated_at,au1_0.username from app_user au1_0 where au1_0.username=? and au1_0.account_status
--2026-03-26 12:50:52.095 DEBUG 54116 --- [http-nio-8888-exec-7] org.hibernate.SQL                        : select r1_0.user_id,r1_1.id,r1_1.created_at,r1_1.created_by,r1_1.description,r1_1.is_system,r1_1.last_modified_by,r1_1.name,p1_0.role_id,p1_1.id,p1_1.affectable,p1_1.description,p1_1.groupe,p1_1.module,p1_1.name,p1_1.title,r1_1.title,r1_1.updated_at from app_user_roles r1_0 join app_role r1_1 on r1_1.id=r1_0.role_id left join role_permissions p1_0 on r1_1.id=p1_0.role_id left join app_permission p1_1 on p1_1.id=p1_0.permission_id where r1_0.user_id=?
--2026-03-26 12:50:52.101 DEBUG 54116 --- [http-nio-8888-exec-3] org.hibernate.SQL                        : select au1_0.id,au1_0.account_status,au1_0.avatar,au1_0.created_at,au1_0.first_name,au1_0.is_system,au1_0.last_name,au1_0.password,au1_0.updated_at,au1_0.username from app_user au1_0 where au1_0.username=? and au1_0.account_status
--2026-03-26 12:50:52.102  INFO 54116 --- [http-nio-8888-exec-7] m.g.cmohotel.service.StatisticsService   : admin loads reservations current statistics
--2026-03-26 12:50:52.103 DEBUG 54116 --- [http-nio-8888-exec-3] org.hibernate.SQL                        : select r1_0.user_id,r1_1.id,r1_1.created_at,r1_1.created_by,r1_1.description,r1_1.is_system,r1_1.last_modified_by,r1_1.name,p1_0.role_id,p1_1.id,p1_1.affectable,p1_1.description,p1_1.groupe,p1_1.module,p1_1.name,p1_1.title,r1_1.title,r1_1.updated_at from app_user_roles r1_0 join app_role r1_1 on r1_1.id=r1_0.role_id left join role_permissions p1_0 on r1_1.id=p1_0.role_id left join app_permission p1_1 on p1_1.id=p1_0.permission_id where r1_0.user_id=?
--2026-03-26 12:50:52.107 DEBUG 54116 --- [http-nio-8888-exec-7] org.hibernate.SQL                        : select count(rd1_0.code) from reservation_details rd1_0 where rd1_0.status in (?)
--2026-03-26 12:50:52.109 DEBUG 54116 --- [http-nio-8888-exec-7] org.hibernate.SQL                        : select count(rd1_0.code) from reservation_details rd1_0 where rd1_0.status in (?)
--2026-03-26 12:50:52.111 DEBUG 54116 --- [http-nio-8888-exec-3] org.hibernate.SQL                        : select rt1_0.type,count(r1_0.id) from room r1_0 join room_type rt1_0 on rt1_0.id=r1_0.room_type_id where r1_0.archived=false group by rt1_0.type
--2026-03-26 12:50:52.113 DEBUG 54116 --- [http-nio-8888-exec-7] org.hibernate.SQL                        : select count(r1_0.id) from reservation r1_0 join reservation_details d1_0 on d1_0.code=r1_0.details_code where (? is null or d1_0.status in (?))
--2026-03-26 12:50:52.115 DEBUG 54116 --- [http-nio-8888-exec-3] org.hibernate.SQL                        : select rt1_0.type,count(distinct r2_0.id) from reservation r1_0 join room r2_0 on r2_0.id=r1_0.room_id join room_type rt1_0 on rt1_0.id=r2_0.room_type_id join reservation_details d1_0 on d1_0.code=r1_0.details_code where d1_0.status='CONFIRMED' group by rt1_0.type
--2026-03-26 12:50:52.118 DEBUG 54116 --- [http-nio-8888-exec-7] org.hibernate.SQL                        : select count(rd1_0.code) from reservation_details rd1_0 where rd1_0.status in (?,?)
--2026-03-26 12:50:52.119  INFO 54116 --- [http-nio-8888-exec-3] m.g.cmohotel.service.StatisticsService   : admin loads room type occupation statistics
--2026-03-26 12:50:52.119 DEBUG 54116 --- [http-nio-8888-exec-7] org.hibernate.SQL                        : select count(rd1_0.code) from reservation_details rd1_0 where rd1_0.status in (?)
--2026-03-26 12:50:52.122 DEBUG 54116 --- [http-nio-8888-exec-7] org.hibernate.SQL                        : select count(r1_0.id) from reservation r1_0 join reservation_details d1_0 on d1_0.code=r1_0.details_code where (? is null or d1_0.status in (?))
--2026-03-26 12:54:04.689  INFO 54116 --- [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
--2026-03-26 12:54:04.695  INFO 54116 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
--2026-03-26 12:54:04.701  INFO 54116 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
--2026-03-26 12:54:04.702  INFO 54116 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
--2026-03-26 12:54:04.704  INFO 54116 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
--2026-03-26 12:54:06.897  INFO 52420 --- [main] m.g.cmohotel.CmoHotelBackApplication     : Starting CmoHotelBackApplication vv1.0 using Java 22.0.2 with PID 52420 (C:\Users\moham\Desktop\projet-CMO\cmo-hotel\cmo-hotel-back\target\classes started by Developpement in C:\Users\moham\Desktop\projet-CMO\cmo-hotel)
--2026-03-26 12:54:06.898  INFO 52420 --- [main] m.g.cmohotel.CmoHotelBackApplication     : The following 1 profile is active: "prod"
--2026-03-26 12:54:07.492  INFO 52420 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
--2026-03-26 12:54:07.589  INFO 52420 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 91 ms. Found 27 JPA repository interfaces.
--2026-03-26 12:54:08.019  INFO 52420 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8888 (http)
--2026-03-26 12:54:08.028  INFO 52420 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
--2026-03-26 12:54:08.028  INFO 52420 --- [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
--2026-03-26 12:54:08.064  INFO 52420 --- [main] o.a.c.c.C.[.[localhost].[/cmo-api]       : Initializing Spring embedded WebApplicationContext
--2026-03-26 12:54:08.065  INFO 52420 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1130 ms
--2026-03-26 12:54:08.126  INFO 52420 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
--2026-03-26 12:54:08.271  INFO 52420 --- [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@52621501
--2026-03-26 12:54:08.273  INFO 52420 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
--2026-03-26 12:54:08.332  INFO 52420 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
--2026-03-26 12:54:08.359  INFO 52420 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.5.Final
--2026-03-26 12:54:08.378  INFO 52420 --- [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
--2026-03-26 12:54:08.562  INFO 52420 --- [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
--2026-03-26 12:54:08.596  WARN 52420 --- [main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
--2026-03-26 12:54:08.607  INFO 52420 --- [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
-	Database driver: undefined/unknown
-	Database version: 17.5
-	Autocommit mode: undefined/unknown
-	Isolation level: undefined/unknown
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
--2026-03-26 12:54:09.890  INFO 52420 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
--2026-03-26 12:54:10.811  INFO 52420 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
--2026-03-26 12:54:10.996  INFO 52420 --- [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
--2026-03-26 12:54:13.458  INFO 52420 --- [main] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
--2026-03-26 12:54:13.459  WARN 52420 --- [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
--2026-03-26 12:54:14.411  WARN 52420 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
--2026-03-26 12:54:14.633  WARN 52420 --- [main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore DispatcherTypeRequestMatcher{dispatcherType=ERROR, httpMethod=null}. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
--2026-03-26 12:54:14.829  INFO 52420 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8888 (http) with context path '/cmo-api'
--2026-03-26 12:54:14.879  INFO 52420 --- [main] m.g.cmohotel.utils.DynamicJobService     : Prochaine exécution planifiée auto cleaning room à : 0 1 1 * * ?
--2026-03-26 12:54:14.879  INFO 52420 --- [main] m.g.cmohotel.CmoHotelBackApplication     : Started CmoHotelBackApplication in 8.314 seconds (process running for 8.945)
--2026-03-26 12:54:22.447  INFO 52420 --- [http-nio-8888-exec-1] o.a.c.c.C.[.[localhost].[/cmo-api]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
--2026-03-26 12:54:22.448  INFO 52420 --- [http-nio-8888-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
--2026-03-26 12:54:22.450  INFO 52420 --- [http-nio-8888-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
--2026-03-26 12:54:22.745  INFO 52420 --- [http-nio-8888-exec-9] m.g.cmohotel.service.ProfileService      : get profile infos for admin
--2026-03-26 12:54:22.947  INFO 52420 --- [http-nio-8888-exec-2] m.g.cmohotel.service.StatisticsService   : admin loads reservations current statistics
--2026-03-26 12:54:22.972  INFO 52420 --- [http-nio-8888-exec-6] m.g.cmohotel.service.StatisticsService   : admin loads room type occupation statistics
--2026-03-26 12:56:24.871  INFO 52420 --- [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
--2026-03-26 12:56:24.879  INFO 52420 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
--2026-03-26 12:56:24.884  INFO 52420 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
--2026-03-26 12:56:24.886  INFO 52420 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
--2026-03-26 12:56:24.888  INFO 52420 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
--2026-03-26 12:56:27.042  INFO 54708 --- [main] m.g.cmohotel.CmoHotelBackApplication     : Starting CmoHotelBackApplication vv1.0 using Java 22.0.2 with PID 54708 (C:\Users\moham\Desktop\projet-CMO\cmo-hotel\cmo-hotel-back\target\classes started by Developpement in C:\Users\moham\Desktop\projet-CMO\cmo-hotel)
--2026-03-26 12:56:27.043  INFO 54708 --- [main] m.g.cmohotel.CmoHotelBackApplication     : The following 1 profile is active: "prod"
--2026-03-26 12:56:27.629  INFO 54708 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
--2026-03-26 12:56:27.729  INFO 54708 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 95 ms. Found 27 JPA repository interfaces.
--2026-03-26 12:56:28.163  INFO 54708 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8888 (http)
--2026-03-26 12:56:28.175  INFO 54708 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
--2026-03-26 12:56:28.176  INFO 54708 --- [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
--2026-03-26 12:56:28.216  INFO 54708 --- [main] o.a.c.c.C.[.[localhost].[/cmo-api]       : Initializing Spring embedded WebApplicationContext
--2026-03-26 12:56:28.216  INFO 54708 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1134 ms
--2026-03-26 12:56:28.268  INFO 54708 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
--2026-03-26 12:56:28.414  INFO 54708 --- [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@52621501
--2026-03-26 12:56:28.415  INFO 54708 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
--2026-03-26 12:56:28.474  INFO 54708 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
--2026-03-26 12:56:28.502  INFO 54708 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.5.Final
--2026-03-26 12:56:28.522  INFO 54708 --- [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
--2026-03-26 12:56:28.697  INFO 54708 --- [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
--2026-03-26 12:56:28.733  WARN 54708 --- [main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
--2026-03-26 12:56:28.743  INFO 54708 --- [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
-	Database driver: undefined/unknown
-	Database version: 17.5
-	Autocommit mode: undefined/unknown
-	Isolation level: undefined/unknown
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
--2026-03-26 12:56:29.760  INFO 54708 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
--2026-03-26 12:56:30.659  INFO 54708 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
--2026-03-26 12:56:30.853  INFO 54708 --- [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
--2026-03-26 12:56:33.241  INFO 54708 --- [main] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
--2026-03-26 12:56:33.241  WARN 54708 --- [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
--2026-03-26 12:56:34.128  WARN 54708 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
--2026-03-26 12:56:34.347  WARN 54708 --- [main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore DispatcherTypeRequestMatcher{dispatcherType=ERROR, httpMethod=null}. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
--2026-03-26 12:56:34.533  INFO 54708 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8888 (http) with context path '/cmo-api'
--2026-03-26 12:56:34.580  INFO 54708 --- [main] m.g.cmohotel.utils.DynamicJobService     : Prochaine exécution planifiée auto cleaning room à : 0 1 1 * * ?
--2026-03-26 12:56:34.580  INFO 54708 --- [main] m.g.cmohotel.CmoHotelBackApplication     : Started CmoHotelBackApplication in 7.885 seconds (process running for 8.423)
--2026-03-26 12:56:37.855  INFO 54708 --- [http-nio-8888-exec-1] o.a.c.c.C.[.[localhost].[/cmo-api]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
--2026-03-26 12:56:37.856  INFO 54708 --- [http-nio-8888-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
--2026-03-26 12:56:37.858  INFO 54708 --- [http-nio-8888-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
--2026-03-26 12:56:38.400  INFO 54708 --- [http-nio-8888-exec-2] m.g.cmohotel.service.ProfileService      : get profile infos for admin
--2026-03-26 12:56:39.081  INFO 54708 --- [http-nio-8888-exec-5] m.g.cmohotel.service.StatisticsService   : admin loads reservations current statistics
--2026-03-26 12:56:39.098  INFO 54708 --- [http-nio-8888-exec-6] m.g.cmohotel.service.StatisticsService   : admin loads room type occupation statistics
--2026-03-26 13:18:25.530  INFO 54708 --- [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
--2026-03-26 13:18:25.536  INFO 54708 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
--2026-03-26 13:18:25.541  INFO 54708 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
--2026-03-26 13:18:25.542  INFO 54708 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
--2026-03-26 13:18:25.545  INFO 54708 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
--2026-03-26 13:18:29.701  INFO 54292 --- [main] m.g.cmohotel.CmoHotelBackApplication     : Starting CmoHotelBackApplication vv1.0 using Java 22.0.2 with PID 54292 (C:\Users\moham\Desktop\projet-CMO\cmo-hotel\cmo-hotel-back\target\classes started by Developpement in C:\Users\moham\Desktop\projet-CMO\cmo-hotel)
--2026-03-26 13:18:29.702  INFO 54292 --- [main] m.g.cmohotel.CmoHotelBackApplication     : The following 1 profile is active: "prod"
--2026-03-26 13:18:30.288  INFO 54292 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
--2026-03-26 13:18:30.390  INFO 54292 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 96 ms. Found 27 JPA repository interfaces.
--2026-03-26 13:18:30.831  INFO 54292 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8888 (http)
--2026-03-26 13:18:30.843  INFO 54292 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
--2026-03-26 13:18:30.843  INFO 54292 --- [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
--2026-03-26 13:18:30.881  INFO 54292 --- [main] o.a.c.c.C.[.[localhost].[/cmo-api]       : Initializing Spring embedded WebApplicationContext
--2026-03-26 13:18:30.881  INFO 54292 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1138 ms
--2026-03-26 13:18:30.930  INFO 54292 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
--2026-03-26 13:18:31.073  INFO 54292 --- [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@52621501
--2026-03-26 13:18:31.075  INFO 54292 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
--2026-03-26 13:18:31.133  INFO 54292 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
--2026-03-26 13:18:31.162  INFO 54292 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.5.Final
--2026-03-26 13:18:31.187  INFO 54292 --- [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
--2026-03-26 13:18:31.379  INFO 54292 --- [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
--2026-03-26 13:18:31.413  WARN 54292 --- [main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
--2026-03-26 13:18:31.421  INFO 54292 --- [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
-	Database driver: undefined/unknown
-	Database version: 17.5
-	Autocommit mode: undefined/unknown
-	Isolation level: undefined/unknown
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
--2026-03-26 13:18:32.469  INFO 54292 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
--2026-03-26 13:18:33.398  INFO 54292 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
--2026-03-26 13:18:33.588  INFO 54292 --- [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
--2026-03-26 13:18:35.949  INFO 54292 --- [main] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
--2026-03-26 13:18:35.950  WARN 54292 --- [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
--2026-03-26 13:18:36.881  WARN 54292 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
--2026-03-26 13:18:37.100  WARN 54292 --- [main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore DispatcherTypeRequestMatcher{dispatcherType=ERROR, httpMethod=null}. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
--2026-03-26 13:18:37.291  INFO 54292 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8888 (http) with context path '/cmo-api'
--2026-03-26 13:18:37.337  INFO 54292 --- [main] m.g.cmohotel.utils.DynamicJobService     : Prochaine exécution planifiée auto cleaning room à : 0 1 1 * * ?
--2026-03-26 13:18:37.337  INFO 54292 --- [main] m.g.cmohotel.CmoHotelBackApplication     : Started CmoHotelBackApplication in 7.966 seconds (process running for 8.438)
--2026-03-26 13:50:25.940  INFO 54292 --- [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
--2026-03-26 13:50:25.951  INFO 54292 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
--2026-03-26 13:50:25.958  INFO 54292 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
--2026-03-26 13:50:25.960  INFO 54292 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
--2026-03-26 13:50:25.963  INFO 54292 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+-2026-03-30 09:11:50.543  INFO 84232 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+-2026-03-30 09:11:51.049  INFO 84232 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+-2026-03-30 09:11:51.234  INFO 84232 --- [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+-2026-03-30 09:11:53.625  INFO 84232 --- [main] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+-2026-03-30 09:11:53.625  WARN 84232 --- [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+-2026-03-30 09:11:54.504  WARN 84232 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+-2026-03-30 09:11:54.721  WARN 84232 --- [main] o.s.s.c.a.web.builders.WebSecurity       : You are asking Spring Security to ignore DispatcherTypeRequestMatcher{dispatcherType=ERROR, httpMethod=null}. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+-2026-03-30 09:11:54.910  INFO 84232 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8888 (http) with context path '/cmo-api'
+-2026-03-30 09:11:54.962  INFO 84232 --- [main] m.g.cmohotel.utils.DynamicJobService     : Prochaine exécution planifiée auto cleaning room à : 0 0 0 * * *
+-2026-03-30 09:11:54.962  INFO 84232 --- [main] m.g.cmohotel.CmoHotelBackApplication     : Started CmoHotelBackApplication in 7.745 seconds (process running for 8.241)
+-2026-03-30 09:11:54.964  INFO 84232 --- [main] med.goeasy.cmohotel.Feeder               : Feeder : start
+-2026-03-30 09:11:55.031  INFO 84232 --- [main] med.goeasy.cmohotel.Feeder               : Init initial configuration
+-2026-03-30 09:11:55.031  INFO 84232 --- [main] med.goeasy.cmohotel.Feeder               : --> data-prod.sql file loaded
+-2026-03-30 09:11:55.031  INFO 84232 --- [main] med.goeasy.cmohotel.Feeder               : --> Start feed system roles & permissions
+-2026-03-30 09:11:55.039  INFO 84232 --- [main] med.goeasy.cmohotel.Feeder               : -> 85 permissions saved
+-2026-03-30 09:11:55.059  INFO 84232 --- [main] med.goeasy.cmohotel.Feeder               : -> 7 roles saved
+-2026-03-30 09:11:55.121  INFO 84232 --- [main] med.goeasy.cmohotel.Feeder               : admin account created
+-2026-03-30 09:11:55.242  INFO 84232 --- [main] med.goeasy.cmohotel.Feeder               : governant chellah account created
+-2026-03-30 09:11:55.300  INFO 84232 --- [main] med.goeasy.cmohotel.Feeder               : governant oudaya account created
+-2026-03-30 09:11:55.356  INFO 84232 --- [main] med.goeasy.cmohotel.Feeder               : prestation accounts created
+-2026-03-30 09:11:55.417  INFO 84232 --- [main] med.goeasy.cmohotel.Feeder               : Fron desk accounts created
+-2026-03-30 09:11:55.475  INFO 84232 --- [main] med.goeasy.cmohotel.Feeder               : Night audit accounts created
+-2026-03-30 09:11:55.475  INFO 84232 --- [main] med.goeasy.cmohotel.Feeder               : Feeder : end
+-2026-03-30 09:12:32.824  INFO 84232 --- [http-nio-8888-exec-3] o.a.c.c.C.[.[localhost].[/cmo-api]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+-2026-03-30 09:12:32.824  INFO 84232 --- [http-nio-8888-exec-3] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+-2026-03-30 09:12:32.826  INFO 84232 --- [http-nio-8888-exec-3] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+-2026-03-30 09:12:33.455  INFO 84232 --- [http-nio-8888-exec-1] m.g.c.s.services.TokenServiceImpl        : token generated for -> 52dcf142-fe30-44e4-b3bc-89b40aecbad6
+-2026-03-30 09:12:33.460  INFO 84232 --- [task-1] m.g.cmohotel.audit.ActivityLogService    : admin :: (Authentication,Authentication), Connexion réussie : L'utilisateur 'admin' s'est authentifié avec succès. token ID: 79fbcbf1-6b96-4be6-a7ff-e66d7ec3e810.
+-2026-03-30 09:12:33.662  INFO 84232 --- [http-nio-8888-exec-5] m.g.cmohotel.service.ProfileService      : get profile infos for admin
+-2026-03-30 09:12:33.725  INFO 84232 --- [http-nio-8888-exec-8] m.g.cmohotel.service.StatisticsService   : admin loads reservations current statistics
+-2026-03-30 09:12:34.164  INFO 84232 --- [http-nio-8888-exec-4] m.g.cmohotel.service.StatisticsService   : admin loads room type occupation statistics
+-2026-03-30 09:12:40.976  INFO 84232 --- [http-nio-8888-exec-10] m.g.cmohotel.service.ProfileService      : get profile infos for admin
+-2026-03-30 09:12:41.070  INFO 84232 --- [http-nio-8888-exec-6] m.g.cmohotel.service.ReservationService  : admin get reservations
+-2026-03-30 09:12:50.292  INFO 84232 --- [http-nio-8888-exec-7] m.goeasy.cmohotel.service.PersonService  : admin get persons
+-2026-03-30 09:13:01.479  INFO 84232 --- [task-2] m.g.cmohotel.audit.ActivityLogService    : admin :: (Personne,Creation), Enregistrement de l'invité 'aaa aa' (Grade: GENERAL DARMEE), (Identité: A12)
+-2026-03-30 09:13:11.651  INFO 84232 --- [http-nio-8888-exec-7] m.goeasy.cmohotel.service.RoomService    : admin get rooms in pavillon id 2 with Occupied Ranges
+-2026-03-30 09:13:19.243  INFO 84232 --- [task-3] m.g.cmohotel.audit.ActivityLogService    : admin :: (Réservation,Creation), Nouvelle réservation enregistrée (#1) pour 1 personne(s) du 2026-03-30 au 2026-03-31 (Catégorie: SINGLE).
+-2026-03-30 09:13:19.325  INFO 84232 --- [http-nio-8888-exec-9] m.g.cmohotel.service.ReservationService  : admin get reservations
+-2026-03-30 09:13:32.889  INFO 84232 --- [task-4] m.g.cmohotel.audit.ActivityLogService    : admin :: (Réservation,Modification), Check-in effectué : Le client s'est présenté à l'hôtel le 30/03/2026 12:00. La réservation (#1) est désormais confirmée.
+-2026-03-30 09:13:33.084  INFO 84232 --- [http-nio-8888-exec-6] m.g.cmohotel.service.ReservationService  : admin get reservations
+-2026-03-30 09:13:40.708  INFO 84232 --- [task-5] m.g.cmohotel.audit.ActivityLogService    : admin :: (Facture,Gestion), Valider la nuitée de 2026-03-30.
+-2026-03-30 09:13:43.865  INFO 84232 --- [http-nio-8888-exec-2] m.g.cmohotel.service.InvoiceService      : admin load invoices
+-2026-03-30 09:13:54.268  INFO 84232 --- [http-nio-8888-exec-1] m.g.cmohotel.service.PrestationService   : admin get resident prestations
+-2026-03-30 09:13:56.608  INFO 84232 --- [http-nio-8888-exec-9] m.goeasy.cmohotel.service.MealService    : get all meal types
+-2026-03-30 09:13:59.277  INFO 84232 --- [task-6] m.g.cmohotel.audit.ActivityLogService    : admin :: (Préstation,Creation), Nouvelle préstation enregistrée (Déjeuner) pour le GENERAL DARMEE aaa aa (Catégorie: Officiers Generaux).
+-2026-03-30 09:13:59.394  INFO 84232 --- [http-nio-8888-exec-4] m.g.cmohotel.service.PrestationService   : admin get resident prestations
+-2026-03-30 09:14:01.007  INFO 84232 --- [http-nio-8888-exec-7] m.g.cmohotel.service.InvoiceService      : admin load invoices
+-2026-03-30 09:14:13.625  INFO 84232 --- [http-nio-8888-exec-4] m.g.cmohotel.service.InvoiceService      : admin load paid invoices
+-2026-03-30 09:14:16.440  INFO 84232 --- [http-nio-8888-exec-1] m.g.cmohotel.service.ReservationService  : admin get reservations
+-2026-03-30 09:14:22.640  INFO 84232 --- [task-7] m.g.cmohotel.audit.ActivityLogService    : admin :: (Réservation,Modification), Check-out effectué le 31/03/2026 12:00, pour la reservation (#1).
+-2026-03-30 09:14:22.765  INFO 84232 --- [http-nio-8888-exec-4] m.g.cmohotel.service.ReservationService  : admin get reservations
+-2026-03-30 09:14:24.347  INFO 84232 --- [http-nio-8888-exec-7] m.g.cmohotel.service.InvoiceService      : admin load invoices
+-2026-03-30 09:14:34.338  INFO 84232 --- [task-8] m.g.cmohotel.audit.ActivityLogService    : admin :: (Facture,Gestion), Paiement de la facture FAC-2026-1 validé. Mode: TPE.
+-2026-03-30 09:14:34.454  INFO 84232 --- [http-nio-8888-exec-9] m.g.cmohotel.service.InvoiceService      : admin load invoices
+-2026-03-30 09:14:35.792  INFO 84232 --- [http-nio-8888-exec-3] m.g.cmohotel.service.InvoiceService      : admin load paid invoices
+-2026-03-30 09:14:49.789  INFO 84232 --- [http-nio-8888-exec-7] m.g.cmohotel.service.ProfileService      : get profile infos for admin
+-2026-03-30 09:14:49.821  INFO 84232 --- [http-nio-8888-exec-2] m.g.cmohotel.service.StatisticsService   : admin loads reservations current statistics
+-2026-03-30 09:14:49.824  INFO 84232 --- [http-nio-8888-exec-6] m.g.cmohotel.service.StatisticsService   : admin loads room type occupation statistics
+-2026-03-30 09:15:07.260  INFO 84232 --- [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+-2026-03-30 09:15:07.270  INFO 84232 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+-2026-03-30 09:15:07.277  INFO 84232 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+-2026-03-30 09:15:07.278  INFO 84232 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+-2026-03-30 09:15:07.280  INFO 84232 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
 -

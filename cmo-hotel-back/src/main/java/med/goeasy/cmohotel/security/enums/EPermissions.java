@@ -86,6 +86,7 @@ public enum EPermissions {
     RESERVATION_ROOM_CHANGE(RESERVATION, "reservation:room:change", "Gérer les transferts de chambre", MANAGE,true,"Autorise le changement de chambre d'un résident durant son séjour."),
     RESERVATION_TIME_EXTEND(RESERVATION, "reservation:time:extend", "Prolonger le séjour", MANAGE,true,"Autorise la modification de la date de départ et l'extension de la durée de séjour."),
     RESERVATION_FICHE_PDF(RESERVATION, "reservation:pdf", "Imprimer la fiche de reservation", MANAGE,true,"Autorise le téléchargement des fiches de reservation."),
+    RESERVATION_MAIN_COURANTE(RESERVATION, "reservation:main:courante", "Consulter la main courante", MANAGE,true,"Autorise la consultation de la main courante du séjour."),
 
 
     //HOUSE KEEPING
