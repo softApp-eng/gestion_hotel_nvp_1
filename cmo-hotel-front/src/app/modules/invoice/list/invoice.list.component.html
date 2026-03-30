@@ -179,7 +179,7 @@
                             <td mat-cell *matCellDef="let row" class="text-center">
                                 <div (click)="openDetailsModal(row)"
                                      class="cursor-pointer group inline-flex flex-col items-center">
-                                    <span class="text-secondary whitespace-nowrap text-sm font-medium" [innerHTML]="''+row?.invoiceNumber | highlight:filters.key"></span>
+                                    <span class="text-secondary text-sm font-medium" [innerHTML]="''+row?.invoiceNumber | highlight:filters.key"></span>
                                     <div class="h-[1.5px] w-0 bg-primary-500 transition-all duration-300 group-hover:w-full"></div>
                                 </div>
                             </td>
@@ -320,15 +320,13 @@
                                     @if (row.status == 'IN_PROGRESS') {
                                         <span class="text-[10px] text-gray-400 italic">En attente</span>
                                     } @else {
-                                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide" [ngClass]="config?.class" [matTooltip]="row?.paidAt ? 'Payée le ' + row.paidAt : ''">
-                                        <mat-icon class="icon-size-3.5 mr-1 text-current" [svgIcon]="config?.icon"></mat-icon>
-                                        <span class="whitespace-nowrap leading-relaxed">
-                                            {{config?.label }}
-                                            @if (row?.status == 'PAID'){
-                                                ({{ row?.paymentMode?.name }})
-                                            }
+                                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide cursor-help"
+                                              [ngClass]="config?.class" [matTooltip]="(row?.status === 'PAID' ? 'Payée le ' + (row.paidAt | date:'dd/MM/yyyy') + ' via ' + row?.paymentMode?.name : config?.label)">
+                                            <mat-icon class="icon-size-3.5 mr-1 text-current" [svgIcon]="config?.icon"></mat-icon>
+                                            <span class="whitespace-nowrap leading-relaxed">
+                                                {{config?.label }}
+                                            </span>
                                         </span>
-                                    </span>
                                     }
                                 }
                             </td>
