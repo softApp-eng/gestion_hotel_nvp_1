@@ -187,8 +187,8 @@ public class ReservationController {
     }
 
     @GetMapping("/main-courante")
-    ResponseEntity<List<MainCourante>> getMainCourante(Authentication authentication){
-        return ResponseEntity.ok(reservationService.getMainCourante(authentication));
+    ResponseEntity<List<ReservationDetailsResponseDto>> getMainCourante(Authentication authentication){
+        return ResponseEntity.ok(reservationService.getMainCourante());
     }
 
     @GetMapping("/planning/{type}")
@@ -216,6 +216,17 @@ public class ReservationController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("attachment", "Reservation_" + code + ".pdf");
+
+        return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/download/main-courante")
+    public ResponseEntity<byte[]> generateMainCourantePdf( Authentication authentication) throws Exception {
+        byte[] pdf = reservationService.generateMainCourantePdf(authentication);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "Main_courante.pdf");
 
         return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
     }

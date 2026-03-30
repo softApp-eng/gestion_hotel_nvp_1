@@ -534,49 +534,98 @@ public class ReservationService {
         }
     }
 
-    public List<MainCourante> getMainCourante(Authentication authentication) {
+    public List<ReservationDetailsResponseDto> getMainCourante() {
+        List<ReservationDetails> reservations = reservationDetailsRepository.getSejours();
+        return reservations.stream().map(reservationDetails -> ReservationDetailsResponseDto.mapWithValidatedNightToDto(
+                reservationDetails,
+                invoiceService.getValidatedNights(reservationDetails)
+        )).toList();
+    }
+
+    public byte[] generateMainCourantePdf(Authentication authentication) throws Exception {
         List<ReservationDetails> sejours = reservationDetailsRepository.getSejours();
 
-        if (sejours == null || sejours.isEmpty()) {
-            return List.of();
+        List<Map<String, Object>> rows = sejours.stream().map(details -> {
+            Map<String, Object> rowMap = new HashMap<>();
+
+            // 1. Informations de base
+            rowMap.put("code", details.getCode());
+            rowMap.put("checkin", details.getCheckin());
+            rowMap.put("category", details.getCategory()); // On passe l'objet pour avoir .name et .code
+
+            // 2. Récupération de la facture et des nuits
+            Invoice invoice = invoiceService.getInvoiceByReservations(details).orElse(null);
+            List<ValidatedNight> nights = (invoice != null) ? invoice.getValidatedNights() : new ArrayList<>();
+            rowMap.put("validatedNights", nights);
+
+            // 3. Calcul des nuitées uniques (Logique getUniqueNightsCount)
+            long uniqueNights = nights.stream()
+                    .map(ValidatedNight::getNightDate)
+                    .distinct()
+                    .count();
+            rowMap.put("uniqueNightsCount", uniqueNights);
+
+            // 4. Calcul du prix total (Logique calculateTotalPrice)
+            double total = nights.stream()
+                    .mapToDouble(ValidatedNight::getRoomPriceApplied)
+                    .sum();
+            rowMap.put("totalPrice", total);
+
+            // 5. Regroupement par chambre (Logique getGroupedRooms)
+            // On crée une liste de groupes [ {room: Room, occupants: [Reservation]} ]
+            Collection<Map<String, Object>> groupedRooms = details.getReservations().stream()
+                    .collect(Collectors.groupingBy(
+                            res -> res.getRoom().getId(),
+                            Collectors.collectingAndThen(Collectors.toList(), list -> {
+                                Map<String, Object> groupData = new HashMap<>();
+                                groupData.put("room", list.get(0).getRoom());
+                                groupData.put("occupants", list);
+                                return groupData;
+                            })
+                    )).values();
+
+            rowMap.put("groupedRooms", groupedRooms);
+
+            return rowMap;
+        }).collect(Collectors.toList());
+
+        Context context = new Context();
+        context.setVariable("rows", rows);
+        context.setVariable("now", LocalDateTime.now());
+        context.setVariable("generatedBy", authentication.getName());
+
+        String logoBase64 = utilsService.getAppLogoAs64();
+        context.setVariable("logoBase64", "data:image/png;base64," + logoBase64);
+
+        // Assurez-vous que le nom du template correspond (main_courante.html)
+        String htmlContent = templateEngine.process("main_courante", context);
+
+        activityLogService.logActivity(
+                EAuditActionTarget.RESERVATION,
+                EAuditActionOperation.SELECT,
+                "Génération du rapport de la main courante.",
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            ITextRenderer renderer = new ITextRenderer();
+            renderer.setDocumentFromString(htmlContent);
+            renderer.layout();
+            renderer.createPDF(outputStream);
+            return outputStream.toByteArray();
+        }catch (Exception e) {
+            log.error("Erreur lors de la génération du PDF de la main courante : {}", e.getMessage());
+            throw new BadRequestException("Échec de la génération du PDF de la main courante.");
         }
-
-        return sejours.stream()
-                .flatMap(details -> details.getReservations().stream().map(res -> {
-
-                    // Accès sécurisé aux objets liés
-                    Person person = res.getPerson();
-                    Room room = res.getRoom();
-
-                    return MainCourante.builder()
-                            .reservationCode(details.getCode())
-                            .checkin(details.getCheckin())
-                            .category(details.getCategory() != null ? details.getCategory().getName() : "N/A")
-
-                            // Données de la personne
-                            .grade(person != null && person.getGrade() != null ? person.getGrade().getName() : "")
-                            .client(person != null ? person.getFirstName() + " " + person.getLastName() : "Inconnu")
-                            .unite(person != null ? person.getUnite() : "")
-
-                            // Données de la chambre
-                            .roomCode(room != null ? room.getCode() : "N/A")
-                            .pavillon(room != null && room.getPavillon() != null ? room.getPavillon().getName() : "")
-                            .roomPrice(calculateCurrentRoomPrice(res))
-                            .validatedNightsNumber(calculateValidatedNights(details))
-
-                            .build();
-                }))
-                .toList();
     }
+
+
+
 
     /// /////////////////////////////////////////////////////////////////////////////
     ///                              EXTRAS FUNCTIONS                             ///
     /// /////////////////////////////////////////////////////////////////////////////
-
-    private Integer calculateValidatedNights(ReservationDetails details) {
-        List<ValidatedNight> validatedNights = invoiceService.getValidatedNights(details);
-        return validatedNights.size();
-    }
 
     protected ReservationDetails getReservationDetailsByCode(Long code){
         return reservationDetailsRepository.findById(code)
@@ -630,28 +679,5 @@ public class ReservationService {
         }
 
         return new PriceEstimationResponse(priceDetails, totalGlobal, duration);
-    }
-
-    private Double calculateCurrentRoomPrice(Reservation res) {
-        Room room = res.getRoom();
-        if (room == null || room.getRoomType() == null) {
-            return 0.0;
-        }
-
-        // Récupérer tous les occupants de la même chambre pour ce séjour
-        // afin de trouver la personne de référence (le plus haut gradé)
-        List<Reservation> siblings = res.getDetails().getReservations().stream()
-                .filter(r -> r.getRoom() != null && r.getRoom().getId().equals(room.getId()))
-                .toList();
-
-        // UTILISATION DE VOTRE LOGIQUE EXISTANTE DANS INVOICE_SERVICE
-        Person referencePerson = invoiceService.findReferencePersonForPricing(siblings);
-
-        if (invoiceService.isEligibleForPricing(referencePerson)) {
-            // On cherche le prix spécifique à la catégorie du gradé de référence
-            return invoiceService.findPriceForRoom(room, referencePerson.getGrade().getCategory());
-        }
-
-        return 0.0;
     }
 }

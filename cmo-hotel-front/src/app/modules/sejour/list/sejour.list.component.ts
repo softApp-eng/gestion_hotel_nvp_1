@@ -273,4 +273,5 @@ export class SejourListComponent implements OnInit {
 
         return Object.values(groups);
     }
+
 }

@@ -112,4 +112,10 @@ export class ApiReservationService {
         });
     }
 
+    generateMainCourantePdf(): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/download/main-courante`, {
+            responseType: 'blob'
+        });
+    }
+
 }
