@@ -1,4 +1,4 @@
 export const environment = {
     solidarityApi:'http://localhost:8888/cmo-api',
-    //solidarityApi:'http://172.16.0.44/cmo-api',
+    //solidarityApi:'http://192.168.1.200/cmo-api',
 };

@@ -16,7 +16,7 @@ insert into grade (id ,code,name,rating,category) values (12,'ASP','ASPIRANT',12
 --insert into grade (id ,code,name,rating,category) values (15,'S/M','SERGENT-MAJOR',15,'ODR');
 --insert into grade (id ,code,name,rating,category) values (16,'S/C','SERGENT-CHEF',16,'ODR');
 --insert into grade (id ,code,name,rating,category) values (17,'SGT','SERGENT',17,'ODR');
---insert into grade (id ,code,name,rating,category) values (18,'civil','CIVIL',18,'CIVIL');
+insert into grade (id ,code,name,rating,category) values (18,'civil','CIVIL',18,'CIVIL');
 SELECT setval('public."seq-grade"', (SELECT MAX(id) FROM grade));
 
 

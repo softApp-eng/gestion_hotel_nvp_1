@@ -16,6 +16,7 @@ import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 import med.goeasy.cmohotel.persistence.repository.ReservationDetailsRepository;
 import med.goeasy.cmohotel.persistence.repository.ReservationRepository;
+import med.goeasy.cmohotel.persistence.repository.RoomRepository;
 import med.goeasy.cmohotel.persistence.repository.SwitchedRoomRepository;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
 import med.goeasy.cmohotel.presentation.dto.person.PersonResponseDto;
@@ -57,6 +58,7 @@ public class ReservationService {
     private final HttpServletRequest request;
     private final InvoiceService invoiceService;
     private final UtilsService utilsService;
+    private final RoomRepository roomRepository;
 
     @Transactional
     public void create(Authentication authentication, ReservationRequestDto dto) {
@@ -355,7 +357,9 @@ public class ReservationService {
         // Change status
         reservationDetails.setStatus(EReservationStatus.CONFIRMED);
         reservationDetails.setCheckin(date);
+
         reservationDetailsRepository.save(reservationDetails);
+
         activityLogService.logActivity(
                 EAuditActionTarget.RESERVATION,
                 EAuditActionOperation.UPDATE,
@@ -385,6 +389,17 @@ public class ReservationService {
         // Change status
         reservationDetails.setStatus(EReservationStatus.CLOSED);
         reservationDetails.setCheckout(date);
+        // update room cleaning status
+        if (reservationDetails.getReservations() != null) {
+            reservationDetails.getReservations().forEach(res -> {
+                Room room = res.getRoom();
+                if (room != null) {
+                    // On marque la chambre comme "sale" car le client vient d'entrer
+                    room.setClean(false);
+                    roomRepository.save(room);
+                }
+            });
+        }
         reservationDetails = reservationDetailsRepository.save(reservationDetails);
         invoiceService.activateInvoice(reservationDetails);
         activityLogService.logActivity(

@@ -10,39 +10,7 @@
                     Analyser les metrics et les performances des réservations.
                 </div>
             </div>
-            <div class="ml-6 flex items-center">
-                <button class="hidden sm:inline-flex" mat-stroked-button>
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:cog-8-tooth'"
-                    ></mat-icon>
-                    <span class="ml-2">Settings</span>
-                </button>
-                <button
-                    class="ml-3 hidden sm:inline-flex"
-                    mat-flat-button
-                    [color]="'primary'"
-                >
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_solid:arrow-up-tray'"
-                    ></mat-icon>
-                    <span class="ml-2">Export</span>
-                </button>
 
-                <!-- Actions menu (visible on xs) -->
-                <div class="sm:hidden">
-                    <button [matMenuTriggerFor]="actionsMenu" mat-icon-button>
-                        <mat-icon
-                            [svgIcon]="'heroicons_outline:ellipsis-vertical'"
-                        ></mat-icon>
-                    </button>
-                    <mat-menu #actionsMenu="matMenu">
-                        <button mat-menu-item>Export</button>
-                        <button mat-menu-item>Settings</button>
-                    </mat-menu>
-                </div>
-            </div>
         </div>
 
         <div class="mt-8 grid w-full grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">

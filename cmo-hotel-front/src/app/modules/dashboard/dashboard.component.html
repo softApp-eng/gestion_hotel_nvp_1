@@ -6,11 +6,12 @@
                 <!-- Avatar and name -->
                 <div class="flex min-w-0 flex-auto items-center">
                     <div class="h-16 w-16 flex-0 overflow-hidden rounded-full">
-                        @if (user && user.avatar) {
+                        <img class="h-full w-full object-cover" src="logo/cmo.png"  alt=""/>
+                        <!--@if (user && user.avatar) {
                             <img class="h-full w-full object-cover" [src]="user.avatar"  alt="" referrerpolicy="no-referrer"/>
                         } @else {
                             <mat-icon class="h-full w-full object-cover" [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
-                        }
+                        }-->
                     </div>
                     <div class="ml-4 flex min-w-0 flex-col">
 

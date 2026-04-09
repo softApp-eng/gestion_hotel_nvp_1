@@ -53,10 +53,10 @@ public interface InvoiceRepository extends JpaRepository<Invoice, String> {
     );
 
     // counters
-    @Query("SELECT sum(i.totalRoomPrice) FROM Invoice i WHERE i.status in :status ")
+    @Query("SELECT COALESCE(sum(i.totalRoomPrice), 0) FROM Invoice i WHERE i.status in :status ")
     long countHostingPrice(@Param("status") List<EInvoiceStatus> status);
 
-    @Query("SELECT sum(i.totalPrestationPrice) FROM Invoice i WHERE i.status in :status")
+    @Query("SELECT COALESCE(sum(i.totalPrestationPrice), 0) FROM Invoice i WHERE i.status in :status")
     long countPrestationPrice(@Param("status") List<EInvoiceStatus> status);
 
     @Query("""
