@@ -1,6 +1,7 @@
 package med.goeasy.cmohotel.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -9,6 +10,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
@@ -29,11 +31,15 @@ public class WebMvcConfig {
         return new RestTemplate();
     }
 
+    @Value("${app.cors.allowed-origins:#{T(java.util.Collections).emptyList()}}")
+    private List<String> additionalOrigins;
+
     @Bean
     public CorsConfigurationSource corsConfiguration(){
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
-        corsConfiguration.setAllowedOrigins(List.of(
+        // 1. Define your hardcoded base origins
+        List<String> baseOrigins = new ArrayList<>(List.of(
                 //DEV
                 "http://127.0.0.1:4200/",
                 "http://localhost:4200/",
@@ -44,14 +50,17 @@ public class WebMvcConfig {
                 "http://127.0.0.1:8080",
                 "http://172.16.0.44:4200",
                 "http://172.16.0.44",
-                //PROD PERS
-                "http://193.0.0.244:460/",
-                "https://193.0.0.244:460/",
+                //PROD
                 "http://127.0.0.1:460/",
-				"http://192.168.1.200",
+                "http://192.168.1.200",
                 "https://127.0.0.1:460/"
-
         ));
+
+        // 2. Merge the injected origins from properties/Docker into the base list
+        if (additionalOrigins != null) {
+            baseOrigins.addAll(additionalOrigins);
+        }
+        corsConfiguration.setAllowedOrigins(baseOrigins);
         corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PUT","OPTIONS","PATCH", "DELETE"));
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setExposedHeaders(List.of("Authorization"));
