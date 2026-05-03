@@ -564,6 +564,8 @@ public class ReservationService {
             Map<String, Object> rowMap = new HashMap<>();
 
             // 1. Informations de base
+            rowMap.put("pax", details.getReservations().size());
+            rowMap.put("paymentCateg", details.isPriseEnCharge() ? "PC" : "ESP");
             rowMap.put("code", details.getCode());
             rowMap.put("checkin", details.getCheckin());
             rowMap.put("category", details.getCategory()); // On passe l'objet pour avoir .name et .code

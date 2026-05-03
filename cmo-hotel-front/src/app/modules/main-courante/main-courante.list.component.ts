@@ -45,15 +45,17 @@ import { Toastr } from '../../core/service/toastr.service';
         DisableIfNoPermissionDirective,
         DecimalPipe,
         SlicePipe,
+        HighlightPipe,
     ],
 })
 export class MainCouranteListComponent implements OnInit {
     protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
     isLoading: boolean = false;
     displayedColumns: string[] = [
+        'details',
         'period',
-        'code',
         'category',
+        'pax',
         'roomAndGuests',
         'nights',
         'pc',
@@ -95,6 +97,7 @@ export class MainCouranteListComponent implements OnInit {
             .subscribe({
                 next: (value: any) => {
                     this.dataSource.data = value || [];
+                    console.log(value);
                 },
             });
     }
@@ -176,35 +179,31 @@ export class MainCouranteListComponent implements OnInit {
     }
 
     processDownloadEncassement(action: 'download' | 'print'): void {
-        this._apiReservationService
-            .generateMainCourantePdf()
-            .subscribe({
-                next: (blob: Blob) => {
-                    const blobUrl = window.URL.createObjectURL(blob);
+        this._apiReservationService.generateMainCourantePdf().subscribe({
+            next: (blob: Blob) => {
+                const blobUrl = window.URL.createObjectURL(blob);
 
-                    if (action === 'download') {
-                        const link = document.createElement('a');
-                        link.href = blobUrl;
-                        link.download = `Main-courante_${this._utils.convertToDate(this.today).replace('/', '-')}.pdf`;
-                        link.click();
-                    } else {
-                        const printWindow = window.open(blobUrl, '_blank');
-                        if (printWindow) {
-                            printWindow.focus();
-                        }
+                if (action === 'download') {
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = `Main-courante_${this._utils.convertToDate(this.today).replace('/', '-')}.pdf`;
+                    link.click();
+                } else {
+                    const printWindow = window.open(blobUrl, '_blank');
+                    if (printWindow) {
+                        printWindow.focus();
                     }
+                }
 
-                    // Nettoyage de la mémoire
-                    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
-                    //this.loadingFicheId = null;
-                },
-                error: (err) => {
-                    console.error('Erreur PDF:', err);
-                    //this.loadingFicheId = null;
-                    this._toast.error(
-                        'erreur de generation de la main courante'
-                    );
-                },
-            });
+                // Nettoyage de la mémoire
+                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+                //this.loadingFicheId = null;
+            },
+            error: (err) => {
+                console.error('Erreur PDF:', err);
+                //this.loadingFicheId = null;
+                this._toast.error('erreur de generation de la main courante');
+            },
+        });
     }
 }

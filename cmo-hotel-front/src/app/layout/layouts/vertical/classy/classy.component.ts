@@ -21,6 +21,10 @@ import { SearchComponent } from 'app/layout/common/search/search.component';
 import { ShortcutsComponent } from 'app/layout/common/shortcuts/shortcuts.component';
 import { UserComponent } from 'app/layout/common/user/user.component';
 import { Subject, takeUntil } from 'rxjs';
+import { ApiInvoiceService } from '../../../../modules/invoice/api.invoice.service';
+import { LastValidatedNightService } from '../../../../core/service/lastValidatedNight.service';
+import { AsyncPipe, DatePipe, NgClass } from '@angular/common';
+import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
     selector: 'classy-layout',
@@ -30,23 +34,22 @@ import { Subject, takeUntil } from 'rxjs';
     imports: [
         FuseLoadingBarComponent,
         FuseVerticalNavigationComponent,
-        NotificationsComponent,
         UserComponent,
         MatIconModule,
         MatButtonModule,
-        LanguagesComponent,
         FuseFullscreenComponent,
-        SearchComponent,
-        ShortcutsComponent,
-        MessagesComponent,
         RouterOutlet,
-        QuickChatComponent,
+        AsyncPipe,
+        DatePipe,
+        MatTooltip,
+        NgClass,
     ],
 })
 export class ClassyLayoutComponent implements OnInit, OnDestroy {
     isScreenSmall: boolean;
     navigation: Navigation;
     user: User;
+    toDay: Date = new Date();
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -54,16 +57,35 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy {
      */
     constructor(
         private _activatedRoute: ActivatedRoute,
-        private _router: Router,
+        public _lastValidatedNightService: LastValidatedNightService,
         private _navigationService: NavigationService,
         private _userService: UserService,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
         private _fuseNavigationService: FuseNavigationService
-    ) {}
+    ) {
+        this._lastValidatedNightService.getFromServer().subscribe({
+            next: (value) => {
+                console.log('LAST Night', value);
+                ///this.lastNight = value;
+            },
+        });
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors
     // -----------------------------------------------------------------------------------------------------
+
+    // Dans votre composant de Header
+    get isTodayValidated(): boolean {
+        const lastNight = this._lastValidatedNightService.getLatestValue(); // Valeur actuelle du BehaviorSubject
+        if (!lastNight) return false;
+
+        const today = new Date();
+        // Comparaison stricte du jour, mois et année
+        return lastNight.getDate() === today.getDate() &&
+            lastNight.getMonth() === today.getMonth() &&
+            lastNight.getFullYear() === today.getFullYear();
+    }
 
     /**
      * Getter for current year

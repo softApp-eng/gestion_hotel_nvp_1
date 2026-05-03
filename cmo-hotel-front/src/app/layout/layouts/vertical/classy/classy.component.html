@@ -71,14 +71,33 @@
         <button mat-icon-button (click)="toggleNavigation('mainNavigation')">
             <mat-icon [svgIcon]="'heroicons_outline:bars-3'"></mat-icon>
         </button>
+
+
+
         <!-- Components -->
         <div class="ml-auto flex items-center space-x-0.5 pl-2 sm:space-x-2">
-<!--            <languages></languages>-->
+            @if (_lastValidatedNightService.lastNight$ | async; as lastNight) {
+                <div class="inline-flex items-center justify-center rounded-full px-3 py-1 text-[13px] font-semibold leading-none transition-all cursor-help"
+                     [ngClass]="isTodayValidated ?
+                    'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400' :
+                    'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'"
+                     [matTooltip]="isTodayValidated ? 'À jour : La nuit a été validée' : 'Action requise : Nuit non validée'"
+                     matTooltipPosition="below">
+
+                    <mat-icon class="icon-size-4 mr-1.5"
+                              [svgIcon]="'heroicons_outline:moon'">
+                    </mat-icon>
+
+                    <span class="tracking-tight">
+                        {{ (_lastValidatedNightService.lastNight$ | async)
+                        ? ((_lastValidatedNightService.lastNight$ | async) | date:'dd MMM':'':'fr')
+                        : ''
+                        }}
+                    </span>
+                </div>
+            }
             <fuse-fullscreen class="hidden md:block"></fuse-fullscreen>
             <user [showAvatar]="false"></user>
-<!--            <search [appearance]="'bar'"></search>-->
-<!--            <shortcuts></shortcuts>-->
-<!--            <messages></messages>-->
         </div>
     </div>
 

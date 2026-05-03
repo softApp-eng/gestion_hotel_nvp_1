@@ -15,7 +15,7 @@ public record PersonRequestDto(
         Long gradeId,
         String primaryPersonId,
         String relationshipType,
-        @NotBlank(message = "Identité obligatoire")
+        //@NotBlank(message = "Identité obligatoire")
         String identity,
         @NotBlank(message = "Nom obligatoire")
         String firstName,

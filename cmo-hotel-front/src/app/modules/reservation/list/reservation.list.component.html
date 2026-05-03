@@ -369,7 +369,7 @@
                                     @if (row?.status?.code === 'CONFIRMED') {
                                         <button mat-menu-item (click)="raiseCloseReservation(row?.code)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_CLOSE]">
                                             <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:edit_calendar'"></mat-icon>
-                                            <span>Cloturer</span>
+                                            <span>Check-out</span>
                                         </button>
                                         <!--<button mat-menu-item (click)="raiseSwitchRoom(row)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_ROOM_CHANGE]">
                                             <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:edit_calendar'"></mat-icon>
@@ -380,7 +380,7 @@
                                     @if (row?.status?.code === 'PENDING') {
                                         <button mat-menu-item [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_ACCEPT]" (click)="raiseAcceptReservation(row?.code)">
                                             <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:check'"></mat-icon>
-                                            <span>Confirmer</span>
+                                            <span>Check-in</span>
                                         </button>
                                     }
 

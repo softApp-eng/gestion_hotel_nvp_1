@@ -72,7 +72,7 @@ export class PersonCreateModel implements OnInit {
             gradeId: ['', [Validators.required]],
             primaryPersonId: [''],
             relationshipType: [''],
-            identity: ['', [Validators.required]],
+            identity: [''],
             firstName: ['', [Validators.required]],
             lastName: ['', [Validators.required]],
             gender: [''],

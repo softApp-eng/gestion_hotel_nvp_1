@@ -21,6 +21,10 @@ export class ApiInvoiceService {
         return this._httpClient.post(`${this.API_URL}/night/validate`, payload);
     }
 
+    lastValidatdNight(): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/last-validated-night`);
+    }
+
     payInvoice(payload): Observable<any>{
         return this._httpClient.post(`${this.API_URL}/pay`, payload);
     }

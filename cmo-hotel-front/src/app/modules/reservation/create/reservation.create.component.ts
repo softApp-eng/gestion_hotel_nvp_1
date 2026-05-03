@@ -28,7 +28,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { AssignRoomsModel } from '../room-assign/assign-rooms.model';
 import {finalize} from "rxjs";
 import { ApiCommonService } from '../../../core/service/api.common.service';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe, TitleCasePipe, UpperCasePipe } from '@angular/common';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatOptionModule } from '@angular/material/core';
@@ -69,6 +69,8 @@ interface RoomGroup {
         MatOptionModule,
         MatRadioModule,
         DatePipe,
+        TitleCasePipe,
+        UpperCasePipe,
     ],
 })
 export class ReservationCreateComponent implements OnInit {
@@ -78,7 +80,7 @@ export class ReservationCreateComponent implements OnInit {
         message: '',
     };
     isSaving: boolean = false;
-    today: Date = new Date();
+    //today: Date = new Date();
 
     startAt: Date | null = null;
     endAt: Date | null = null;
@@ -143,19 +145,21 @@ export class ReservationCreateComponent implements OnInit {
         this.horizontalStepperForm
             .get('step1.dateRange')
             ?.valueChanges.subscribe((val) => {
-            if (val && (val.start || val.end)) {
-                // Si les dates changent, on invalide les chambres assignées
-                // car la disponibilité n'est plus garantie pour la nouvelle période
-                this.persons = this.persons.map(p => ({
-                    ...p,
-                    room: null // On retire la chambre
-                }));
+                if (val && (val.start || val.end)) {
+                    // Si les dates changent, on invalide les chambres assignées
+                    // car la disponibilité n'est plus garantie pour la nouvelle période
+                    this.persons = this.persons.map((p) => ({
+                        ...p,
+                        room: null, // On retire la chambre
+                    }));
 
-                // Optionnel : Notification utilisateur
-                if (this.persons.some(p => p.id)) {
-                    this._toastr.info('La période a changé : les chambres assignées ont été réinitialisées.');
+                    // Optionnel : Notification utilisateur
+                    if (this.persons.some((p) => p.id)) {
+                        this._toastr.info(
+                            'La période a changé : les chambres assignées ont été réinitialisées.'
+                        );
+                    }
                 }
-            }
                 if (val && val.start && val.end) {
                     this.startAt = val.start;
                     this.endAt = val.end;
@@ -172,26 +176,29 @@ export class ReservationCreateComponent implements OnInit {
         this.horizontalStepperForm
             .get('step1.category')
             ?.valueChanges.subscribe((category) => {
-            if (category && this.persons.some(p => p.id)) {
-                // On vide complètement la liste des personnes
-                this.persons = [];
-                this.selectedGroupedPersons = [];
+                if (category && this.persons.some((p) => p.id)) {
+                    // On vide complètement la liste des personnes
+                    this.persons = [];
+                    this.selectedGroupedPersons = [];
 
-                // On réinitialise les prix estimés
-                this.estimatedPayment = [];
+                    // On réinitialise les prix estimés
+                    this.estimatedPayment = [];
 
-                this._toastr.info('Catégorie modifiée : la liste des invités a été réinitialisée.');
-            }
-        });
+                    this._toastr.info(
+                        'Catégorie modifiée : la liste des invités a été réinitialisée.'
+                    );
+                }
+            });
         this.horizontalStepperForm
             .get('step1.priseEnCharge')
             ?.valueChanges.subscribe((isCharged) => {
-            if (!isCharged) {
-                // On vide le champ et on peut aussi supprimer les erreurs de validation
-                this.horizontalStepperForm.get('step1.priseEnChargeReference')?.setValue('', { emitEvent: false });
-            }
-        });
-
+                if (!isCharged) {
+                    // On vide le champ et on peut aussi supprimer les erreurs de validation
+                    this.horizontalStepperForm
+                        .get('step1.priseEnChargeReference')
+                        ?.setValue('', { emitEvent: false });
+                }
+            });
     }
 
     loadCategories() {
@@ -221,7 +228,12 @@ export class ReservationCreateComponent implements OnInit {
     }
 
     get estimatedTotal(): number {
-        return this.estimatedPayment?.reduce((sum, detail) => sum + detail.totalPrice, 0) || 0;
+        return (
+            this.estimatedPayment?.reduce(
+                (sum, detail) => sum + detail.totalPrice,
+                0
+            ) || 0
+        );
     }
     get filteredRoles(): any[] {
         const category =
@@ -234,10 +246,19 @@ export class ReservationCreateComponent implements OnInit {
         if (category === 'DELEGATION') {
             return this.roles.filter((r) => r.code === 'PRINCIPAL');
         }
+
+        /*
+        if (category === 'SINGLE') {
+            return this.roles.filter(
+                (r) => r.code === 'PRINCIPAL' || r.code === 'VICE'
+            );
+        }
+        if (category === 'DELEGATION') {
+            return this.roles.filter((r) => r.code === 'PRINCIPAL');
+        }
+         */
         return this.roles;
     }
-
-
 
     /**
      * Vérifie si la liste des résidents est valide pour passer à l'étape suivante
@@ -246,31 +267,38 @@ export class ReservationCreateComponent implements OnInit {
         if (!this.persons || this.persons.length === 0) return false;
 
         // 1. Vérification de base : ID, Rôle et Chambre pour tout le monde
-        const basicCheck = this.persons.every(p => p.id && p.role && p.room?.id);
+        const basicCheck = this.persons.every(
+            (p) => p.id && p.role && p.room?.id
+        );
         if (!basicCheck) return false;
 
-        const category = this.horizontalStepperForm.get('step1.category')?.value;
+        const category =
+            this.horizontalStepperForm.get('step1.category')?.value;
 
         // 2. Logique spécifique pour FAMILY
         if (category === 'FAMILY') {
             // Compter les responsables (Principal ou Vice)
-            const leads = this.persons.filter(p => p.role === 'PRINCIPAL' || p.role === 'VICE');
+            const leads = this.persons.filter(
+                (p) => p.role === 'PRINCIPAL' || p.role === 'VICE'
+            );
 
             // Vérifier qu'il n'y a qu'UN SEUL responsable
             if (leads.length !== 1) return false;
 
             // Vérifier que tous les autres sont soit FAMILY soit CHILD
-            const othersAreValid = this.persons.every(p => {
+            const othersAreValid = this.persons.every((p) => {
                 if (p.role === 'PRINCIPAL' || p.role === 'VICE') return true;
-                return p.role === 'SPOUSE'
-                    || p.role === 'SON'
-                    || p.role === 'DAUGHTER'
-                    || p.role === 'FATHER'
-                    || p.role === 'MOTHER'
-                    || p.role === 'BROTHER'
-                    || p.role === 'SISTER'
-                    || p.role === 'LEGAL_WARD'
-                    || p.role === 'CHILD';
+                return (
+                    p.role === 'SPOUSE' ||
+                    p.role === 'SON' ||
+                    p.role === 'DAUGHTER' ||
+                    p.role === 'FATHER' ||
+                    p.role === 'MOTHER' ||
+                    p.role === 'BROTHER' ||
+                    p.role === 'SISTER' ||
+                    p.role === 'LEGAL_WARD' ||
+                    p.role === 'CHILD'
+                );
             });
 
             if (!othersAreValid) return false;
@@ -280,7 +308,9 @@ export class ReservationCreateComponent implements OnInit {
     }
 
     countLeads(): number {
-        return this.persons.filter(p => p.role === 'PRINCIPAL' || p.role === 'VICE').length;
+        return this.persons.filter(
+            (p) => p.role === 'PRINCIPAL' || p.role === 'VICE'
+        ).length;
     }
     get isStepResidentsValid_old(): boolean {
         // 1. Il doit y avoir au moins une personne
@@ -288,12 +318,7 @@ export class ReservationCreateComponent implements OnInit {
             return false;
         }
         // 2. Chaque personne doit avoir un rôle ET une chambre assignée
-        return this.persons.every(p =>
-            p.id &&
-            p.role &&
-            p.room &&
-            p.room.id
-        );
+        return this.persons.every((p) => p.id && p.role && p.room && p.room.id);
     }
 
     save() {
@@ -301,7 +326,8 @@ export class ReservationCreateComponent implements OnInit {
         const errors: string[] = [];
 
         // 1. Validation des dates
-        const dateRange = this.horizontalStepperForm.get('step1.dateRange')?.value;
+        const dateRange =
+            this.horizontalStepperForm.get('step1.dateRange')?.value;
         if (!dateRange?.start || !dateRange?.end) {
             errors.push(
                 'Veuillez sélectionner une période valide (Date début et fin).'
@@ -330,10 +356,14 @@ export class ReservationCreateComponent implements OnInit {
             }
         });
 
-        if (this.horizontalStepperForm.get('step1.category')?.value === 'FAMILY') {
+        if (
+            this.horizontalStepperForm.get('step1.category')?.value === 'FAMILY'
+        ) {
             const leadsCount = this.countLeads();
             if (leadsCount !== 1) {
-                errors.push("Pour une catégorie FAMILLE, il doit y avoir exactement un responsable (Principal ou Mandataire).");
+                errors.push(
+                    'Pour une catégorie FAMILLE, il doit y avoir exactement un responsable (Principal ou Mandataire).'
+                );
             }
         }
 
@@ -361,9 +391,13 @@ export class ReservationCreateComponent implements OnInit {
             startDate: this._utilsService.convertToDate(dateRange.start),
             endDate: this._utilsService.convertToDate(dateRange.end),
             category: this.horizontalStepperForm.get('step1.category')?.value,
-            observation: this.horizontalStepperForm.get('step3.observation')?.value,
-            priseEnCharge: this.horizontalStepperForm.get('step1.priseEnCharge')?.value,
-            priseEnChargeReference: this.horizontalStepperForm.get('step1.priseEnChargeReference')?.value,
+            observation:
+                this.horizontalStepperForm.get('step3.observation')?.value,
+            priseEnCharge: this.horizontalStepperForm.get('step1.priseEnCharge')
+                ?.value,
+            priseEnChargeReference: this.horizontalStepperForm.get(
+                'step1.priseEnChargeReference'
+            )?.value,
             persons: this.persons.map((p) => ({
                 personId: p.id,
                 role: p.role,
@@ -378,14 +412,21 @@ export class ReservationCreateComponent implements OnInit {
         this.horizontalStepperForm.disable({ emitEvent: false });
 
         if (this.reservationCode)
-            this._apiReservationService.update(reservationData, this.reservationCode);
+            this._apiReservationService.update(
+                reservationData,
+                this.reservationCode
+            );
 
         const request = this.reservationCode
-            ? this._apiReservationService.update(reservationData, this.reservationCode)
+            ? this._apiReservationService.update(
+                  reservationData,
+                  this.reservationCode
+              )
             : this._apiReservationService.create(reservationData);
 
         // Appel au service
-        request.pipe(
+        request
+            .pipe(
                 finalize(() => {
                     this.isSaving = false;
                     this.horizontalStepperForm.enable({ emitEvent: false });
@@ -399,7 +440,9 @@ export class ReservationCreateComponent implements OnInit {
                 error: (err) => {
                     this.alert = {
                         type: 'error',
-                        message: err?.error?.description || 'Erreur lors de la sauvegarde.',
+                        message:
+                            err?.error?.description ||
+                            'Erreur lors de la sauvegarde.',
                     };
                     this.showAlert = true;
                 },
@@ -462,7 +505,8 @@ export class ReservationCreateComponent implements OnInit {
             .open(PersonManageModel, {
                 data: {
                     selectedPersons: [...this.persons],
-                    category: this.horizontalStepperForm.get('step1.category').value,
+                    category:
+                        this.horizontalStepperForm.get('step1.category').value,
                 },
                 disableClose: true,
             })
@@ -475,7 +519,8 @@ export class ReservationCreateComponent implements OnInit {
     }
 
     raiseRoomAssignDialog() {
-        const dateRange = this.horizontalStepperForm.get('step1.dateRange').value;
+        const dateRange =
+            this.horizontalStepperForm.get('step1.dateRange').value;
         const currentOccupations = this.getExistingOccupations();
         this._matDialog
             .open(AssignRoomsModel, {
@@ -512,53 +557,69 @@ export class ReservationCreateComponent implements OnInit {
         this.horizontalStepperForm.disable({ emitEvent: false });
         this.reservationCode = this._activeRoute.snapshot.params['code'];
 
-        this._apiReservationService.getReservation(this.reservationCode).subscribe({
-            next: (data: any) => {
-                if (data) {
-                    // 1. Remplissage du Step 1 (Dates et Catégorie)
-                    // Note: On extrait le code de la catégorie car l'API renvoie un objet complet
-                    this.horizontalStepperForm.get('step1').patchValue({
-                        dateRange: {
-                            start: new Date(data.plannedStart),
-                            end: new Date(data.plannedEnd)
-                        },
-                        category: data.category?.code,
-                        priseEnCharge: data.priseEnCharge,
-                        priseEnChargeReference: data.priseEnChargeReference
-                    }, { emitEvent: true });
+        this._apiReservationService
+            .getReservation(this.reservationCode)
+            .subscribe({
+                next: (data: any) => {
+                    if (data) {
+                        // 1. Remplissage du Step 1 (Dates et Catégorie)
+                        // Note: On extrait le code de la catégorie car l'API renvoie un objet complet
+                        this.horizontalStepperForm.get('step1').patchValue(
+                            {
+                                dateRange: {
+                                    start: new Date(data.plannedStart),
+                                    end: new Date(data.plannedEnd),
+                                },
+                                category: data.category?.code,
+                                priseEnCharge: data.priseEnCharge,
+                                priseEnChargeReference:
+                                    data.priseEnChargeReference,
+                            },
+                            { emitEvent: true }
+                        );
 
-                    // 2. Remplissage du Step 3
-                    this.horizontalStepperForm.get('step3.observation').setValue(data.observation);
+                        // 2. Remplissage du Step 3
+                        this.horizontalStepperForm
+                            .get('step3.observation')
+                            .setValue(data.observation);
 
-                    // 3. Mapping des Guests vers le tableau "persons"
-                    // On aplatit la structure pour que p.firstName, p.role et p.room soient accessibles
-                    this.persons = data.guests.map(guest => ({
-                        ...guest.person,       // Contient id, firstName, lastName, grade, etc.
-                        role: guest.role.code, // On stocke uniquement le code pour la validation/formulaire
-                        room: guest.room       // Objet room complet pour l'affichage et les calculs
-                    }));
+                        // 3. Mapping des Guests vers le tableau "persons"
+                        // On aplatit la structure pour que p.firstName, p.role et p.room soient accessibles
+                        this.persons = data.guests.map((guest) => ({
+                            ...guest.person, // Contient id, firstName, lastName, grade, etc.
+                            role: guest.role.code, // On stocke uniquement le code pour la validation/formulaire
+                            room: guest.room, // Objet room complet pour l'affichage et les calculs
+                        }));
 
-                    // 4. Recalcul des variables de durée
-                    this.startAt = new Date(data.plannedStart);
-                    this.endAt = new Date(data.plannedEnd);
-                    this.durationInDays = this._utilsService.calculateDuration(this.startAt, this.endAt);
+                        // 4. Recalcul des variables de durée
+                        this.startAt = new Date(data.plannedStart);
+                        this.endAt = new Date(data.plannedEnd);
+                        this.durationInDays =
+                            this._utilsService.calculateDuration(
+                                this.startAt,
+                                this.endAt
+                            );
 
-                    // Correction de la durée si nécessaire (selon votre logique métier)
-                    if (this.durationInDays > 0) {
-                        this.durationInDays--;
+                        // Correction de la durée si nécessaire (selon votre logique métier)
+                        if (this.durationInDays > 0) {
+                            this.durationInDays--;
+                        }
+
+                        // 5. Calcul immédiat des prix pour l'affichage
+                        //this.calculateRoomPrices();
                     }
 
-                    // 5. Calcul immédiat des prix pour l'affichage
-                    //this.calculateRoomPrices();
-                }
-
-                this.horizontalStepperForm.enable({ emitEvent: false });
-            },
-            error: (err) => {
-                this._toastr.error('Erreur lors du chargement de la réservation');
-                this._router.navigate(['../'], { relativeTo: this._activeRoute });
-            }
-        });
+                    this.horizontalStepperForm.enable({ emitEvent: false });
+                },
+                error: (err) => {
+                    this._toastr.error(
+                        'Erreur lors du chargement de la réservation'
+                    );
+                    this._router.navigate(['../'], {
+                        relativeTo: this._activeRoute,
+                    });
+                },
+            });
     }
 
     unSelectPerson(person: any) {
@@ -617,10 +678,14 @@ export class ReservationCreateComponent implements OnInit {
     }
 
     private getExistingOccupations(): any[] {
-        const occupationsMap = new Map<number, { roomId: number, rangeOccupation: any, numberOfPersons: number }>();
-        const dateRange = this.horizontalStepperForm.get('step1.dateRange').value;
+        const occupationsMap = new Map<
+            number,
+            { roomId: number; rangeOccupation: any; numberOfPersons: number }
+        >();
+        const dateRange =
+            this.horizontalStepperForm.get('step1.dateRange').value;
 
-        this.persons.forEach(p => {
+        this.persons.forEach((p) => {
             if (p.room && p.room.id) {
                 const roomId = p.room.id;
                 if (!occupationsMap.has(roomId)) {
@@ -628,9 +693,9 @@ export class ReservationCreateComponent implements OnInit {
                         roomId: roomId,
                         rangeOccupation: {
                             start: this.formatToISO(dateRange.start),
-                            end: this.formatToISO(dateRange.end)
+                            end: this.formatToISO(dateRange.end),
                         },
-                        numberOfPersons: 0
+                        numberOfPersons: 0,
                     });
                 }
                 occupationsMap.get(roomId).numberOfPersons++;

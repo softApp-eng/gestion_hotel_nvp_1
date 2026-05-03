@@ -76,7 +76,7 @@ export class PersonCreateComponent implements OnInit {
         this.loadGrades();
         this.form = this._formBuilder.group({
             gradeId: ['', [Validators.required]],
-            identity: ['', [Validators.required]],
+            identity: [''],
             firstName: ['', [Validators.required]],
             lastName: ['', [Validators.required]],
             gender: [''],

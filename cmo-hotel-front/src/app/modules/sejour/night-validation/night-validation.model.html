@@ -27,7 +27,7 @@
         <div class="grid grid-cols-1 gap-6">
             <mat-form-field class="w-full" appearance="outline">
                 <mat-label>Date de la nuitée</mat-label>
-                <input matInput [matDatepicker]="dp3" formControlName="nightDate" [max]="maxDate">
+                <input matInput [matDatepicker]="dp3" formControlName="nightDate">
                 <mat-datepicker-toggle matIconSuffix [for]="dp3"></mat-datepicker-toggle>
                 <mat-datepicker #dp3></mat-datepicker>
                 <mat-error>La date est obligatoire</mat-error>

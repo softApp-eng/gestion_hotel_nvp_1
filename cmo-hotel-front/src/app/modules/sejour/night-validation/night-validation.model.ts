@@ -19,6 +19,7 @@ import { ApiInvoiceService } from '../../invoice/api.invoice.service';
 import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
 import { MatProgressSpinner, MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { UtilsService } from '../../../core/service/utils.service';
+import { LastValidatedNightService } from '../../../core/service/lastValidatedNight.service';
 
 @Component({
     selector: 'night-validation',
@@ -51,6 +52,7 @@ export class NightValidationModel implements OnInit {
      */
     constructor(
         public matDialogRef: MatDialogRef<NightValidationModel>,
+        private _lastValidatedNightService: LastValidatedNightService,
         private _fb: FormBuilder,
         private _apiInvoiceService: ApiInvoiceService,
         private _utilsService: UtilsService,
@@ -91,6 +93,7 @@ export class NightValidationModel implements OnInit {
             next: (res) => {
                 this._toast.success('La nuitée a été validée avec succès');
                 this.matDialogRef.close({reload:true});
+                this._lastValidatedNightService.updateLastNight();
             },
             error: (err) => {
                 this._toast.error(err?.error?.description || 'Erreur lors de la validation');

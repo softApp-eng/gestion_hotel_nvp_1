@@ -1,5 +1,6 @@
 package med.goeasy.cmohotel.presentation.controller;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -70,6 +71,12 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceService.getEncaissement(
                 authentication,day
         ));
+    }
+
+    @GetMapping("/last-validated-night")
+    //@JsonFormat(pattern = "dd-MM-yyyy")
+    ResponseEntity<LocalDate> getLastValidatedNight(){
+        return ResponseEntity.ok(invoiceService.getLastValidatedNight());
     }
 
     @PostMapping("/pay")

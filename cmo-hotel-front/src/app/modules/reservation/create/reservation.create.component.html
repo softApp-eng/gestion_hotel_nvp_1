@@ -81,7 +81,6 @@
 
                             <mat-date-range-input
                                 formGroupName="dateRange"
-                                [min]="today"
                                 [rangePicker]="rangePicker">
                                 <input
                                     matStartDate
@@ -122,7 +121,7 @@
                                 <mat-select formControlName="category" placeholder="Sélectionnez une catégorie">
                                     @for (c of categories; track c.code) {
                                         <mat-option [value]="c.code">
-                                            <span class="font-medium">{{c.name}}</span>
+                                            <span class="font-medium">{{c.name | uppercase}}</span>
                                         </mat-option>
                                     }
                                 </mat-select>

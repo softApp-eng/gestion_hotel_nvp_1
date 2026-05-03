@@ -255,10 +255,19 @@ export class ReservationListComponent implements OnInit, OnDestroy {
                 class: 'bg-amber-200 text-amber-800 dark:bg-amber-600 dark:text-amber-50',
             },
             CONFIRMED: {
-                label: 'Confirmée',
+                label: 'Check-in',
                 class: 'bg-green-200 text-green-800 dark:bg-green-600 dark:text-green-50',
             },
-            IN_PROGRESS: {
+            CANCELED: {
+                label: 'Annulée',
+                class: 'bg-red-200 text-red-800 dark:bg-red-600 dark:text-red-50',
+            },
+            CLOSED: {
+                label: 'Check-out',
+                class: 'bg-slate-300 text-slate-900 dark:bg-slate-700 dark:text-slate-100',
+            },
+
+            /*IN_PROGRESS: {
                 label: 'En cours',
                 class: 'bg-blue-200 text-blue-800 dark:bg-blue-600 dark:text-blue-50',
             },
@@ -266,10 +275,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
                 label: 'Terminée',
                 class: 'bg-teal-200 text-teal-800 dark:bg-teal-600 dark:text-teal-50',
             },
-            CANCELED: {
-                label: 'Annulée',
-                class: 'bg-red-200 text-red-800 dark:bg-red-600 dark:text-red-50',
-            },
+
             NO_SHOW: {
                 label: 'Non présenté',
                 class: 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-50',
@@ -277,11 +283,8 @@ export class ReservationListComponent implements OnInit, OnDestroy {
             EXPIRED: {
                 label: 'Expirée',
                 class: 'bg-orange-200 text-orange-800 dark:bg-orange-600 dark:text-orange-50',
-            },
-            CLOSED: {
-                label: 'Clôturée',
-                class: 'bg-slate-300 text-slate-900 dark:bg-slate-700 dark:text-slate-100',
-            },
+            },*/
+
         };
 
         return (

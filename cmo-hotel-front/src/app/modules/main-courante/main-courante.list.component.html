@@ -63,15 +63,31 @@
                 <div class="w-full bg-primary-50 dark:bg-transparent border rounded-xl shadow-sm overflow-x-auto ">
                         <table mat-table [dataSource]="dataSource" class="min-w-full">
 
-                            <ng-container matColumnDef="code">
+                            <ng-container matColumnDef="details">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center"></th>
+                                <td mat-cell *matCellDef="let row" class="text-center">
+                                    <div class="flex items-center justify-end space-x-1">
+                                        <button mat-icon-button
+                                                (click)="raiseReservationDetailsDialog(row)"
+                                                matTooltip="Détails"
+                                                class="text-slate-400 hover:text-primary transition-colors">
+                                            <mat-icon class="icon-size-5" svgIcon="heroicons_outline:information-circle"></mat-icon>
+                                        </button>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="pax">
                                 <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center">
-                                    <span class="bg-gray-50 dark:bg-transparent text-center uppercase">Réf.</span>
+                                    <span class="bg-gray-50 dark:bg-transparent text-center uppercase">PAX</span>
                                 </th>
                                 <td mat-cell *matCellDef="let row" class="text-center">
                                     <div (click)="raiseReservationDetailsDialog(row)"
                                          class="cursor-pointer group inline-flex flex-col items-center">
-                                        <span class="text-secondary whitespace-nowrap text-sm font-medium">
-                                            {{row?.code}}
+                                        <span class="text-secondary whitespace-nowrap text-md font-semibold">
+                                            {{
+                                                row?.guests?.length || 0
+                                            }}
                                         </span>
                                         <div class="h-[1.5px] w-0 bg-primary-500 transition-all duration-300 group-hover:w-full"></div>
                                     </div>
@@ -187,9 +203,21 @@
                             </ng-container>
 
                             <ng-container matColumnDef="pc">
-                                <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700 text-right"> PC (MAD) </th>
+                                <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700 text-right"> MT (MAD) </th>
                                 <td mat-cell *matCellDef="let row" class="text-right font-bold text-slate-900">
-                                    {{calculateTotalPrice(row?.validatedNights) | number:'1.2-2'}}
+                                    <div class="flex flex-col items-center justify-center w-full">
+                                        <div class="flex flex-col items-center justify-center w-full">
+                                            {{
+                                                calculateTotalPrice(row?.validatedNights) | number:'1.2-2'
+                                            }}
+                                        </div>
+                                        <div class="text-md text-secondary">
+                                            {{
+                                                row?.priseEnCharge ? 'PC':'ESP'
+                                            }}
+                                        </div>
+                                    </div>
+
                                 </td>
                             </ng-container>
 

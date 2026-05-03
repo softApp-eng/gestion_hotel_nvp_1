@@ -12,6 +12,10 @@ public interface ValidatedNightRepository extends JpaRepository<ValidatedNight, 
     @Query("SELECT COUNT(vn) > 0 FROM ValidatedNight vn WHERE vn.nightDate = :nightDate")
     boolean isNightValidated(@Param("nightDate") LocalDate nightDate);
 
+
     @Query("SELECT n FROM ValidatedNight n WHERE n.invoice.reservationDetails.code = :rcode")
     List<ValidatedNight> getValidatedNights(@Param("rcode") Long code);
+
+    @Query("SELECT max(n.nightDate) FROM ValidatedNight n")
+    LocalDate lastNight();
 }

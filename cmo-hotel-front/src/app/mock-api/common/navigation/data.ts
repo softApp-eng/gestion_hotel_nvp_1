@@ -110,7 +110,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
     },
     {
         id: 'housekeeping',
-        title: 'Gouvernance',
+        title: 'Service d\'étage',
         subtitle: 'Hygiène & Maintenance',
         type: 'group',
         icon: 'heroicons_outline:sparkles',

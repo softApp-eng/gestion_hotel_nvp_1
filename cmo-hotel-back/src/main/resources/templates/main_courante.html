@@ -81,8 +81,8 @@
     <thead>
     <tr>
         <th class="text-center" style="width: 9%;">Arrivée</th>
-        <th class="text-center" style="width: 7%;">Réf.</th>
         <th class="text-center" style="width: 10%;">Catégorie</th>
+        <th class="text-center" style="width: 7%;">Pax.</th>
         <th style="width: 46%;">Chambres &amp; Clients</th>
         <th class="text-center" style="width: 8%;">Nuits</th>
         <th class="text-right" style="width: 20%;">Total (DHS)</th>
@@ -91,8 +91,8 @@
     <tbody>
     <tr th:each="row : ${rows}">
         <td class="text-center" th:text="${#temporals.format(row.checkin, 'dd/MM/yyyy')}"></td>
-        <td class="text-center bold" th:text="${row.code}"></td>
         <td class="text-center" th:text="${row.category.name}"></td>
+        <td class="text-center bold" th:text="${row.pax}"></td>
         <td>
             <div th:each="group : ${row.groupedRooms}" class="room-group">
                 <div class="room-header">
@@ -111,7 +111,8 @@
         </td>
         <td class="text-center bold" th:text="${row.uniqueNightsCount}"></td>
         <td class="text-right bold" style="color: #059669;">
-            <span th:text="${#numbers.formatDecimal(row.totalPrice, 1, 2)} + ' MAD'"></span>
+            <span th:text="${#numbers.formatDecimal(row.totalPrice, 1, 2)} + ' MAD'"></span><br/>
+            <span th:text="'(' + ${row.paymentCateg} + ')'"></span>
         </td>
     </tr>
     </tbody>

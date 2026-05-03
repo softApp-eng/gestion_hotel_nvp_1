@@ -128,6 +128,11 @@ public class InvoiceService {
         );
     }
 
+
+    public LocalDate getLastValidatedNight(){
+        return validatedNightRepository.lastNight();
+    }
+
     protected Person findReferencePersonForPricing(List<Reservation> reservations) {
         List<Person> persons = reservations.stream()
                 .map(Reservation::getPerson)
