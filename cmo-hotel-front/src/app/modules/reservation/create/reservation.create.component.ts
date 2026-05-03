@@ -4,6 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import {
+    FormArray,
     FormsModule,
     ReactiveFormsModule,
     UntypedFormBuilder,
@@ -69,7 +70,6 @@ interface RoomGroup {
         MatOptionModule,
         MatRadioModule,
         DatePipe,
-        TitleCasePipe,
         UpperCasePipe,
     ],
 })
@@ -130,11 +130,14 @@ export class ReservationCreateComponent implements OnInit {
                     }
                 ),
                 category: [null, [Validators.required]],
-                priseEnCharge: [''],
+                priseEnCharge: ['',[Validators.required]],
                 priseEnChargeReference: [''],
             }),
             step2: this._formBuilder.group({}),
             step3: this._formBuilder.group({
+                roomPrices: this._formBuilder.array([])
+            }),
+            step4: this._formBuilder.group({
                 observation: [''],
             }),
         });
@@ -200,7 +203,9 @@ export class ReservationCreateComponent implements OnInit {
                 }
             });
     }
-
+    get roomPricesArray(): FormArray {
+        return this.horizontalStepperForm.get('step3.roomPrices') as FormArray;
+    }
     loadCategories() {
         this._apiCommonService
             .getEnumsData('reservation-categories')
@@ -235,7 +240,41 @@ export class ReservationCreateComponent implements OnInit {
             ) || 0
         );
     }
+
     get filteredRoles(): any[] {
+        const category = this.horizontalStepperForm.get('step1.category')?.value;
+
+        // Si aucune catégorie n'est sélectionnée, on ne retourne aucun rôle
+        if (!category) return [];
+
+        // Définition des règles de filtrage par catégorie
+        const roleMapping: Record<string, string[]> = {
+            'SINGLE': ['PRINCIPAL'],
+            'DELEGATION': ['PRINCIPAL'],
+            'GENDARMERIE': ['PRINCIPAL'],
+            'OFF_AND_FAM': [
+                'PRINCIPAL', 'SPOUSE', 'SON', 'DAUGHTER', 'FATHER',
+                'MOTHER', 'BROTHER', 'SISTER', 'LEGAL_WARD', 'CHILD'
+            ],
+            'FAMILY': [
+                'VICE', 'SPOUSE', 'SON', 'DAUGHTER', 'FATHER',
+                'MOTHER', 'BROTHER', 'SISTER', 'LEGAL_WARD', 'CHILD'
+            ],
+            'INVITED': [
+                'VICE', 'SPOUSE', 'SON', 'DAUGHTER', 'FATHER',
+                'MOTHER', 'BROTHER', 'SISTER', 'LEGAL_WARD', 'CHILD'
+            ]
+        };
+
+        const allowedRoles = roleMapping[category];
+
+        // On filtre la liste globale des rôles basée sur les codes autorisés
+        return allowedRoles
+            ? this.roles.filter(role => allowedRoles.includes(role.code))
+            : this.roles;
+    }
+
+    get filteredRoles_old(): any[] {
         const category =
             this.horizontalStepperForm.get('step1.category')?.value;
         if (category === 'SINGLE') {
@@ -246,17 +285,6 @@ export class ReservationCreateComponent implements OnInit {
         if (category === 'DELEGATION') {
             return this.roles.filter((r) => r.code === 'PRINCIPAL');
         }
-
-        /*
-        if (category === 'SINGLE') {
-            return this.roles.filter(
-                (r) => r.code === 'PRINCIPAL' || r.code === 'VICE'
-            );
-        }
-        if (category === 'DELEGATION') {
-            return this.roles.filter((r) => r.code === 'PRINCIPAL');
-        }
-         */
         return this.roles;
     }
 
@@ -312,14 +340,6 @@ export class ReservationCreateComponent implements OnInit {
             (p) => p.role === 'PRINCIPAL' || p.role === 'VICE'
         ).length;
     }
-    get isStepResidentsValid_old(): boolean {
-        // 1. Il doit y avoir au moins une personne
-        if (!this.persons || this.persons.length === 0) {
-            return false;
-        }
-        // 2. Chaque personne doit avoir un rôle ET une chambre assignée
-        return this.persons.every((p) => p.id && p.role && p.room && p.room.id);
-    }
 
     save() {
         this.showAlert = false; // Reset l'alerte
@@ -356,16 +376,16 @@ export class ReservationCreateComponent implements OnInit {
             }
         });
 
-        if (
-            this.horizontalStepperForm.get('step1.category')?.value === 'FAMILY'
-        ) {
-            const leadsCount = this.countLeads();
-            if (leadsCount !== 1) {
-                errors.push(
-                    'Pour une catégorie FAMILLE, il doit y avoir exactement un responsable (Principal ou Mandataire).'
-                );
-            }
-        }
+        // if (
+        //     this.horizontalStepperForm.get('step1.category')?.value === 'FAMILY'
+        // ) {
+        //     const leadsCount = this.countLeads();
+        //     if (leadsCount !== 1) {
+        //         errors.push(
+        //             'Pour une catégorie FAMILLE, il doit y avoir exactement un responsable (Principal ou Mandataire).'
+        //         );
+        //     }
+        // }
 
         // 4. Affichage des messages d'erreur si présents
         if (errors.length > 0) {
@@ -387,12 +407,15 @@ export class ReservationCreateComponent implements OnInit {
             }, 0);
             return;
         }
+
+        const pricingData = this.horizontalStepperForm.get('step3.roomPrices')?.value || [];
+
         const reservationData = {
             startDate: this._utilsService.convertToDate(dateRange.start),
             endDate: this._utilsService.convertToDate(dateRange.end),
             category: this.horizontalStepperForm.get('step1.category')?.value,
             observation:
-                this.horizontalStepperForm.get('step3.observation')?.value,
+                this.horizontalStepperForm.get('step4.observation')?.value,
             priseEnCharge: this.horizontalStepperForm.get('step1.priseEnCharge')
                 ?.value,
             priseEnChargeReference: this.horizontalStepperForm.get(
@@ -402,7 +425,12 @@ export class ReservationCreateComponent implements OnInit {
                 personId: p.id,
                 role: p.role,
                 roomId: p.room.id,
+                appliedPrice: pricingData.find(rp => rp.roomId === p.room.id)?.unitPrice || 0
             })),
+            /*roomPrices: {
+                roomId:this.horizontalStepperForm.get('step3.roomPrices')?.value?.roomId,
+                unitPrice:this.horizontalStepperForm.get('step3.roomPrices')?.value?.unitPrice
+            },*/
         };
 
         console.log('PAYLOAD VALIDE:', reservationData);
@@ -580,7 +608,7 @@ export class ReservationCreateComponent implements OnInit {
 
                         // 2. Remplissage du Step 3
                         this.horizontalStepperForm
-                            .get('step3.observation')
+                            .get('step4.observation')
                             .setValue(data.observation);
 
                         // 3. Mapping des Guests vers le tableau "persons"
@@ -672,9 +700,75 @@ export class ReservationCreateComponent implements OnInit {
     protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
 
     onStepChange(event: StepperSelectionEvent) {
-        if (event.selectedIndex === 3) {
+        /*if (event.selectedIndex === 3) {
             this.calculateRoomPrices();
+        }*/
+
+        // Quand on arrive sur l'étape 3 (Index 2)
+        if (event.selectedIndex === 2) {
+            this.setupPricingForm();
         }
+        // Quand on arrive sur l'étape 4 (Confirmation)
+        if (event.selectedIndex === 3) {
+            this.syncPricesToEstimation();
+        }
+    }
+
+    /**
+     * Génère dynamiquement les champs de prix pour chaque chambre unique
+     */
+    setupPricingForm(): void {
+        const groupedRooms = this.getGroupedRooms();
+        const pricingArray = this.roomPricesArray;
+
+        // Condition CRITIQUE : Si le tableau a déjà la même taille que le nombre de chambres,
+        // on ne réinitialise pas pour ne pas perdre les modifications de l'utilisateur.
+        if (pricingArray.length === groupedRooms.length) {
+            return;
+        }
+
+        pricingArray.clear();
+
+        groupedRooms.forEach(group => {
+            const payer = group.persons.reduce((highest, current) => {
+                return (current.grade?.rating || 99) < (highest.grade?.rating || 99) ? current : highest;
+            });
+            const payerCategoryCode = payer.grade?.category?.code;
+            const priceEntry = group.room.roomType.prices.find(p => p.category.code === payerCategoryCode);
+            const defaultUnitPrice = priceEntry ? priceEntry.price : 0;
+
+            pricingArray.push(this._formBuilder.group({
+                roomId: [group.room.id],
+                roomName: [`${group.room.roomType.type} / ${group.room.name}`],
+                unitPrice: [defaultUnitPrice, [Validators.required, Validators.min(0)]]
+            }));
+        });
+    }
+
+// Mettez à jour le getter pour l'affichage de la confirmation
+    get estimatedPaymentFromForm(): any[] {
+        const duration = this.durationInDays || 0;
+        return this.roomPricesArray.value.map(item => ({
+            roomName: item.roomName,
+            unitPrice: item.unitPrice,
+            totalPrice: item.unitPrice * duration
+        }));
+    }
+
+// Mettez à jour le total général pour la confirmation
+    get estimatedTotalFromForm(): number {
+        return this.estimatedPaymentFromForm.reduce((sum, item) => sum + item.totalPrice, 0);
+    }
+    /**
+     * Synchronise les valeurs éditées avec l'objet d'affichage de la confirmation
+     */
+    syncPricesToEstimation(): void {
+        const duration = this.durationInDays || 0;
+        this.estimatedPayment = this.roomPricesArray.value.map(item => ({
+            roomName: item.roomName,
+            unitPrice: item.unitPrice,
+            totalPrice: item.unitPrice * duration
+        }));
     }
 
     private getExistingOccupations(): any[] {

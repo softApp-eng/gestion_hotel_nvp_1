@@ -21,7 +21,6 @@ public enum EGuestRole {
     SISTER("SISTER","Soeur", "Sœur du titulaire de la réservation","FAMILY",8),
     LEGAL_WARD("LEGAL_WARD","Sous tutelle", "Personne sous la protection légale du titulaire","FAMILY",9),
     CHILD("CHILD","Enfant (-18)","Enfant à charge du titulaire militaire bénéficiant du séjour.","FAMILY",10),
-    //FAMILY("FAMILY","Membre Famille","Membre de la famille (conjoint, ascendant) accompagnant le titulaire.");
     ;
 
     private final String code;

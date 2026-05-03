@@ -218,11 +218,9 @@ export class PersonManageModel implements OnInit, OnDestroy {
     }
 
     saveAndClose() {
-        const count = this.selectedPersons.length;
+        /*const count = this.selectedPersons.length;
         const category = this.data.category;
 
-
-        // Validation finale avec messages d'erreurs spécifiques
         if (category === 'SINGLE' && count > 1) {
             this._toast.error('La catégorie "Individuel" ne permet qu\'un seul résident.');
             return;
@@ -241,7 +239,7 @@ export class PersonManageModel implements OnInit, OnDestroy {
         if (count === 0) {
             this._toast.error('Veuillez sélectionner au moins un invité.');
             return;
-        }
+        }*/
 
         this.matDialogRef.close(this.selectedPersons);
     }

@@ -369,6 +369,7 @@ public class Feeder {
     private Double generateRoomPrice(EReservationCategory category) {
         return switch (category) {
             case SINGLE -> 300.0 + (random.nextInt(200));   // 300-500
+            case OFF_AND_FAM -> 300.0 + (random.nextInt(200));   // 300-500
             case GENDARMERIE -> 300.0 + (random.nextInt(200));   // 300-500
             case INVITED -> 300.0 + (random.nextInt(200));   // 300-500
             case FAMILY -> 600.0 + (random.nextInt(500));   // 600-1100

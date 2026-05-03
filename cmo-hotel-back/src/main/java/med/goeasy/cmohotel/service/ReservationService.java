@@ -129,6 +129,7 @@ public class ReservationService {
                     .person(p)
                     .role(role)
                     .room(room)
+                    .appliedPrice(person.appliedPrice())
                     .build();
             reservationRepository.save(reservation);
         }
@@ -219,6 +220,7 @@ public class ReservationService {
                     .person(p)
                     .role(role)
                     .room(room)
+                    .appliedPrice(person.appliedPrice())
                     .build();
             reservationRepository.save(reservation);
         }

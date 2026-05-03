@@ -55,6 +55,8 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     private EReservationStatus exceptionPersonStatus;
 
+    private Double appliedPrice;
+
     // audit
     @CreatedBy
     private String createdBy;

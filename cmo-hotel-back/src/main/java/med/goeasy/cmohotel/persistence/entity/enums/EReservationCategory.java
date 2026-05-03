@@ -10,6 +10,7 @@ import lombok.Getter;
 public enum EReservationCategory {
 
     SINGLE("SINGLE","Officier", "Séjour pour une personne seule, généralement en mission ou passage."),
+    OFF_AND_FAM("OFF_AND_FAM","Officier + Ayant droit", "Séjour pour une personne seule, généralement en mission ou passage."),
     FAMILY("FAMILY","Ayant droit", "Séjour incluant le titulaire et ses ayants droit (conjoint, enfants)."),
     DELEGATION("DELEGATION","Délégation", "Groupe de personnes d'une délégation ou un événements pour un motif officiel."),
     GENDARMERIE("GENDARMERIE","Gendarmerie", ""),

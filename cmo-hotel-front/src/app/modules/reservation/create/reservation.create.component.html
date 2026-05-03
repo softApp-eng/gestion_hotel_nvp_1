@@ -136,14 +136,27 @@
                             </mat-form-field>
                         </div>
 
-                        <div class="flex flex-col mt-2 p-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-transparent">
-                            <div class="flex items-center">
-                                <mat-checkbox
-                                    [color]="'primary'"
-                                    formControlName="priseEnCharge"
-                                    class="font-medium">
-                                    Prise en charge par un organisme
-                                </mat-checkbox>
+                            <div class="flex items-center my-4">
+                                <mat-form-field class="w-full" subscriptSizing="dynamic" appearance="outline">
+                                    <mat-label>Mode de règlement</mat-label>
+                                    <mat-select formControlName="priseEnCharge">
+                                        <!-- Valeur 'false' pour le paiement direct -->
+                                        <mat-option [value]="false">
+                                            <div class="flex items-center">
+                                                <mat-icon class="icon-size-5 mr-2 text-green-600" [svgIcon]="'heroicons_outline:banknotes'"></mat-icon>
+                                                <span>Espèce (Règlement direct)</span>
+                                            </div>
+                                        </mat-option>
+
+                                        <!-- Valeur 'true' pour la prise en charge -->
+                                        <mat-option [value]="true">
+                                            <div class="flex items-center">
+                                                <mat-icon class="icon-size-5 mr-2 text-blue-600" [svgIcon]="'heroicons_outline:building-office'"></mat-icon>
+                                                <span>Prise en charge</span>
+                                            </div>
+                                        </mat-option>
+                                    </mat-select>
+                                </mat-form-field>
                             </div>
 
                             @if (horizontalStepperForm.get('step1.priseEnCharge').value) {
@@ -155,7 +168,7 @@
                                     </mat-form-field>
                                 </div>
                             }
-                        </div>
+
 
                         <div class="flex justify-end">
                             <button class="px-8" mat-flat-button [color]="'primary'" type="button" matStepperNext
@@ -351,9 +364,64 @@
                         </div>
                     </mat-step>
 
+                    <mat-step [stepControl]="horizontalStepperForm.get('step3')">
+                        <ng-template matStepLabel>Tarification</ng-template>
+
+                        <div class="flex items-center space-x-4 my-8">
+                            <div class="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
+                                <mat-icon class="icon-size-6" [svgIcon]="'heroicons_outline:currency-dollar'"></mat-icon>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-extrabold tracking-tight leading-none">Ajustement des Tarifs</h2>
+                                <p class="text-secondary font-medium mt-1">Les prix sont calculés selon le grade le plus élevé par chambre. Vous pouvez les modifier manuellement.</p>
+                            </div>
+                        </div>
+
+                        <!-- Liste des chambres avec prix éditables -->
+                        <div [formGroup]="horizontalStepperForm.get('step3')" class="grid grid-cols-1 gap-4 mt-8">
+                            <ng-container formArrayName="roomPrices">
+                                @for (control of roomPricesArray.controls; track control; let i = $index) {
+                                    <div [formGroupName]="i" class="flex flex-col sm:flex-row items-center justify-between p-4 bg-card shadow rounded-2xl border border-gray-200 dark:border-gray-700">
+                                        <div class="flex flex-col mb-4 sm:mb-0">
+                                            <span class="text-xs font-bold text-secondary uppercase tracking-wider">Chambre</span>
+                                            <span class="text-md font-bold">{{ control.get('roomName').value }}</span>
+                                        </div>
+
+                                        <div class="flex items-center space-x-4">
+                                            <mat-form-field class="fuse-mat-no-subscript w-40">
+                                                <mat-label>Prix / Nuit (MAD)</mat-label>
+                                                <input type="number" matInput formControlName="unitPrice">
+                                                <mat-icon matPrefix class="icon-size-5 mr-2" [svgIcon]="'heroicons_outline:banknotes'"></mat-icon>
+                                            </mat-form-field>
+
+                                            <div class="hidden sm:flex flex-col text-right min-w-32">
+                                                <span class="text-xs font-medium text-secondary uppercase">Total ({{durationInDays}} nuits)</span>
+                                                <span class="text-md font-bold text-primary">
+                                {{ (control.get('unitPrice').value * durationInDays) | number:'1.2-2' }} MAD
+                            </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </ng-container>
+
+                            <!-- Message si aucune chambre n'est assignée -->
+                            @if (roomPricesArray.length === 0) {
+                                <div class="p-8 text-center border-2 border-dashed rounded-2xl">
+                                    <p class="text-secondary">Aucune chambre assignée. Veuillez revenir à l'étape précédente.</p>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="mt-10 flex justify-end">
+                            <button class="mr-2 px-8" mat-flat-button [color]="'accent'" type="button" matStepperPrevious>Précédent</button>
+                            <button class="px-8" mat-flat-button color="primary" type="button" matStepperNext [disabled]="roomPricesArray.invalid">Suivant</button>
+                        </div>
+                    </mat-step>
+
                     <mat-step
-                        [formGroupName]="'step3'"
-                        [stepControl]="horizontalStepperForm.get('step3')"
+                        [formGroupName]="'step4'"
+                        [stepControl]="horizontalStepperForm.get('step4')"
                     >
                         <ng-template matStepLabel>Observations</ng-template>
 
@@ -440,15 +508,16 @@
                             </div>
 
                             <div class="space-y-4">
-                                @if (estimatedPayment && estimatedPayment.length > 0) {
+                                <!-- On utilise directement le getter qui transforme le FormArray en liste d'objets -->
+                                @if (estimatedPaymentFromForm && estimatedPaymentFromForm.length > 0) {
                                     <div class="bg-card shadow-lg rounded-2xl border border-primary/20 overflow-hidden">
                                         <div class="bg-primary/5 px-6 py-4 border-b border-primary/10 flex justify-between items-center">
-                                            <h3 class="text-sm font-bold text-primary uppercase">Estimation Folio</h3>
+                                            <h3 class="text-sm font-bold text-primary uppercase">Estimation Finale</h3>
                                             <span class="text-xs font-bold text-primary">{{ durationInDays }} Nuits</span>
                                         </div>
 
                                         <div class="divide-y divide-gray-100 dark:divide-gray-800">
-                                            @for (detail of estimatedPayment; track detail.roomName) {
+                                            @for (detail of estimatedPaymentFromForm; track detail.roomName) {
                                                 <div class="p-4 flex justify-between items-center">
                                                     <div class="flex flex-col text-sm">
                                                         <span class="font-bold">{{ detail.roomName }}</span>
@@ -462,14 +531,15 @@
                                         <div class="p-6 bg-primary text-white">
                                             <div class="flex justify-between items-center">
                                                 <span class="text-xs font-bold uppercase">Total Général TTC</span>
-                                                <span class="text-2xl font-black">{{ estimatedTotal | number:'1.2-2' }} MAD</span>
+                                                <!-- Utilisation du nouveau total calculé -->
+                                                <span class="text-2xl font-black">{{ estimatedTotalFromForm | number:'1.2-2' }} MAD</span>
                                             </div>
                                         </div>
 
                                         @if (horizontalStepperForm.get('step1.priseEnCharge').value) {
                                             <div class="p-4 bg-emerald-500 text-white flex justify-between items-center">
-                                                <span class="text-xs font-bold uppercase">Prise en charge active (Réf: {{horizontalStepperForm.get('step1.priseEnChargeReference').value}})</span>
-                                                <span class="text-lg font-bold">0.00 MAD</span>
+                                                <span class="text-xs font-bold uppercase">Prise en charge active</span>
+                                                <span class="text-lg font-bold">SOLDE : 0.00 MAD</span>
                                             </div>
                                         }
                                     </div>

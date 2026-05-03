@@ -9,6 +9,7 @@ public record ReservationPersonsRequestDto(
         @NotBlank(message = "Role de la personne obligatoire")
         String role,
         @NotNull(message = "Chambre obligatoire")
-        Long roomId
+        Long roomId,
+        Double appliedPrice
 ) {
 }
