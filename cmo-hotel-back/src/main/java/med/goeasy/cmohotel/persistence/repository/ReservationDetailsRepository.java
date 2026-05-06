@@ -71,9 +71,16 @@ public interface ReservationDetailsRepository extends JpaRepository<ReservationD
             rd.status = 'CONFIRMED'
         order by rd.code desc
         """)
-    //AND CURRENT_DATE >= CAST(COALESCE(rd.checkin, rd.plannedStart) AS date)
-    //AND CURRENT_DATE <= CAST(COALESCE(rd.checkout, rd.plannedEnd) AS date)
     List<ReservationDetails> getSejours();
+
+    @Query(value = """
+    SELECT DISTINCT rd FROM ReservationDetails rd
+    LEFT JOIN FETCH rd.reservations r
+    LEFT JOIN FETCH r.room
+    WHERE rd.status = 'CONFIRMED'
+    ORDER BY rd.code DESC
+    """)
+    List<ReservationDetails> getSejoursWithDepth();
 
     @Query("""
     SELECT MONTH(rd.checkin) as month, count (rd.code) as total

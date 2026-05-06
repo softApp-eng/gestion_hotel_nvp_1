@@ -11,6 +11,7 @@ import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 import med.goeasy.cmohotel.presentation.dto.ApiResponse;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
 import med.goeasy.cmohotel.presentation.dto.reservation.*;
+import med.goeasy.cmohotel.presentation.dto.statistic.OccupationStatsDto;
 import med.goeasy.cmohotel.service.ReservationService;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -191,6 +192,11 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.getMainCourante());
     }
 
+    @GetMapping("/main-courante-occupation")
+    ResponseEntity<List<OccupationStatsDto>> calculateOccupationStatistics(){
+        return ResponseEntity.ok(reservationService.calculateOccupationStatistics());
+    }
+
     @GetMapping("/planning/{type}")
     ResponseEntity<List<ReservationCalenderResponseDto>> getRangReservations(
             Authentication authentication,
@@ -227,6 +233,17 @@ public class ReservationController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("attachment", "Main_courante.pdf");
+
+        return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/download/invoice-pro-format")
+    public ResponseEntity<byte[]> generateInvoiceProFormat( Authentication authentication,@Valid @NotNull(message = "code de reservation requis") @RequestParam() Long code) throws Exception {
+        byte[] pdf = reservationService.generateInvoiceProFormat(authentication,code);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "Facture_pro_format.pdf");
 
         return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
     }

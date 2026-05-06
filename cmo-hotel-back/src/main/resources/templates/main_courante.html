@@ -61,6 +61,33 @@
         .footer-left { display: table-cell; width: 50%; text-align: left; }
         .footer-right { display: table-cell; width: 50%; text-align: right; vertical-align: top; }
         .user-info { font-weight: bold; color: #334155; }
+
+        /* Force le saut de page avant les statistiques */
+        .page-break {
+            page-break-before: always;
+        }
+
+        /* Style spécifique pour les tableaux de statistiques */
+        .stats-table {
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .stats-table th {
+            background-color: #1e293b;
+            color: #ffffff;
+            font-size: 7pt;
+        }
+
+        .stats-table td {
+            font-size: 8pt;
+            height: 25px;
+        }
+
+        .bg-light { background-color: #f8fafc; }
+        .bg-total { background-color: #f1f5f9; font-weight: bold; }
+        .text-pec { color: #c2410c; } /* Orange pour PEC */
+        .text-esp { color: #15803d; } /* Vert pour ESP */
     </style>
 </head>
 <body>
@@ -129,6 +156,64 @@
             Rapport Officiel de la Main Courante - Certification Système
         </div>
     </div>
+</div>
+
+<div class="page-break"></div>
+
+<div class="header-grid">
+    <div class="header-left">
+        <div class="company-name">STATISTIQUES D'OCCUPATION</div>
+        <div class="company-sub">Analyse par Pavillon et Type de Logement</div>
+    </div>
+</div>
+
+<div th:each="pavillon : ${occupationStats}" class="stats-container">
+    <h2 style="font-size: 14px; color: #1e40af; border-bottom: 1px solid #1e40af; padding-bottom: 5px;">
+        PAVILLON : <span th:text="${pavillon.pavillonName}">OUDAYA</span>
+    </h2>
+
+    <table class="stats-table">
+        <thead>
+        <tr>
+            <th style="width: 20%; text-align: left;">DÉSIGNATION</th>
+            <th th:each="type : ${pavillon.roomTypeStats}" class="text-center" th:text="${type.typeName}">Type</th>
+            <th class="text-center" style="background-color: #0f172a;">TOTAL</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td class="bg-light bold">Nombre de chambres</td>
+            <td th:each="type : ${pavillon.roomTypeStats}" class="text-center" th:text="${type.totalRoomsOfType}">0</td>
+            <td class="text-center bg-total" th:text="${pavillon.totalRooms}">0</td>
+        </tr>
+        <tr>
+            <td class="bg-light bold">Règlement (ESP / PEC)</td>
+            <td th:each="type : ${pavillon.roomTypeStats}" class="text-center">
+                <span class="text-esp" th:text="${type.occupantsDirectPay}">0</span> /
+                <span class="text-pec" th:text="${type.occupantsPriseEnCharge}">0</span>
+            </td>
+            <td class="text-center bg-total">
+                <span class="text-esp" th:text="${pavillon.totalDirect}">0</span> /
+                <span class="text-pec" th:text="${pavillon.totalPEC}">0</span>
+            </td>
+        </tr>
+        <tr>
+            <td class="bg-light bold">Total Occupants</td>
+            <td th:each="type : ${pavillon.roomTypeStats}" class="text-center" th:text="${type.occupantsDirectPay + type.occupantsPriseEnCharge}">0</td>
+            <td class="text-center bg-total" th:text="${pavillon.totalDirect + pavillon.totalPEC}">0</td>
+        </tr>
+        <tr>
+            <td class="bg-light bold">Chambres Libres</td>
+            <td th:each="type : ${pavillon.roomTypeStats}" class="text-center" style="color: #dc2626;" th:text="${type.totalRoomsOfType - type.occupiedRoomsOfType}">0</td>
+            <td class="text-center bg-total" style="color: #dc2626;" th:text="${pavillon.totalRooms - pavillon.totalOccupiedRooms}">0</td>
+        </tr>
+        <tr>
+            <td class="bg-light bold">Taux d'occupation (%)</td>
+            <td th:each="type : ${pavillon.roomTypeStats}" class="text-center bold" style="color: #1e40af;" th:text="${#numbers.formatDecimal(type.occupationRate, 1, 1) + '%'}">0%</td>
+            <td class="text-center bg-total" style="color: #1e40af;" th:text="${#numbers.formatDecimal(pavillon.globalOccupationRate, 1, 1) + '%'}">0%</td>
+        </tr>
+        </tbody>
+    </table>
 </div>
 
 </body>

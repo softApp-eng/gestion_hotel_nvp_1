@@ -10,10 +10,7 @@ import med.goeasy.cmohotel.audit.EAuditActionTarget;
 import med.goeasy.cmohotel.exception.BadRequestException;
 import med.goeasy.cmohotel.exception.OperationNotPermittedException;
 import med.goeasy.cmohotel.persistence.entity.*;
-import med.goeasy.cmohotel.persistence.entity.enums.EGradeCategory;
-import med.goeasy.cmohotel.persistence.entity.enums.EGuestRole;
-import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
-import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
+import med.goeasy.cmohotel.persistence.entity.enums.*;
 import med.goeasy.cmohotel.persistence.repository.ReservationDetailsRepository;
 import med.goeasy.cmohotel.persistence.repository.ReservationRepository;
 import med.goeasy.cmohotel.persistence.repository.RoomRepository;
@@ -23,6 +20,8 @@ import med.goeasy.cmohotel.presentation.dto.person.PersonResponseDto;
 import med.goeasy.cmohotel.presentation.dto.prices.PriceEstimationResponse;
 import med.goeasy.cmohotel.presentation.dto.prices.RoomPriceDetail;
 import med.goeasy.cmohotel.presentation.dto.reservation.*;
+import med.goeasy.cmohotel.presentation.dto.statistic.OccupationStatsDto;
+import med.goeasy.cmohotel.presentation.dto.statistic.RoomTypeStatsDto;
 import med.goeasy.cmohotel.utils.UtilsService;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.data.domain.Page;
@@ -521,7 +520,7 @@ public class ReservationService {
         ReservationDetails details = reservationDetailsRepository.findById(code)
                 .orElseThrow(() -> new EntityNotFoundException("Réservation non trouvée"));
 
-        PriceEstimationResponse estimation = calculateEstimationByCode(details);
+        PriceEstimationResponse estimation = calculatePriceEstimation(details);
 
         Context context = new Context();
         context.setVariable("details", details);
@@ -559,8 +558,91 @@ public class ReservationService {
         )).toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<OccupationStatsDto> calculateOccupationStatistics() {
+        // 1. Récupérer toutes les chambres pour connaître la capacité totale par pavillon/type
+        List<Room> allRooms = roomRepository.getRooms(null,null);
+
+        // 2. Récupérer les séjours actifs
+        List<ReservationDetails> activeSejours = reservationDetailsRepository.getSejoursWithDepth();
+
+        // 3. Identifier les chambres réellement occupées et compter les occupants
+        // Map<RoomId, ReservationDetails> pour savoir quelle chambre est prise et comment
+        Map<Long, ReservationDetails> occupiedRoomsMap = new HashMap<>();
+        activeSejours.forEach(details ->
+                details.getReservations().stream()
+                        .filter(r -> r.getRoom() != null)
+                        .forEach(r -> occupiedRoomsMap.put(r.getRoom().getId(), details))
+        );
+
+        // 4. Grouper par Pavillon
+        Map<Pavillon, List<Room>> roomsByPavillon = allRooms.stream()
+                .collect(Collectors.groupingBy(Room:: getPavillon));
+
+        return roomsByPavillon.entrySet().stream().map(entry -> {
+            Pavillon pavillon = entry.getKey();
+            List<Room> pavillonRooms = entry.getValue();
+
+            // Grouper par Type de chambre au sein du pavillon
+            Map<RoomType, List<Room>> roomsByType = pavillonRooms.stream()
+                    .collect(Collectors.groupingBy(Room::getRoomType));
+
+            List<RoomTypeStatsDto> typeStats = roomsByType.entrySet().stream().map(typeEntry -> {
+                RoomType type = typeEntry.getKey();
+                List<Room> roomsOfThisType = typeEntry.getValue();
+
+                long totalRoomsOfType = roomsOfThisType.size();
+
+                // Chambres occupées de ce type
+                List<Room> occupiedInType = roomsOfThisType.stream()
+                        .filter(room -> occupiedRoomsMap.containsKey(room.getId()))
+                        .toList();
+
+                // Calcul des occupants par statut de prise en charge
+                long pecCount = 0;
+                long directCount = 0;
+
+                for (Room r : occupiedInType) {
+                    ReservationDetails rd = occupiedRoomsMap.get(r.getId());
+                    // On compte le nombre de personnes dans cette chambre pour ce dossier
+                    long occupantsInRoom = rd.getReservations().stream()
+                            .filter(res -> res.getRoom().getId().equals(r.getId()))
+                            .count();
+
+                    if (rd.isPriseEnCharge()) pecCount += occupantsInRoom;
+                    else directCount += occupantsInRoom;
+                }
+
+                double rate = totalRoomsOfType > 0 ? (double) occupiedInType.size() / totalRoomsOfType * 100 : 0;
+
+                return new RoomTypeStatsDto(
+                        type.getType(),
+                        totalRoomsOfType,
+                        (long) occupiedInType.size(),
+                        pecCount,
+                        directCount,
+                        rate
+                );
+            }).toList();
+
+            long totalPavillonRooms = pavillonRooms.size();
+            long totalPavillonOccupied = typeStats.stream().mapToLong(RoomTypeStatsDto::occupiedRoomsOfType).sum();
+            double globalRate = totalPavillonRooms > 0 ? (double) totalPavillonOccupied / totalPavillonRooms * 100 : 0;
+
+            return new OccupationStatsDto(
+                    pavillon.getName(),
+                    typeStats,
+                    totalPavillonRooms,
+                    totalPavillonOccupied,
+                    globalRate
+            );
+        }).toList();
+    }
+
     public byte[] generateMainCourantePdf(Authentication authentication) throws Exception {
         List<ReservationDetails> sejours = reservationDetailsRepository.getSejours();
+
+        List<OccupationStatsDto> occupationStats = calculateOccupationStatistics();
 
         List<Map<String, Object>> rows = sejours.stream().map(details -> {
             Map<String, Object> rowMap = new HashMap<>();
@@ -570,7 +652,7 @@ public class ReservationService {
             rowMap.put("paymentCateg", details.isPriseEnCharge() ? "PC" : "ESP");
             rowMap.put("code", details.getCode());
             rowMap.put("checkin", details.getCheckin());
-            rowMap.put("category", details.getCategory()); // On passe l'objet pour avoir .name et .code
+            rowMap.put("category", details.getCategory());
 
             // 2. Récupération de la facture et des nuits
             Invoice invoice = invoiceService.getInvoiceByReservations(details).orElse(null);
@@ -610,6 +692,7 @@ public class ReservationService {
 
         Context context = new Context();
         context.setVariable("rows", rows);
+        context.setVariable("occupationStats", occupationStats);
         context.setVariable("now", LocalDateTime.now());
         context.setVariable("generatedBy", authentication.getName());
 
@@ -640,6 +723,47 @@ public class ReservationService {
     }
 
 
+    public byte[] generateInvoiceProFormat(Authentication authentication, Long reservationCode) throws Exception {
+        ReservationDetails details = reservationDetailsRepository.findById(reservationCode)
+                .orElseThrow(() -> new EntityNotFoundException("Réservation non trouvée"));
+
+        PriceEstimationResponse estimation = calculatePriceEstimation(details);
+
+        Context context = new Context();
+        context.setVariable("details", details);
+        context.setVariable("estimation", estimation);
+        context.setVariable("generatedBy", authentication.getName());
+        context.setVariable("now", LocalDateTime.now());
+        String logoBase64 = utilsService.getAppLogoAs64();
+        context.setVariable("logoBase64", "data:image/png;base64," + logoBase64);
+
+        String htmlContent = templateEngine.process("invoice-pro-format", context);
+
+        // 2. Audit de l'action
+        activityLogService.logActivity(
+                EAuditActionTarget.INVOICE,
+                EAuditActionOperation.SELECT,
+                String.format("Génération de la facture pro format de la reservation %s.", reservationCode),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            ITextRenderer renderer = new ITextRenderer();
+
+            // Support des caractères spéciaux (Optionnel mais recommandé pour le français)
+            renderer.setDocumentFromString(htmlContent);
+            renderer.layout();
+            renderer.createPDF(outputStream);
+
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            log.error("Erreur lors de la génération du PDF : {}", e.getMessage());
+            throw new BadRequestException("Échec de la génération du PDF de la facture.");
+        }
+    }
+
+
 
 
     /// /////////////////////////////////////////////////////////////////////////////
@@ -656,7 +780,7 @@ public class ReservationService {
                 .orElseThrow(()-> new BadRequestException("reservation n'existe pas"));
     }
 
-    protected PriceEstimationResponse calculateEstimationByCode(ReservationDetails details) {
+    protected PriceEstimationResponse calculatePriceEstimation(ReservationDetails details) {
         // 1. Déterminer la période (Priorité au réel, sinon prévu)
         LocalDateTime start = details.getCheckin() != null ? details.getCheckin() : details.getPlannedStart();
         LocalDateTime end = details.getCheckout() != null ? details.getCheckout() : details.getPlannedEnd();
@@ -677,21 +801,20 @@ public class ReservationService {
             Room room = entry.getKey();
             List<Reservation> guestsInRoom = entry.getValue();
 
-            // 4. Trouver la personne de référence selon la logique métier (Militaire le plus gradé > Civil)
-            Person referencePerson = invoiceService.findReferencePersonForPricing(guestsInRoom);
-
-            // 5. Calculer le prix unitaire selon l'éligibilité (ex: gratuit pour mineurs)
-            Double unitPrice = 0.0;
-            if (invoiceService.isEligibleForPricing(referencePerson)) {
-                // Utilise la catégorie de la personne de référence pour chercher dans les prix de la chambre
-                unitPrice = invoiceService.findPriceForRoom(room, referencePerson.getGrade().getCategory());
-            }
+            // 4. Récupérer le prix appliqué (AppliedPrice)
+            // Comme le prix est le même pour toutes les personnes d'une même chambre,
+            // on prend celui de la première personne trouvée ou du "PRINCIPAL".
+            Double unitPrice = guestsInRoom.stream()
+                    .map(Reservation::getAppliedPrice)
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElse(0.0); // Sécurité si aucun prix n'a été saisi
 
             double roomTotalPrice = unitPrice * duration;
             totalGlobal += roomTotalPrice;
 
             priceDetails.add(new RoomPriceDetail(
-                    room.getRoomType().getType() + " / " + room.getCode(),
+                    room.getRoomType().getType() + " / " + room.getName(),
                     unitPrice,
                     roomTotalPrice
             ));
@@ -699,4 +822,50 @@ public class ReservationService {
 
         return new PriceEstimationResponse(priceDetails, totalGlobal, duration);
     }
+
+
+
+//    protected PriceEstimationResponse calculateEstimationByCode(ReservationDetails details) {
+//        // 1. Déterminer la période (Priorité au réel, sinon prévu)
+//        LocalDateTime start = details.getCheckin() != null ? details.getCheckin() : details.getPlannedStart();
+//        LocalDateTime end = details.getCheckout() != null ? details.getCheckout() : details.getPlannedEnd();
+//
+//        // 2. Calculer la durée (Minimum 1 nuit)
+//        long duration = java.time.temporal.ChronoUnit.DAYS.between(start.toLocalDate(), end.toLocalDate());
+//        if (duration <= 0) duration = 1;
+//
+//        // 3. Groupement des réservations par Chambre
+//        Map<Room, List<Reservation>> roomGroups = details.getReservations().stream()
+//                .filter(r -> r.getRoom() != null)
+//                .collect(Collectors.groupingBy(Reservation::getRoom));
+//
+//        List<RoomPriceDetail> priceDetails = new ArrayList<>();
+//        double totalGlobal = 0.0;
+//
+//        for (Map.Entry<Room, List<Reservation>> entry : roomGroups.entrySet()) {
+//            Room room = entry.getKey();
+//            List<Reservation> guestsInRoom = entry.getValue();
+//
+//            // 4. Trouver la personne de référence selon la logique métier (Militaire le plus gradé > Civil)
+//            Person referencePerson = invoiceService.findReferencePersonForPricing(guestsInRoom);
+//
+//            // 5. Calculer le prix unitaire selon l'éligibilité (ex: gratuit pour mineurs)
+//            Double unitPrice = 0.0;
+//            if (invoiceService.isEligibleForPricing(referencePerson)) {
+//                // Utilise la catégorie de la personne de référence pour chercher dans les prix de la chambre
+//                unitPrice = invoiceService.findPriceForRoom(room, referencePerson.getGrade().getCategory());
+//            }
+//
+//            double roomTotalPrice = unitPrice * duration;
+//            totalGlobal += roomTotalPrice;
+//
+//            priceDetails.add(new RoomPriceDetail(
+//                    room.getRoomType().getType() + " / " + room.getCode(),
+//                    unitPrice,
+//                    roomTotalPrice
+//            ));
+//        }
+//
+//        return new PriceEstimationResponse(priceDetails, totalGlobal, duration);
+//    }
 }

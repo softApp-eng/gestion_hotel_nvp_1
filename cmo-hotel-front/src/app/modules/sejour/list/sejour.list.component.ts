@@ -23,6 +23,7 @@ import { ReservationDetailsModel } from '../../reservation/dialog-reservation-de
 import { CloseReservationModel } from '../../reservation/list/dialog-close-reservation/close.reservation.model';
 import { NightValidationModel } from '../night-validation/night-validation.model';
 import { TimeExtendModel } from '../time-extend/time-extend.model';
+import { Toastr } from '../../../core/service/toastr.service';
 
 @Component({
     selector: 'sejour-list',
@@ -71,6 +72,7 @@ export class SejourListComponent implements OnInit {
     pageSizeOptions: number[] = [20, 50, 70, 100];
     key = '';
     today = new Date();
+    loadingFicheId: number | null = null;
 
     /**
      * Constructor
@@ -78,6 +80,7 @@ export class SejourListComponent implements OnInit {
     constructor(
         private _apiReservationService: ApiReservationService,
         private _matDialog: MatDialog,
+        private _toastr: Toastr,
     ) {}
 
     ngOnInit(): void {
@@ -272,6 +275,45 @@ export class SejourListComponent implements OnInit {
         }, {});
 
         return Object.values(groups);
+    }
+
+    processInvoice(row: any, action: 'download' | 'print'): void {
+        if (!row?.code) return;
+
+        this.loadingFicheId = row.code;
+
+        this._apiReservationService
+            .generateInvoiceProFormatPdf(row.code)
+            .subscribe({
+                next: (blob: Blob) => {
+                    const blobUrl = window.URL.createObjectURL(blob);
+
+                    if (action === 'download') {
+                        // CAS 1 : TELECHARGEMENT
+                        const link = document.createElement('a');
+                        link.href = blobUrl;
+                        link.download = `Facture_proforma_${row.code}.pdf`;
+                        link.click();
+                    } else {
+                        // CAS 2 : IMPRESSION (Ouverture dans un nouvel onglet)
+                        const printWindow = window.open(blobUrl, '_blank');
+                        // Note: Certains navigateurs bloquent les popups, s'assurer qu'ils sont autorisés
+                        if (printWindow) {
+                            printWindow.focus();
+                        }
+                    }
+
+                    // Nettoyage de la mémoire
+                    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+                    this.loadingFicheId = null;
+                },
+                error: (err) => {
+                    console.error('Erreur PDF:', err);
+                    this.loadingFicheId = null;
+                    this._toastr.error("erreur de generation de la facture de réservation")
+                    // Optionnel : Afficher un SnackBar d'erreur
+                },
+            });
     }
 
 }

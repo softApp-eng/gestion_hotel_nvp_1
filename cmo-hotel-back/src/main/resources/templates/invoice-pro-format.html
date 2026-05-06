@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"></meta>
+    <style>
+        @page { size: A4; margin: 0.5cm; }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #1e293b;
+            margin: 0;
+            padding: 30px;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        /* --- ENTÊTE --- */
+        .header-grid { display: table; width: 100%; border-bottom: 2px solid #0f172a; padding-bottom: 20px; margin-bottom: 25px; }
+        .header-left { display: table-cell; vertical-align: middle; width: 50%; }
+        .header-right { display: table-cell; vertical-align: middle; width: 50%; text-align: right; }
+
+        .logo-img { height: 50px; width: auto; margin-bottom: 8px; }
+        .company-name { font-size: 16px; font-weight: 800; color: #0f172a; text-transform: uppercase; }
+        .company-sub { font-size: 9px; color: #64748b; font-weight: 500; }
+
+        .title-doc { font-size: 24px; font-weight: 800; color: #1e40af; letter-spacing: 1px; }
+        .invoice-num { font-size: 13px; font-weight: 700; color: #0f172a; margin-top: 5px; }
+
+        /* --- BLOCS D'INFORMATIONS --- */
+        .info-grid { display: table; width: 100%; margin-bottom: 25px; table-layout: fixed; }
+        .info-col { display: table-cell; vertical-align: top; width: 33.33%; padding: 0 10px; }
+        .info-col:first-child { padding-left: 0; }
+        .info-col:last-child { padding-right: 0; }
+
+        .card-info { background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; height: 90px; }
+        .label { font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+        .value { font-size: 10px; font-weight: 600; color: #0f172a; }
+
+        /* --- STATUTS ET BADGES --- */
+        .status-badge {
+            display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase;
+        }
+        .paid { background: #dcfce7; color: #166534; }
+        .unpaid { background: #fee2e2; color: #991b1b; }
+
+        /* --- TABLEAUX DE FACTURATION --- */
+        .table-section { margin-bottom: 25px; }
+        .section-title { font-size: 10px; font-weight: 800; color: #0f172a; margin-bottom: 8px; text-transform: uppercase; border-left: 3px solid #1e40af; padding-left: 8px; }
+
+        .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        .invoice-table th {
+            background: #0f172a; color: white; font-size: 9px; font-weight: 700; text-transform: uppercase;
+            padding: 10px; text-align: left;
+        }
+        .invoice-table td { padding: 10px; font-size: 10px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        .invoice-table tr:nth-child(even) { background: #f8fafc; }
+
+        .price-col { text-align: right; font-weight: 600; width: 100px; }
+        .qty-col { text-align: center; width: 60px; }
+
+        /* --- RÉSUMÉ FINANCIER --- */
+        .financial-grid { display: table; width: 100%; margin-top: 20px; }
+        .fin-left { display: table-cell; vertical-align: top; width: 55%; font-size: 9px; color: #64748b; }
+        .fin-right { display: table-cell; vertical-align: top; width: 45%; }
+
+        .totals-table { width: 100%; border-collapse: collapse; }
+        .totals-table td { padding: 8px 12px; font-size: 10px; border-bottom: 1px solid #f1f5f9; }
+        .total-row { background: #0f172a; color: white; font-weight: 800; font-size: 13px; }
+        .total-row td { padding: 12px; border: none; }
+
+        /* --- FOOTER  SIGNATURES --- */
+        .signature-grid { display: table; width: 100%; margin-top: 40px; table-layout: fixed; }
+        .sig-box { display: table-cell; vertical-align: top; width: 50%; padding: 0 20px; text-align: center; }
+        .sig-space { height: 80px; border: 1px dashed #cbd5e1; border-radius: 8px; margin-top: 8px; padding-top: 5px; font-size: 9px; color: #94a3b8; }
+
+        .footer { margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 15px; text-align: center; font-size: 8px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+<div class="header-grid">
+    <div class="header-left">
+        <img th:src="${logoBase64}" class="logo-img" />
+        <div class="company-name">CMO-HOTEL MANAGER</div>
+        <div class="company-sub">Système Intégré de Gestion de l'Hébergement</div>
+    </div>
+    <div class="header-right">
+        <div class="title-doc">FACTURE PRO FORMAT</div>
+        <div class="invoice-num" th:text="${'R#' + details.code}">000</div>
+        <div style="font-size: 10px; color: #64748b; margin-top: 5px;">Date d'émission: <span th:text="${#temporals.format(now, 'dd/MM/yyyy HH:mm')}">--</span></div>
+    </div>
+</div>
+
+<div class="info-grid">
+    <div class="info-col">
+        <div class="card-info">
+            <div class="label">Informations Facture</div>
+            <div class="value">Catégorie : <span th:text="${details.category.name}">-</span></div>
+            <div class="value" style="margin-top: 5px;">Statut :
+                <span class="status-badge unpaid">NON PAYÉE</span>
+            </div>
+<!--            <div class="value" style="margin-top: 5px;" th:if="${invoice.paidAt}">Règlement: <span th:text="${#temporals.format(invoice.paidAt, 'dd/MM/yyyy')}"></span></div>-->
+        </div>
+    </div>
+
+    <div class="info-col">
+        <div class="card-info">
+            <div class="label">Hébergement Validé</div>
+            <div class="value">Période du Séjour :</div>
+            <div class="value" style="font-weight: 700; color: #1e40af;">
+                Du <span th:text="${#temporals.format(details.checkin, 'dd/MM/yyyy HH:mm')}">--</span>
+                au <span th:text="${#temporals.format(details.plannedEnd, 'dd/MM/yyyy')}">--</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-col">
+        <div class="card-info">
+            <div class="label">Mode de Paiement</div>
+            <div th:if="${details.priseEnCharge}" style="margin-top: 8px; color: #15803d; font-weight: 700; font-size: 9px;">
+                <span>Prise en charge</span>
+            </div>
+            <div th:if="${!details.priseEnCharge}" class="value">
+                <span>Espèce</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-section">
+    <div class="section-title">Liste des Résidents par Chambre (Prévisionnel)</div>
+    <table class="invoice-table">
+        <thead>
+        <tr>
+            <th>Résident</th>
+            <th>Rôle</th>
+            <th>Identité / Matricule</th>
+            <th>Logement / Chambre</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="res : ${details.reservations}">
+            <td>
+                <div style="font-weight: 700;" th:text="${res.person.grade != null ? res.person.grade.code : 'CLIENT'}">GRADE</div>
+                <div style="font-size: 9px; color: #64748b;" th:text="${res.person.firstName + ' ' + res.person.lastName}">Prénom Nom</div>
+            </td>
+
+            <td th:text="${res.role != null ? res.role.name : '-'}">-</td>
+
+            <td th:text="${(res.person.identity ?: '') + ' / ' + (res.person.matricule ?: '')}">CIN / MAT</td>
+
+            <td>
+                <th:block th:if="${res.room != null}">
+                    <div style="font-weight: 700; color: #1e40af;" th:text="${res.room.name}">Room</div>
+                    <div style="font-size: 9px; color: #64748b;" th:text="${res.room.roomType.type}">Type</div>
+                </th:block>
+                <th:block th:unless="${res.room != null}">
+                    <div style="color: #94a3b8; font-style: italic;">Non assignée</div>
+                </th:block>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="table-section" th:if="${estimation != null}">
+    <div class="section-title">Tarification de l'Hébergement (Estimation)</div>
+    <table class="invoice-table">
+        <thead>
+        <tr>
+            <th>Chambre / Logement</th>
+            <th class="qty-col">Nuits</th>
+            <th class="price-col">Prix Journalier</th>
+            <th class="price-col">Total Estimé</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${estimation.details}">
+            <td>
+                <span style="font-weight: 700;" th:text="${item.roomName}">-</span>
+            </td>
+            <td class="qty-col" th:text="${estimation.durationInDays}">1</td>
+            <td class="price-col" th:text="${#numbers.formatDecimal(item.unitPrice, 1, 2) + ' MAD'}">0.00</td>
+            <td class="price-col" th:text="${#numbers.formatDecimal(item.totalPrice, 1, 2) + ' MAD'}">0.00</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="financial-grid">
+    <div class="fin-left">
+        <strong>Notes importantes (Document Provisoire) :</strong><br/>
+        * Cette estimation est basée sur une durée de <strong th:text="${estimation.durationInDays + ' nuitée(s)'}">0 nuit</strong>.<br/>
+        * Les montants définitifs seront arrêtés lors de la facturation finale (Check-out).<br/>
+        <th:block th:if="${details.priseEnCharge}">
+            * <strong>Prise en charge :</strong> Ce dossier fait l'objet d'une prise en charge (Réf: <span th:text="${details.priseEnChargeReference}">-</span>).
+        </th:block>
+    </div>
+
+    <div class="fin-right">
+        <table class="totals-table">
+            <tr class="total-row" style="background: #64748b;">
+                <td>MONTANT TOTAL ESTIMÉ</td>
+                <td class="price-col" th:text="${#numbers.formatDecimal(estimation.totalAmount, 1, 2) + ' MAD'}">0.00 MAD</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="signature-grid">
+    <div class="sig-box">
+        <div style="font-weight: 700;">Le Gérant / Réceptionniste</div>
+        <div class="sig-space">Cachet Officiel et Signature</div>
+    </div>
+    <div class="sig-box">
+        <div style="font-weight: 700;">Le Client / Payeur</div>
+        <div class="sig-space">Mention "Bon pour accord" et Signature</div>
+    </div>
+</div>
+
+<div class="footer">
+    CMO-HOTEL MANAGER - Facture éditée par <span th:text="${createdBy}">Admin</span>. Tous droits réservés.
+</div>
+
+</body>
+</html>

@@ -54,6 +54,10 @@ export class ApiReservationService {
         return this._httpClient.get(`${this.API_URL}/main-courante`);
     }
 
+    getMainCouranteOccupation(): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/main-courante-occupation`);
+    }
+
     getResidentReservations(): Observable<any>{
         return this._httpClient.get(`${this.API_URL}/residents`);
     }
@@ -114,6 +118,12 @@ export class ApiReservationService {
 
     generateMainCourantePdf(): Observable<any>{
         return this._httpClient.get(`${this.API_URL}/download/main-courante`, {
+            responseType: 'blob'
+        });
+    }
+
+    generateInvoiceProFormatPdf(code): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/download/invoice-pro-format?code=${code}`, {
             responseType: 'blob'
         });
     }

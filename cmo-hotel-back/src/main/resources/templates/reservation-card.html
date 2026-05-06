@@ -184,7 +184,7 @@
                 <span th:class="${res.role.name() == 'PRINCIPAL' ? 'role-badge role-principal' : 'role-badge'}"
                       th:text="${res.role.name}">Rôle</span>
             </td>
-            <td th:text="${res.person.identity + ' / ' + res.person.matricule}">CIN / MAT</td>
+            <td th:text="${(res.person.identity ?: '') + ' / ' + (res.person.matricule ?: '')}">CIN / MAT</td>
             <td>
                 <div th:text="${res.room.pavillon.name}">Pavillon</div>
                 <div style="font-weight: 700; color: #3f51b5;" th:text="${'Chambre ' + res.room.code}">101</div>

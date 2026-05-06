@@ -77,13 +77,20 @@ public class InvoiceService {
             for (Map.Entry<Room, List<Reservation>> entry : roomGroups.entrySet()) {
                 Room room = entry.getKey();
                 List<Reservation> guestsInRoom = entry.getValue();
-// LOGIQUE MISE À JOUR : Trouver la personne de référence pour le prix
+                Double price = guestsInRoom.stream()
+                        .map(Reservation::getAppliedPrice)
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .orElse(0.0);
+
+
+                /*// LOGIQUE MISE À JOUR : Trouver la personne de référence pour le prix
                 Person referencePerson = findReferencePersonForPricing(guestsInRoom);
 
                 Double price = 0.0;
                 if (isEligibleForPricing(referencePerson)) {
                     price = findPriceForRoom(room, referencePerson.getGrade().getCategory());
-                }
+                }*/
 
                 // 4. Créer le Snapshot de la nuitée (ValidatedNight)
                 ValidatedNight night = ValidatedNight.builder()
@@ -95,23 +102,6 @@ public class InvoiceService {
                         .observation(dto.observation())
                         .build();
                 invoice.getValidatedNights().add(night);
-                // 5. Capturer l'état des invités (GuestInfo)
-                /*for (Reservation res : guestsInRoom) {
-                    Person p = res.getPerson();
-                    GuestInfo guestInfo = GuestInfo.builder()
-                            .validatedNight(night)
-                            .personId(p.getId())
-                            .firstName(p.getFirstName())
-                            .lastName(p.getLastName())
-                            .grtadeCode(p.getGrade().getCode())
-                            .matricule(p.getMatricule())
-                            .unite(p.getUnite())
-                            .role(res.getRole())
-                            .identity(p.getIdentity())
-                            .build();
-                    night.getGuests().add(guestInfo);
-                }*/
-
                 validatedNightRepository.save(night);
             }
 
@@ -133,54 +123,54 @@ public class InvoiceService {
         return validatedNightRepository.lastNight();
     }
 
-    protected Person findReferencePersonForPricing(List<Reservation> reservations) {
-        List<Person> persons = reservations.stream()
-                .map(Reservation::getPerson)
-                .toList();
-
-        // 1. Militaires d'abord (inchangé)
-        List<Person> militaires = persons.stream()
-                //.filter(p -> p.getGrade() != null && !p.getGrade().getCode().equalsIgnoreCase("CIVIL"))
-                .filter(p -> p.getGrade() != null && p.getGrade().getCategory() != EGradeCategory.CIVIL)
-                .toList();
-
-        if (!militaires.isEmpty()) {
-            return militaires.stream()
-                    .max(Comparator.comparingInt(p -> p.getGrade().getRating()))
-                    .get();
-        }
-
-        // 2. Civils : Gestion sécurisée du null pour l'âge
-        return persons.stream()
-                .max(Comparator.comparing(Person::getBirthDate, Comparator.nullsLast(Comparator.reverseOrder())))
-                .orElse(persons.getFirst());
-    }
-
-    protected boolean isEligibleForPricing(Person p) {
-        // Militaire = Toujours payant selon sa catégorie
-        if (p.getGrade() != null && p.getGrade().getCategory() != EGradeCategory.CIVIL) {
-            return true;
-        }
-
-        // Civil : Si la date est nulle, on considère qu'il est majeur par défaut (Payant)
-        if (p.getBirthDate() == null) {
-            //log.warn("Date de naissance manquante pour le civil {}, tarif plein appliqué par défaut", p.getId());
-            return true;
-        }
-
-        // Calcul sécurisé
-        long age = java.time.temporal.ChronoUnit.YEARS.between(p.getBirthDate(), LocalDate.now());
-        return age >= 18;
-    }
-
-    protected Double findPriceForRoom(Room room, EGradeCategory category) {
-        // On cherche le prix dans RoomType correspondant à la catégorie du grade
-        return room.getRoomType().getPrices().stream()
-                .filter(p -> p.getCategory() == category)
-                .map(RoomPrice::getPrice)
-                .findFirst()
-                .orElse(0.0); // Ou un prix par défaut
-    }
+//    protected Person findReferencePersonForPricing(List<Reservation> reservations) {
+//        List<Person> persons = reservations.stream()
+//                .map(Reservation::getPerson)
+//                .toList();
+//
+//        // 1. Militaires d'abord (inchangé)
+//        List<Person> militaires = persons.stream()
+//                //.filter(p -> p.getGrade() != null && !p.getGrade().getCode().equalsIgnoreCase("CIVIL"))
+//                .filter(p -> p.getGrade() != null && p.getGrade().getCategory() != EGradeCategory.CIVIL)
+//                .toList();
+//
+//        if (!militaires.isEmpty()) {
+//            return militaires.stream()
+//                    .max(Comparator.comparingInt(p -> p.getGrade().getRating()))
+//                    .get();
+//        }
+//
+//        // 2. Civils : Gestion sécurisée du null pour l'âge
+//        return persons.stream()
+//                .max(Comparator.comparing(Person::getBirthDate, Comparator.nullsLast(Comparator.reverseOrder())))
+//                .orElse(persons.getFirst());
+//    }
+//
+//    protected boolean isEligibleForPricing(Person p) {
+//        // Militaire = Toujours payant selon sa catégorie
+//        if (p.getGrade() != null && p.getGrade().getCategory() != EGradeCategory.CIVIL) {
+//            return true;
+//        }
+//
+//        // Civil : Si la date est nulle, on considère qu'il est majeur par défaut (Payant)
+//        if (p.getBirthDate() == null) {
+//            //log.warn("Date de naissance manquante pour le civil {}, tarif plein appliqué par défaut", p.getId());
+//            return true;
+//        }
+//
+//        // Calcul sécurisé
+//        long age = java.time.temporal.ChronoUnit.YEARS.between(p.getBirthDate(), LocalDate.now());
+//        return age >= 18;
+//    }
+//
+//    protected Double findPriceForRoom(Room room, EGradeCategory category) {
+//        // On cherche le prix dans RoomType correspondant à la catégorie du grade
+//        return room.getRoomType().getPrices().stream()
+//                .filter(p -> p.getCategory() == category)
+//                .map(RoomPrice::getPrice)
+//                .findFirst()
+//                .orElse(0.0); // Ou un prix par défaut
+//    }
 
     private Invoice getOrCreateInvoice(ReservationDetails details) {
         return invoiceRepository.findByReservationDetails(details)

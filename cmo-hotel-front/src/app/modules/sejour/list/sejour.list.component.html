@@ -206,6 +206,21 @@
                                                 <span>Clôturer la réservation </span>
                                             </button>
                                         }
+                                        <button mat-menu-item [matMenuTriggerFor]="ficheMenu" [disabled]="loadingFicheId === row.code">
+                                            <mat-icon class="icon-size-5 text-red-600" [svgIcon]="'heroicons_outline:document-arrow-down'"></mat-icon>
+                                            <span class="font-medium">Facture Pro-forma</span>
+                                        </button>
+                                        <mat-menu #ficheMenu="matMenu" xPosition="before" class="rounded-xl shadow-lg border border-slate-100">
+                                            <button mat-menu-item (click)="processInvoice(row, 'download')">
+                                                <mat-icon class="text-blue-500 icon-size-5" [svgIcon]="'heroicons_outline:arrow-down-tray'"></mat-icon>
+                                                <span>Télécharger (PDF)</span>
+                                            </button>
+
+                                            <button mat-menu-item (click)="processInvoice(row, 'print')">
+                                                <mat-icon class="text-slate-500 icon-size-5" [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                                                <span>Imprimer directement</span>
+                                            </button>
+                                        </mat-menu>
                                     </mat-menu>
                                 </td>
                             </ng-container>

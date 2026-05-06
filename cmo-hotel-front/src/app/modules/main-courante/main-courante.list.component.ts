@@ -11,7 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 import { MatDialog } from '@angular/material/dialog';
-import { DatePipe, DecimalPipe, NgClass, SlicePipe } from '@angular/common';
+import { DatePipe, DecimalPipe, NgClass, NgForOf, SlicePipe } from '@angular/common';
 import { MatPaginator } from '@angular/material/paginator';
 import { FormsModule } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -45,12 +45,13 @@ import { Toastr } from '../../core/service/toastr.service';
         DisableIfNoPermissionDirective,
         DecimalPipe,
         SlicePipe,
-        HighlightPipe,
+        NgForOf,
     ],
 })
 export class MainCouranteListComponent implements OnInit {
     protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
     isLoading: boolean = false;
+    isLoadingStatistics: boolean = false;
     displayedColumns: string[] = [
         'details',
         'period',
@@ -68,6 +69,7 @@ export class MainCouranteListComponent implements OnInit {
     currentPage = 0;
     pageSizeOptions: number[] = [20, 50, 70, 100];
     today = new Date();
+    occupations: any;
 
     /**
      * Constructor
@@ -82,6 +84,7 @@ export class MainCouranteListComponent implements OnInit {
     ngOnInit(): void {
         this.dataSource.paginator = this._paginator;
         this.getSejour();
+        this.getMainCouranteOccupation();
     }
 
     getSejour() {
@@ -98,6 +101,24 @@ export class MainCouranteListComponent implements OnInit {
                 next: (value: any) => {
                     this.dataSource.data = value || [];
                     console.log(value);
+                },
+            });
+    }
+
+    getMainCouranteOccupation() {
+        this.isLoading = true;
+        this.dataSource.data = [];
+        this._apiReservationService
+            .getMainCouranteOccupation()
+            .pipe(
+                finalize(() => {
+                    this.isLoadingStatistics = false;
+                })
+            )
+            .subscribe({
+                next: (value: any) => {
+                    console.log('stats', value);
+                    this.occupations = value || [];
                 },
             });
     }
@@ -205,5 +226,34 @@ export class MainCouranteListComponent implements OnInit {
                 this._toast.error('erreur de generation de la main courante');
             },
         });
+    }
+
+
+    // Calculer le total Espèces (Direct Pay) pour un pavillon
+    getTotalDirect(pavillon: any): number {
+        return pavillon.roomTypeStats.reduce((acc, curr) => acc + curr.occupantsDirectPay, 0);
+    }
+
+// Calculer le total Prise en Charge pour un pavillon
+    getTotalPEC(pavillon: any): number {
+        return pavillon.roomTypeStats.reduce((acc, curr) => acc + curr.occupantsPriseEnCharge, 0);
+    }
+
+// Pourcentage par type de chambre
+    getPercent(val: number, type: any): string {
+        const total = type.occupantsDirectPay + type.occupantsPriseEnCharge;
+        return total > 0 ? ((val / total) * 100).toFixed(1) : '0';
+    }
+
+// Pourcentage global par pavillon
+    getGlobalPercent(pavillon: any, mode: 'ESP' | 'PEC'): string {
+        const totalDirect = this.getTotalDirect(pavillon);
+        const totalPEC = this.getTotalPEC(pavillon);
+        const total = totalDirect + totalPEC;
+
+        if (total === 0) return '0';
+        return mode === 'ESP'
+            ? ((totalDirect / total) * 100).toFixed(1)
+            : ((totalPEC / total) * 100).toFixed(1);
     }
 }

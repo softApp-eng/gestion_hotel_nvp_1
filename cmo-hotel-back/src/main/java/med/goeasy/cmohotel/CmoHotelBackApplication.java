@@ -7,6 +7,7 @@ import med.goeasy.cmohotel.presentation.dto.prices.PriceEstimationResponse;
 import med.goeasy.cmohotel.presentation.dto.reservation.ReservedRoomResponseDto;
 import med.goeasy.cmohotel.security.enums.EPermissions;
 import med.goeasy.cmohotel.security.enums.ERoleSystem;
+import med.goeasy.cmohotel.service.ReservationService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -34,8 +35,9 @@ public class CmoHotelBackApplication {
     private boolean shouldFeed;
 
     @Bean
-    CommandLineRunner runner(Feeder feeder,ReservationRepository reservationRepository){
+    CommandLineRunner runner(Feeder feeder, ReservationService reservationService){
         return args -> {
+            //reservationService.calculateOccupationStatistics().forEach(System.out::println);
             //reservationRepository.findOccupiedRangesByRoom(1L,LocalDateTime.now()).forEach(System.out::println);
             //PriceEstimationResponse price = reservationPricingService.calculateEstimationByCode(501L);
             //System.err.println(price);
