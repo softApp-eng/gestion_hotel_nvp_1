@@ -430,4 +430,43 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
                 },
             });
     }
+
+    processEtatExplicatif(row: any, action: 'download' | 'print') {
+        if (!row?.num) return;
+
+        this.loadingFicheId = row.num;
+
+        this._apiInvoiceService
+            .generateEtatExplicatifPdf(row.num)
+            .subscribe({
+                next: (blob: Blob) => {
+                    const blobUrl = window.URL.createObjectURL(blob);
+
+                    if (action === 'download') {
+                        // CAS 1 : TELECHARGEMENT
+                        const link = document.createElement('a');
+                        link.href = blobUrl;
+                        link.download = `Etat_explicatif_${row.invoiceNumber}.pdf`;
+                        link.click();
+                    } else {
+                        // CAS 2 : IMPRESSION (Ouverture dans un nouvel onglet)
+                        const printWindow = window.open(blobUrl, '_blank');
+                        // Note: Certains navigateurs bloquent les popups, s'assurer qu'ils sont autorisés
+                        if (printWindow) {
+                            printWindow.focus();
+                        }
+                    }
+
+                    // Nettoyage de la mémoire
+                    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+                    this.loadingFicheId = null;
+                },
+                error: (err) => {
+                    console.error('Erreur PDF:', err);
+                    this.loadingFicheId = null;
+                    this._toast.error("erreur de generation de la fiche de réservation")
+                    // Optionnel : Afficher un SnackBar d'erreur
+                },
+            });
+    }
 }

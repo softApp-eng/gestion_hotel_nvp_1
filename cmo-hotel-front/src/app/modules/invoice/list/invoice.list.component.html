@@ -320,13 +320,16 @@
                                     @if (row.status == 'IN_PROGRESS') {
                                         <span class="text-[10px] text-gray-400 italic">En attente</span>
                                     } @else {
+                                        <div class="flex items-center justify-center">
                                         <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide cursor-help"
                                               [ngClass]="config?.class" [matTooltip]="(row?.status === 'PAID' ? 'Payée le ' + (row.paidAt | date:'dd/MM/yyyy') + ' via ' + row?.paymentMode?.name : config?.label)">
-                                            <mat-icon class="icon-size-3.5 mr-1 text-current" [svgIcon]="config?.icon"></mat-icon>
+                                            <mat-icon [ngClass]="{'text-yellow-500':(row.status === 'PAID' && row.paymentMode?.code === 'PRISE_EN_CHARGE')}" class="icon-size-3.5 mr-1 text-current" [svgIcon]="config?.icon"></mat-icon>
                                             <span class="whitespace-nowrap leading-relaxed">
                                                 {{config?.label }}
                                             </span>
+
                                         </span>
+                                        </div>
                                     }
                                 }
                             </td>
@@ -343,6 +346,24 @@
                                         <mat-icon class="icon-size-5 text-blue-600" [svgIcon]="'heroicons_outline:information-circle'"></mat-icon>
                                         <span class="font-medium">Voir les détails</span>
                                     </button>
+
+                                    @if (row.paymentMode?.code === 'PRISE_EN_CHARGE') {
+                                        <button mat-menu-item [matMenuTriggerFor]="ficheMenu" [disabled]="loadingFicheId === row.code" [disableIfNoPermission]="[APP_PERMISSIONS.INVOICE_INVOICE_PDF]">
+                                            <mat-icon class="icon-size-5 text-blue-600" [svgIcon]="'heroicons_outline:briefcase'"></mat-icon>
+                                            <span class="font-medium">Etat explicatif</span>
+                                        </button>
+                                        <mat-menu #ficheMenu="matMenu" xPosition="before" class="rounded-xl shadow-lg border border-slate-100">
+                                            <button mat-menu-item (click)="processEtatExplicatif(row, 'download')" [disableIfNoPermission]="[APP_PERMISSIONS.INVOICE_INVOICE_PDF]">
+                                                <mat-icon class="text-blue-500 icon-size-5" [svgIcon]="'heroicons_outline:arrow-down-tray'"></mat-icon>
+                                                <span>Télécharger (PDF)</span>
+                                            </button>
+
+                                            <button mat-menu-item (click)="processEtatExplicatif(row, 'print')" [disableIfNoPermission]="[APP_PERMISSIONS.INVOICE_INVOICE_PDF]">
+                                                <mat-icon class="text-slate-500 icon-size-5" [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                                                <span>Imprimer directement</span>
+                                            </button>
+                                        </mat-menu>
+                                    }
 
                                     @if (row?.status === 'PAID') {
                                         <button mat-menu-item [matMenuTriggerFor]="ficheMenu" [disabled]="loadingFicheId === row.code" [disableIfNoPermission]="[APP_PERMISSIONS.INVOICE_INVOICE_PDF]">

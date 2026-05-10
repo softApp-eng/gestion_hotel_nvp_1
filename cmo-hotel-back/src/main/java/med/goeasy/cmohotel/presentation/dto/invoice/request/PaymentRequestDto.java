@@ -7,6 +7,7 @@ public record PaymentRequestDto(
         String num,
         @NotEmpty(message = "le mode de paiement est obligatoire")
         String paymentMode,
+        String priseEnChargeRef,
         String observation
 ) {
 }

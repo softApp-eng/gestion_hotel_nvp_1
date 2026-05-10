@@ -99,6 +99,17 @@ public class InvoiceController {
         return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
     }
 
+    @GetMapping("/download/etat-explicatif")
+    public ResponseEntity<byte[]> generateEtatExplicatifPdf( Authentication authentication,@Valid @NotNull(message = "numero de facture requis") @RequestParam() String num) throws Exception {
+        byte[] pdf = invoiceService.generateEtatExplicatifPdf(authentication,num);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "Facture_" + num + ".pdf");
+
+        return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+    }
+
     @GetMapping("/download/encaissement")
     public ResponseEntity<byte[]> generateEncaissementPdf( Authentication authentication,@RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate day) throws Exception {
         byte[] pdf = invoiceService.generateEncaissementPdf(authentication,day);

@@ -300,13 +300,16 @@ public class InvoiceService {
         if (!EnumUtils.isValidEnum(EPaymentMode.class, dto.paymentMode()))
             throw new BadRequestException("mode de paiement invalide : " + dto.paymentMode());
 
+        EPaymentMode paymentMode = EPaymentMode.valueOf(dto.paymentMode());
         invoice.setPaidAt(LocalDateTime.now());
-        invoice.setPaymentMode(EPaymentMode.valueOf(dto.paymentMode()));
+        invoice.setPaymentMode(paymentMode);
         invoice.setStatus(EInvoiceStatus.PAID);
         invoice.setDescription(dto.observation());
         ReservationDetails reservationDetails = invoice.getReservationDetails();
         invoice.setCheckin(reservationDetails.getCheckin());
         invoice.setCheckout(reservationDetails.getCheckout());
+        invoice.setPriseEnCharge(paymentMode == EPaymentMode.PRISE_EN_CHARGE);
+        invoice.setPriseEnChargeReference(dto.priseEnChargeRef());
         invoiceRepository.save(invoice);
 
         activityLogService.logActivity(
@@ -344,6 +347,119 @@ public class InvoiceService {
                 EAuditActionTarget.INVOICE,
                 EAuditActionOperation.SELECT,
                 String.format("Génération de la facture numéro %s.", invoice.getInvoiceNumber()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            ITextRenderer renderer = new ITextRenderer();
+
+            // Support des caractères spéciaux (Optionnel mais recommandé pour le français)
+            renderer.setDocumentFromString(htmlContent);
+            renderer.layout();
+            renderer.createPDF(outputStream);
+
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            log.error("Erreur lors de la génération du PDF : {}", e.getMessage());
+            throw new BadRequestException("Échec de la génération du PDF de la facture.");
+        }
+    }
+
+    public byte[] generateEtatExplicatifPdf(Authentication authentication, String num) throws Exception {
+        // 1. Récupération de la facture (Invoice)
+        Invoice invoice = invoiceRepository.findById(num)
+                .orElseThrow(() -> new BadRequestException("Numéro de facture invalide."));
+
+        if (!invoice.getReservationDetails().isPriseEnCharge())
+            throw new BadRequestException("Facture non prise en charge.");
+
+        // trie des client par role
+        List<Map<String, Object>> guestsWithRoom = invoice.getDetails().getInvoiceRooms().stream()
+                .flatMap(room -> room.getGuests().stream().map(guest -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("firstName", guest.getFirstName());
+                    map.put("lastName", guest.getLastName());
+                    map.put("role", guest.getRole());
+                    map.put("gradeCode", guest.getGradeCode());
+                    map.put("roomName", room.getRoomName()); // On récupère le nom depuis le parent 'room'
+                    return map;
+                })).sorted(Comparator.comparingInt(m -> ((EGuestRole) m.get("role")).getOrder())).collect(Collectors.toList());
+
+        // Grouper les nuitées par date (triées par date)
+
+        Map<LocalDate, List<ValidatedNight>> nightsByDate = invoice.getValidatedNights().stream()
+                .collect(Collectors.groupingBy(
+                        ValidatedNight::getNightDate,
+                        TreeMap::new,
+                        Collectors.toList()
+                ));
+
+        // Grouper les prestations par date
+
+        List<Map<String, Object>> prestationsData = invoice.getInvoicePrestations().stream()
+                .filter(p -> p.getDay() != null && p.getName() != null)
+                .collect(Collectors.groupingBy(InvoicePrestation::getDay, TreeMap::new, Collectors.toList()))
+                .entrySet().stream()
+                .map(entry -> {
+                    Map<String, Object> dayMap = new HashMap<>();
+                    dayMap.put("date", entry.getKey());
+
+                    // Groupement par nom et calcul immédiat des totaux par ligne
+                    List<Map<String, Object>> lines = entry.getValue().stream()
+                            .collect(Collectors.groupingBy(InvoicePrestation::getName))
+                            .entrySet().stream()
+                            .map(nameEntry -> {
+                                Map<String, Object> line = new HashMap<>();
+                                line.put("name", nameEntry.getKey());
+                                line.put("type", nameEntry.getValue().get(0).getType().name());
+
+                                // Somme des quantités
+                                int totalQty = nameEntry.getValue().stream()
+                                        .mapToInt(p -> p.getQuantity() != null ? p.getQuantity() : 1)
+                                        .sum();
+                                line.put("totalQty", totalQty);
+
+                                // Somme des prix (Prix * Quantité)
+                                double lineTotalPrice = nameEntry.getValue().stream()
+                                        .mapToDouble(InvoicePrestation::getPrice)
+                                        .sum();
+                                line.put("totalPrice", lineTotalPrice);
+
+                                return line;
+                            }).collect(Collectors.toList());
+
+                    dayMap.put("lines", lines);
+
+                    // Total général de la journée
+                    double dayTotal = lines.stream()
+                            .mapToDouble(l -> (double) l.get("totalPrice"))
+                            .sum();
+                    dayMap.put("dayTotal", dayTotal);
+
+                    return dayMap;
+                })
+                .collect(Collectors.toList());
+
+
+
+        Context context = new Context();
+        context.setVariable("invoice", invoice);
+        context.setVariable("nightsByDate", nightsByDate);
+        context.setVariable("prestationsData", prestationsData);
+        context.setVariable("allGuests", guestsWithRoom);
+        context.setVariable("generatedBy", authentication.getName());
+        context.setVariable("now", LocalDateTime.now());
+        String logoBase64 = utilsService.getAppLogoAs64();
+        context.setVariable("logoBase64", "data:image/png;base64," + logoBase64);
+
+        String htmlContent = templateEngine.process("etat_explicatif", context);
+
+        // 2. Audit de l'action
+        activityLogService.logActivity(
+                EAuditActionTarget.INVOICE,
+                EAuditActionOperation.SELECT,
+                String.format("Génération de l'état explicatif de la facture numéro %s.", invoice.getInvoiceNumber()),
                 activityLogService.getClientIp(request),
                 authentication.getName()
         );
@@ -443,8 +559,10 @@ public class InvoiceService {
                 .map(p -> InvoicePrestation.builder()
                         .invoice(invoice)
                         .type(p.getType())
-                        .name(p.getName() + " (Qté" + p.getQuantity() + ")")
+                        .name(p.getName())
+                        .quantity(p.getQuantity())
                         .price(p.getPrice().multiply(BigDecimal.valueOf(p.getQuantity())).doubleValue())
+                        .day(p.getDay())
                         .build())
                 .toList();
 

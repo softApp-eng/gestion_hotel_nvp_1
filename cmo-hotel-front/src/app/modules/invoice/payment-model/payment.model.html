@@ -59,8 +59,8 @@
 
             <mat-form-field *ngIf="paymentForm.get('paymentMode').value === 'PRISE_EN_CHARGE'"
                             class="w-full" appearance="outline" subscriptSizing="dynamic">
-                <mat-label>Référence du bon / Document</mat-label>
-                <input matInput formControlName="observation" placeholder="Ex: BC-2024-001">
+                <mat-label>Référence du document en charge</mat-label>
+                <input matInput formControlName="priseEnChargeRef" placeholder="Ex: BC-2024-001">
                 <mat-icon matSuffix class="icon-size-5" [svgIcon]="'heroicons_outline:document-text'"></mat-icon>
             </mat-form-field>
 

@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import med.goeasy.cmohotel.persistence.entity.enums.EPrestationType;
 
+import java.time.LocalDate;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,6 +31,9 @@ public class InvoicePrestation {
 
     @Column(nullable = false)
     private String name;
+    private Integer quantity;
+
+    private LocalDate day;
 
     private Double price;
 }

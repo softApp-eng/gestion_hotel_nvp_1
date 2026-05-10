@@ -17,7 +17,7 @@ import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { UtilsService } from '../../../core/service/utils.service';
 import { MatRadioModule } from '@angular/material/radio';
-import { DecimalPipe, NgClass } from '@angular/common';
+import { DecimalPipe, NgClass, NgIf } from '@angular/common';
 import { ApiCommonService } from '../../../core/service/api.common.service';
 
 @Component({
@@ -38,6 +38,7 @@ import { ApiCommonService } from '../../../core/service/api.common.service';
         MatRadioModule,
         NgClass,
         DecimalPipe,
+        NgIf,
     ],
 })
 export class PaymentModel implements OnInit {
@@ -59,9 +60,11 @@ export class PaymentModel implements OnInit {
         @Inject(MAT_DIALOG_DATA) public data: { invoice: any[] }
     ) {
         this.invoice = data.invoice;
+        console.log(this.invoice);
         this.paymentForm = this._fb.group({
             num: [this.invoice.num, [Validators.required]],
             paymentMode: ['', [Validators.required]],
+            priseEnChargeRef: [''],
             observation: [''],
         });
     }
@@ -71,11 +74,17 @@ export class PaymentModel implements OnInit {
     }
 
     loadPaymentMode() {
-        this._apiCommonService.getEnumsData('payment-mode').subscribe({
-            next: (data) => {
-                this.paymentModes = data;
-                console.log(data);
-            },
+        this._apiCommonService.getEnumsData('payment-mode').subscribe(data => {
+            const isPEC = this.invoice.reservationDetails.priseEnCharge;
+            // Filtrage des modes de paiement
+            this.paymentModes = data?.filter(m =>
+                isPEC ? m.code === 'PRISE_EN_CHARGE' : m.code !== 'PRISE_EN_CHARGE'
+            );
+            if (isPEC) {
+                this.paymentForm.patchValue({
+                    priseEnChargeRef: this.invoice.reservationDetails.priseEnChargeReference
+                });
+            }
         });
     }
 

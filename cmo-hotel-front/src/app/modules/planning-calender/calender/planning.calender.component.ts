@@ -21,6 +21,7 @@ import {FormsModule} from "@angular/forms";
 import {MatSelectModule} from "@angular/material/select";
 import { ReservationDetailsModel } from '../../reservation/dialog-reservation-details/reservation.details.model';
 import { MatDialog } from '@angular/material/dialog';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 
 
 @Component({
@@ -113,7 +114,8 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
         private _apiPavillonService: ApiPavillonService,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
         private _matDialog: MatDialog,
-        private _utilsService: UtilsService
+        private _utilsService: UtilsService,
+        private _breakpointObserver: BreakpointObserver,
     ) {}
 
     ngOnInit(): void {
@@ -132,6 +134,31 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
                 }
             });
         this.loadPavillons();
+
+        this._breakpointObserver.observe([Breakpoints.Handset])
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(result => {
+                const isMobile = result.matches;
+                this.calendarOptions.update(options => ({
+                    ...options,
+                    initialView: isMobile ? 'listWeek' : 'dayGridMonth',
+                    headerToolbar: isMobile ? {
+                        left: 'prev,next',
+                        center: 'title',
+                        right: 'listWeek,dayGridDay' // Vues simplifiées sur mobile
+                    } : {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,dayGridWeek,dayGridDay',
+                    }
+                }));
+
+                // Forcer le changement de vue si le calendrier est déjà chargé
+                if (this.fullCalendar) {
+                    const api = this.fullCalendar.getApi();
+                    api.changeView(isMobile ? 'listWeek' : 'dayGridMonth');
+                }
+            });
     }
 
     filterReservationsLocally(): any[] {
@@ -196,7 +223,12 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
 
     selectRoom(room: any): void {
         this.selectedRoom = room;
-        let d = this.filterReservationsLocally()
+
+        // Fermer le drawer sur mobile après sélection
+        if (this.drawerMode === 'over') {
+            this.drawer.close();
+        }
+
         if (this.fullCalendar) {
             this.fullCalendar.getApi().refetchEvents();
         }

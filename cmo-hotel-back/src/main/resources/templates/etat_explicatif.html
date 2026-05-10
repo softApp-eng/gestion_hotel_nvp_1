@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"></meta>
+    <style>
+        @page { size: A4; margin: 0.5cm; }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #1e293b;
+            margin: 0;
+            padding: 30px;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        /* --- ENTÊTE (Harmonisé avec la Facture) --- */
+        .header-grid { display: table; width: 100%; border-bottom: 2px solid #0f172a; padding-bottom: 20px; margin-bottom: 25px; }
+        .header-left { display: table-cell; vertical-align: middle; width: 50%; }
+        .header-right { display: table-cell; vertical-align: middle; width: 50%; text-align: right; }
+
+        .logo-img { height: 50px; width: auto; margin-bottom: 8px; }
+        .company-name { font-size: 16px; font-weight: 800; color: #0f172a; text-transform: uppercase; }
+        .company-sub { font-size: 9px; color: #64748b; font-weight: 500; }
+
+        .title-doc { font-size: 20px; font-weight: 800; color: #1e40af; letter-spacing: 1px; }
+        .invoice-num { font-size: 13px; font-weight: 700; color: #0f172a; margin-top: 5px; }
+
+        /* --- SECTIONS --- */
+        .table-section { margin-bottom: 25px; }
+        .section-title { page-break-after: avoid;font-size: 10px; font-weight: 800; color: #0f172a; margin-bottom: 8px; text-transform: uppercase; border-left: 3px solid #1e40af; padding-left: 8px; }
+
+        /* --- TABLEAUX --- */
+        .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        .invoice-table th {
+            background: #0f172a; color: white; font-size: 9px; font-weight: 700; text-transform: uppercase;
+            padding: 10px; text-align: left;
+        }
+        .invoice-table td { padding: 10px; font-size: 10px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        .invoice-table tr:nth-child(even) { background: #f8fafc; }
+        .invoice-table tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+        .invoice-table td table {
+            page-break-inside: avoid;
+        }
+        .price-col { text-align: right; font-weight: 600; width: 120px; }
+
+        /* --- BADGES ROLES --- */
+        .role-badge {
+            background: #dbeafe; color: #1e40af; padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: 700; text-transform: uppercase;
+        }
+
+        /* --- TOTAL RÉSUMÉ --- */
+        .financial-grid { display: table; width: 100%; margin-top: 10px; }
+        .fin-right { display: table-cell; width: 100%; }
+        .totals-table { width: 45%; border-collapse: collapse; margin-left: auto; }
+        .total-row { background: #0f172a; color: white; font-weight: 800; font-size: 12px; }
+        .total-row td { padding: 10px; border: none; }
+
+        /* --- SIGNATURES (3 Colonnes pour l'état explicatif) --- */
+        .signature-grid { page-break-inside: avoid;display: table; width: 100%; margin-top: 40px; table-layout: fixed; }
+        .sig-box { display: table-cell; vertical-align: top; width: 33.33%; padding: 0 10px; text-align: center; }
+        .sig-space { height: 90px; border: 1px dashed #cbd5e1; border-radius: 8px; margin-top: 8px; padding-top: 10px; font-size: 8px; color: #94a3b8; }
+
+        .footer { margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 15px; text-align: center; font-size: 8px; color: #94a3b8; }
+
+    </style>
+</head>
+<body>
+
+<div class="header-grid">
+    <div class="header-left">
+        <img th:src="${logoBase64}" class="logo-img" />
+        <div class="company-name">CMO-HOTEL MANAGER</div>
+        <div class="company-sub">État Explicatif d'Hébergement et de subsistance</div>
+    </div>
+    <div class="header-right">
+        <div class="title-doc">ÉTAT EXPLICATIF</div>
+        <div class="invoice-num" th:text="'FACTURE N° : ' + ${invoice.invoiceNumber}">INV-2026-000</div>
+        <div style="font-size: 10px; color: #64748b; margin-top: 5px;">
+            Période du <span th:text="${#temporals.format(invoice.checkin, 'dd/MM/yyyy')}">--</span>
+            au <span th:text="${#temporals.format(invoice.checkout, 'dd/MM/yyyy')}">--</span>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION CATEGORIE AMÉLIORÉE (FIX 100% WIDTH) -->
+<div class="table-section" style="width: 100%;">
+    <table style="width: 100%; border-collapse: collapse; background: #f1f5f9; border-radius: 6px; border-left: 4px solid #1e40af;">
+        <tr>
+            <td style="padding: 10px 15px; vertical-align: middle; text-align: left;">
+                <span style="font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 2px;">Type de Tarification / Catégorie</span>
+                <span style="font-size: 13px; font-weight: 700; color: #0f172a;" th:text="${invoice.category.name}">CATEGORIE</span>
+            </td>
+            <td style="padding: 10px 15px; vertical-align: middle; text-align: right;">
+                <span style="font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 2px;">Référence Système</span>
+                <span style="font-size: 10px; font-weight: 600; color: #1e40af;" th:text="${invoice.invoiceNumber}">INV-000</span>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- SECTION 1: RÉSIDENTS (TRIÉS PAR ROLE ORDER) -->
+<!-- SECTION 1: TOUS LES OCCUPANTS (TRIÉS) -->
+<div class="table-section" th:if="${allGuests != null}">
+    <div class="section-title">Liste Globale des Occupants</div>
+    <table class="invoice-table">
+        <thead>
+        <tr>
+            <th>Nom et Prénom du Résident</th>
+            <th style="width: 150px;">Rôle / Qualité</th>
+            <th>Grade</th>
+            <th style="text-align: right;">Chambre Affectée</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="g : ${allGuests}">
+            <!-- Réduction du padding à 5px pour resserrer les lignes -->
+            <td style="padding: 5px 10px;">
+                <div style="font-weight: 700; text-transform: uppercase; font-size: 10px;"
+                     th:text="${g.firstName + ' ' + g.lastName}">NOM PRENOM</div>
+            </td>
+            <td style="padding: 5px 10px;">
+                <!-- On s'assure que le badge ne force pas une hauteur trop grande -->
+                <span class="role-badge" style="padding: 2px 6px; font-size: 9px;"
+                      th:text="${g.role.name}">ROLE</span>
+            </td>
+            <td style="padding: 5px 10px; font-weight: 600; font-size: 10px;"
+                th:text="${g.gradeCode ?: '-'}">GRADE</td>
+
+            <td style="padding: 5px 10px; text-align: right; font-weight: 700; color: #1e40af; font-size: 10px;"
+                th:text="${g.roomName}">ROOM</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- SECTION 2: DÉTAIL DES NUITÉES (NIGHT AUDIT) -->
+<div class="table-section">
+    <div class="section-title">Relevé quotidien d'hébergement par jour</div>
+    <table class="invoice-table">
+        <thead>
+        <tr>
+            <th style="width: 120px;">Date</th>
+            <th>Détails des Occupations (Chambres)</th>
+            <th class="price-col">Total Journée (MAD)</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Boucle sur chaque groupe de date -->
+        <th:block th:each="entry : ${nightsByDate}">
+            <tr>
+                <!-- Date centrée verticalement pour correspondre au style des prestations -->
+                <td style="font-weight: 700; background: #f8fafc; vertical-align: middle; text-align: center;"
+                    th:text="${#temporals.format(entry.key, 'dd/MM/yyyy')}">01/01/2026</td>
+
+                <td style="padding: 0;">
+                    <!-- Sous-table pour lister les chambres -->
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr th:each="night : ${entry.value}" style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px; border: none;">
+                                <span style="font-weight: 600;" th:text="${night.roomName}">CHAMBRE</span>
+                                <span style="font-size: 8px; color: #64748b; margin-left: 10px;"
+                                      th:text="${night.observation ?: ''}"></span>
+                            </td>
+                            <td style="padding: 10px; border: none; text-align: right; width: 110px; vertical-align: middle; font-weight: 600;"
+                                th:text="${#numbers.formatDecimal(night.roomPriceApplied, 1, 2)}">0.00</td>
+                        </tr>
+                    </table>
+                </td>
+
+                <!-- Total pour la journée -->
+                <td class="price-col" style="vertical-align: middle; background: #f8fafc; text-align: right;">
+                        <span style="color: #1e40af; font-weight: 800;"
+                              th:text="${#numbers.formatDecimal(#aggregates.sum(entry.value.![roomPriceApplied]), 1, 2) + ' MAD'}">
+                        </span>
+                </td>
+            </tr>
+        </th:block>
+        </tbody>
+
+        <!-- SOUS-TOTAL HÉBERGEMENT INTÉGRÉ -->
+        <tfoot>
+        <tr>
+            <td colspan="2" style="padding: 15px 12px; text-align: right; font-weight: 700; color: #475569; background: #ffffff;">
+                SOUS-TOTAL HÉBERGEMENT
+            </td>
+            <td style="padding: 15px 12px; text-align: right; color: #1e40af; font-weight: 800; font-size: 12px;"
+                th:text="${#numbers.formatDecimal(invoice.totalRoomPrice, 1, 2) + ' MAD'}">
+                0.00 MAD
+            </td>
+        </tr>
+        </tfoot>
+    </table>
+</div>
+
+
+<!-- SECTION: SERVICES ET PRESTATIONS (GROUPÉS PAR JOUR) -->
+<div class="table-section" th:if="${prestationsData != null and !prestationsData.isEmpty()}">
+    <div class="section-title">Relevé quotidien des prestations par jour</div>
+    <table class="invoice-table">
+        <thead>
+        <tr>
+            <th style="width: 120px;">Date</th>
+            <th>Détails de la prestation</th>
+            <th class="price-col">Total Journée (MAD)</th>
+        </tr>
+        </thead>
+        <tbody>
+        <th:block th:each="day : ${prestationsData}">
+            <tr>
+                <!-- Date centrée -->
+                <td style="font-weight: 700; background: #f8fafc; vertical-align: middle; text-align: center;"
+                    th:text="${#temporals.format(day.date, 'dd/MM/yyyy')}">01/05/2026</td>
+
+                <td style="padding: 0;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr th:each="line : ${day.lines}" style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px; border: none;">
+                                <div style="font-size: 10px;">
+                                        <span style="font-weight: 700; color: #1e40af; text-transform: uppercase;"
+                                              th:text="${(line.type == 'MEAL' ? 'REPAS' : 'SERVICE EXTRA') + ' : '}">REPAS : </span>
+                                    <span style="font-weight: 600;" th:text="${line.name}">NOM</span>
+                                    <span style="font-weight: 700; color: #1e40af; margin-left: 5px;"
+                                          th:text="${'(x' + line.totalQty + ')'}">(x1)</span>
+                                </div>
+                            </td>
+                            <td style="padding: 10px; border: none; text-align: right; width: 110px; vertical-align: middle; font-weight: 600;"
+                                th:text="${#numbers.formatDecimal(line.totalPrice, 1, 2) + ' MAD'}">0.00</td>
+                        </tr>
+                    </table>
+                </td>
+
+                <td class="price-col" style="vertical-align: middle; background: #f8fafc; text-align: right;">
+                        <span style="color: #1e40af; font-weight: 800;"
+                              th:text="${#numbers.formatDecimal(day.dayTotal, 1, 2) + ' MAD'}">
+                        </span>
+                </td>
+            </tr>
+        </th:block>
+        </tbody>
+
+        <!-- SOUS-TOTAL INTÉGRÉ AU TABLEAU -->
+        <tfoot>
+        <tr>
+            <td colspan="2" style="padding: 15px 12px; text-align: right; font-weight: 700; color: #475569; background: #ffffff;">
+                SOUS-TOTAL PRESTATIONS
+            </td>
+            <td style="padding: 15px 12px; text-align: right; color: #1e40af; font-weight: 800; font-size: 12px;"
+                th:text="${#numbers.formatDecimal(invoice.totalPrestationPrice, 1, 2) + ' MAD'}">
+                0.00 MAD
+            </td>
+        </tr>
+        </tfoot>
+    </table>
+</div>
+
+
+<!-- SECTION RÉCAPITULATIVE ALIGNÉE À DROITE -->
+<!-- SECTION RÉCAPITULATIVE CORRIGÉE -->
+<div style="width: 100%; margin-top: 40px;">
+    <!-- On utilise display: table avec margin-left: auto pour pousser le bloc à droite -->
+    <table style="width: 350px; margin-left: auto; border-collapse: collapse; font-family: 'Helvetica', 'Arial', sans-serif;">
+        <!-- Ligne Hébergement -->
+        <tr>
+            <td style="padding: 10px; color: #475569; font-size: 11px; text-align: left; border-bottom: 1px solid #e2e8f0;">
+                TOTAL HÉBERGEMENT
+            </td>
+            <td style="padding: 10px; font-weight: 600; font-size: 11px; text-align: right; border-bottom: 1px solid #e2e8f0; color: #0f172a;"
+                th:text="${#numbers.formatDecimal(invoice.totalRoomPrice, 1, 2) + ' MAD'}">
+                0.00 MAD
+            </td>
+        </tr>
+
+        <!-- Ligne Prestations -->
+        <tr th:if="${invoice.totalPrestationPrice > 0}">
+            <td style="padding: 10px; color: #475569; font-size: 11px; text-align: left; border-bottom: 1px solid #e2e8f0;">
+                TOTAL PRESTATIONS/SERVICES
+            </td>
+            <td style="padding: 10px; font-weight: 600; font-size: 11px; text-align: right; border-bottom: 1px solid #e2e8f0; color: #0f172a;"
+                th:text="${#numbers.formatDecimal(invoice.totalPrestationPrice, 1, 2) + ' MAD'}">
+                0.00 MAD
+            </td>
+        </tr>
+
+        <!-- ESPACE DE SÉPARATION -->
+        <tr>
+            <td colspan="2" style="padding: 8px;"></td>
+        </tr>
+
+        <!-- BLOC TOTAL GÉNÉRAL -->
+        <tr>
+            <td style="padding: 15px 12px; background-color: #1e40af; color: #ffffff; font-weight: 700; font-size: 12px; text-align: left; border-radius: 4px 0 0 4px;">
+                TOTAL GÉNÉRAL À PAYER
+            </td>
+            <td style="padding: 15px 12px; background-color: #1e40af; color: #ffffff; font-weight: 800; font-size: 14px; text-align: right; border-radius: 0 4px 4px 0;"
+                th:text="${#numbers.formatDecimal(invoice.totalRoomPrice + (invoice.totalPrestationPrice ?: 0), 1, 2) + ' MAD'}">
+                0.00 MAD
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- SECTION PRISE EN CHARGE -->
+<div style="margin-top: 10px; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;" th:if="${invoice.priseEnCharge}">
+    <div style="font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase;">Référence Prise en Charge</div>
+    <div style="font-size: 11px; color: #15803d; font-weight: 700;" th:text="${invoice.priseEnChargeReference}">REF-12345</div>
+</div>
+
+<!-- ESPACE D'ÉMARGEMENT (3 COLONNES) -->
+<div class="signature-grid">
+    <div class="sig-box">
+        <div style="font-weight: 700; text-decoration: underline;">Le Client / Résident</div>
+        <div class="sig-space">
+            <div style="margin-top: 40px;">"Lu et approuvé"</div>
+            <div style="font-size: 7px;">Signature</div>
+        </div>
+    </div>
+    <div class="sig-box">
+        <div style="font-weight: 700; text-decoration: underline;">Chef de Réception</div>
+        <div class="sig-space">
+            <div style="margin-top: 40px;">Visa Reception</div>
+        </div>
+    </div>
+    <div class="sig-box">
+        <div style="font-weight: 700; text-decoration: underline;">Le Gérant / Direction</div>
+        <div class="sig-space">
+            <div style="margin-top: 40px;">Cachet et Signature</div>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    Document explicatif certifié conforme aux enregistrements du système CMO-HOTEL.<br/>
+    Édité le <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}"></span>
+</div>
+
+</body>
+</html>

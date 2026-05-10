@@ -67,6 +67,12 @@ export class ApiInvoiceService {
         });
     }
 
+    generateEtatExplicatifPdf(num): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/download/etat-explicatif?num=${num}`, {
+            responseType: 'blob'
+        });
+    }
+
     generateEncaissementPdf(day): Observable<any>{
         return this._httpClient.get(`${this.API_URL}/download/encaissement?day=${day}`, {
             responseType: 'blob'
