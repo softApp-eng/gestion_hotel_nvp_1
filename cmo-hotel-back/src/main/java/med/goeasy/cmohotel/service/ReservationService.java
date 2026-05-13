@@ -150,7 +150,7 @@ public class ReservationService {
     @Transactional
     public void update(Authentication authentication, ReservationRequestDto dto, Long code) {
         ReservationDetails detailsDb = getReservationDetailsByCode(code);
-        if (detailsDb.getStatus() != EReservationStatus.PENDING)
+        if (detailsDb.getStatus() == EReservationStatus.CLOSED || detailsDb.getStatus() == EReservationStatus.CANCELED)
             throw new OperationNotPermittedException("Vous ne pouvez pas modifier une réservation déja traitée");
 
         if (!EnumUtils.isValidEnum(EReservationCategory.class, dto.category())) {

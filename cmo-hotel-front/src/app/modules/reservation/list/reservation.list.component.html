@@ -359,7 +359,7 @@
                                         <span>Détails </span>
                                     </button>
 
-                                    @if (row?.status?.code === 'PENDING') {
+                                    @if (row?.status?.code === 'PENDING' || row?.status?.code === 'CONFIRMED') {
                                         <button mat-menu-item [routerLink]="'./edit/' + row?.code" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_CREATE]">
                                             <mat-icon class="icon-size-5" [svgIcon]="'edit'"></mat-icon>
                                             <span>Modifier</span>
