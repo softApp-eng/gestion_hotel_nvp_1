@@ -1,4 +1,31 @@
 
+
+.fc-timeline {
+    /* Ajustement de la police interne pour gagner de l'espace */
+    .fc-timeline-event {
+        padding: 4px 8px !important;
+        border-radius: 6px !important;
+        font-size: 11px !important;
+    }
+
+    /* Harmonisation avec les couleurs de votre projet */
+    .fc-cell-shaded {
+        background-color: #f8fafc !important; /* Couleur des week-ends */
+    }
+
+    .fc-timeline-slot-label {
+        font-weight: 600;
+        color: #334155;
+    }
+}
+
+
+
+
+
+
+
+
 /* Personnalisation pour matcher avec Fuse / Tailwind */
 .fc {
     --fc-border-color: #e2e8f0; /* gray-200 */

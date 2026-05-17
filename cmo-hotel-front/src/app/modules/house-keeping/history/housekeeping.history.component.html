@@ -22,6 +22,34 @@
                 </div>
             </div>
         </div>
+
+        <div class="flex items-center mt-6 sm:mt-0 sm:ml-4 space-x-3">
+            <button
+                [disabled]="dataSource.data.length == 0"
+                mat-icon-button
+                [matMenuTriggerFor]="actionsMenu"
+                aria-label="Actions de gouvernance"
+                class="rounded-full"
+                matTooltip="Télécharger l'état pdf"
+            >
+                <mat-icon [svgIcon]="'heroicons_solid:arrow-down-tray'"></mat-icon>
+            </button>
+
+            <mat-menu #actionsMenu="matMenu" class="min-w-[200px] rounded-xl shadow-xl border border-gray-100 dark:border-gray-800">
+
+                <button mat-menu-item (click)="exportPDF('download')">
+                    <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:arrow-down-tray'"></mat-icon>
+                    <span>Exporter PDF</span>
+                </button>
+                <button mat-menu-item (click)="exportPDF('print')">
+                    <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                    <span>Imprimer direct</span>
+                </button>
+
+            </mat-menu>
+        </div>
+
+
     </div>
 
     <!-- Main -->

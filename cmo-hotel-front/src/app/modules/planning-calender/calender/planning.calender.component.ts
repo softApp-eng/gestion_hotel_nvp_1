@@ -22,6 +22,7 @@ import {MatSelectModule} from "@angular/material/select";
 import { ReservationDetailsModel } from '../../reservation/dialog-reservation-details/reservation.details.model';
 import { MatDialog } from '@angular/material/dialog';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 
 
 @Component({
@@ -36,7 +37,6 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
         MatInputModule,
         MatTooltipModule,
         MatSidenavModule,
-        NgClass,
         MatRippleModule,
         MatSelectModule,
         FullCalendarModule,
@@ -45,55 +45,63 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
     ],
 })
 export class PlanningCalenderComponent implements OnInit, OnDestroy {
-    @ViewChild('drawer') drawer: MatDrawer;
 
-    drawerMode: 'over' | 'side' = 'side';
-    drawerOpened: boolean = true;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
     calendarOptions = signal<CalendarOptions>({
-        // On utilise dayGridPlugin au lieu de resourceTimeline
-        plugins: [dayGridPlugin, interactionPlugin],
-        initialView: 'dayGridMonth',
+        plugins: [resourceTimelinePlugin, interactionPlugin],
+        initialView: 'resourceTimelineWeek',
+        schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
         locale: 'fr',
         handleWindowResize: true,
         windowResizeDelay: 100,
-        fixedMirrorParent: document.body,
-        // Pour afficher le "+2 more" comme sur votre image
-        dayMaxEvents: true,
-        dayMaxEventRows: 4,
-        moreLinkText: (n) => `+ ${n} de plus`,
+        resourceAreaWidth: '250px', // Augmenté légèrement pour accueillir l'arborescence
+        resourceAreaHeaderContent: 'CMO Hôtel',
+
+        // --- TRI ET GRANULARITÉ ---
+        slotDuration: { days: 1 },
+        slotLabelFormat: [
+            { weekday: 'long', day: 'numeric', month: 'short' }
+        ],
+        resourceOrder: 'title', // Trie automatiquement les lignes par leur titre (Nom de chambre)
+        // --------------------------
+
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,dayGridWeek,dayGridDay',
+            right: 'resourceTimelineWeek'
         },
         buttonText: {
             today:    "Aujourd'hui",
-            month:    "Mois",
             week:     "Semaine",
-            day:      "Jour",
-            list:     "Planning"
         },
+
+        // TRÈS IMPORTANT : Transformation des données en arbre (Pavillon > Type > Chambre)
+        resources: (info, successCallback, failureCallback) => {
+            if (this.rooms && this.rooms.length > 0) {
+                const formattedResources = this.buildHierarchicalResources(this.rooms);
+                successCallback(formattedResources);
+            } else {
+                successCallback([]);
+            }
+        },
+
         events: (info, successCallback, failureCallback) => {
             this.getReservationsByRange('reservations', info.startStr, info.endStr).subscribe({
                 next: (data) => {
                     this.periodReservations = data;
-                    // On appelle votre fonction de filtrage et on donne le résultat au calendrier
                     const events = this.filterReservationsLocally();
                     successCallback(events);
                 },
                 error: (err) => failureCallback(err)
             });
         },
-        eventClick: (info:any) => {
-            console.log('Event:', info.event.id);
-            this.raiseReservationDetailsDialog(info.event.id)
+        eventClick: (info: any) => {
+            this.raiseReservationDetailsDialog(info.event.id);
         },
     });
 
     rooms;
     pavillons;
-    groupedRooms: any;
     selectedRoom = null;
     selectedPavillon;
 
@@ -119,52 +127,108 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
     ) {}
 
     ngOnInit(): void {
-
-        // Subscribe to media changes
-        this._fuseMediaWatcherService.onMediaChange$
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe(({ matchingAliases }) => {
-                // Set the drawerMode and drawerOpened if the given breakpoint is active
-                if (matchingAliases.includes('md')) {
-                    this.drawerMode = 'side';
-                    this.drawerOpened = true;
-                } else {
-                    this.drawerMode = 'over';
-                    this.drawerOpened = false;
-                }
-            });
         this.loadPavillons();
 
         this._breakpointObserver.observe([Breakpoints.Handset])
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe(result => {
                 const isMobile = result.matches;
+
                 this.calendarOptions.update(options => ({
                     ...options,
-                    initialView: isMobile ? 'listWeek' : 'dayGridMonth',
-                    headerToolbar: isMobile ? {
-                        left: 'prev,next',
-                        center: 'title',
-                        right: 'listWeek,dayGridDay' // Vues simplifiées sur mobile
-                    } : {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,dayGridWeek,dayGridDay',
-                    }
+                    // Ajustement des largeurs pour le mobile
+                    resourceAreaWidth: isMobile ? '120px' : '250px', // Réduit la colonne gauche sur mobile
+                    slotMinWidth: isMobile ? 80 : 120, // Force chaque jour à faire au moins 80px (active le scroll horizontal fluide)
+
+                    slotLabelFormat: isMobile ? [
+                        { weekday: 'short', day: 'numeric' } // Format court : "lun. 16"
+                    ] : [
+                        { weekday: 'long', day: 'numeric', month: 'short' } // Format long sur PC
+                    ]
                 }));
 
-                // Forcer le changement de vue si le calendrier est déjà chargé
-                if (this.fullCalendar) {
-                    const api = this.fullCalendar.getApi();
-                    api.changeView(isMobile ? 'listWeek' : 'dayGridMonth');
+                if (this.fullCalendar && this.fullCalendar.getApi) {
+                    this.fullCalendar.getApi().render();
                 }
             });
+    }
+
+    buildHierarchicalResources(rooms: any[]): any[] {
+        const tree = [];
+
+        // 1. Regrouper par Pavillon
+        const pavillonsMap = new Map();
+
+        rooms.forEach(room => {
+            const pavillonName = room.pavillon?.name || 'Sans Pavillon';
+            const typeName = room.roomType?.type || 'Standard';
+
+            if (!pavillonsMap.has(pavillonName)) {
+                pavillonsMap.set(pavillonName, {
+                    id: `pav-${room.pavillon?.id || 'unknown'}`,
+                    title: pavillonName,
+                    childrenMap: new Map()
+                });
+            }
+
+            const pavillonNode = pavillonsMap.get(pavillonName);
+
+            // 2. Regrouper par Type de chambre à l'intérieur du Pavillon
+            if (!pavillonNode.childrenMap.has(typeName)) {
+                pavillonNode.childrenMap.set(typeName, {
+                    id: `type-${room.pavillon?.id}-${room.roomType?.id}`,
+                    title: typeName,
+                    children: []
+                });
+            }
+
+            const typeNode = pavillonNode.childrenMap.get(typeName);
+
+            // 3. Ajouter la chambre (l'élément final)
+            typeNode.children.push({
+                id: room.id.toString(),
+                title: room.name // Utilisé par resourceOrder: 'title' pour le tri
+            });
+        });
+
+        // 4. Convertir les Maps en Tableaux ordonnés
+        // Trier les Pavillons par nom
+        const sortedPavillonsNames = Array.from(pavillonsMap.keys()).sort();
+
+        sortedPavillonsNames.forEach(pName => {
+            const pavNode = pavillonsMap.get(pName);
+            const typesList = [];
+
+            // Trier les Types de chambre par nom
+            const sortedTypesNames = Array.from(pavNode.childrenMap.keys()).sort();
+
+            sortedTypesNames.forEach(tName => {
+                const tNode = pavNode.childrenMap.get(tName);
+
+                // Trier explicitement les chambres par nom (sécurité en plus de resourceOrder)
+                tNode.children.sort((a, b) => a.title.localeCompare(b.title, undefined, {numeric: true, sensitivity: 'base'}));
+
+                typesList.push({
+                    id: tNode.id,
+                    title: tNode.title,
+                    children: tNode.children
+                });
+            });
+
+            tree.push({
+                id: pavNode.id,
+                title: pavNode.title,
+                children: typesList
+            });
+        });
+
+        return tree;
     }
 
     filterReservationsLocally(): any[] {
         const calendarEvents = [];
         const filteredReservations = [...this.periodReservations];
-        console.log('filteredReservations',filteredReservations);
+
         filteredReservations.forEach(res => {
             const uniqueRoomsInRes = new Map();
             res.guests.forEach(g => {
@@ -174,40 +238,30 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
             });
 
             uniqueRoomsInRes.forEach((room, roomId) => {
-
-                // Filtre par Pavillon
                 const matchPavillon = !this.selectedPavillon || room.pavillon.id === this.selectedPavillon;
-                // Filtre par Chambre
                 const matchRoom = !this.selectedRoom || roomId === this.selectedRoom.id;
 
                 if (matchPavillon && matchRoom) {
-                    // On compte combien de personnes de cette réservation sont dans CETTE chambre précisément
-                    //const guestsInThisRoom = res.guests.filter(g => g.room.id === roomId).length;
                     const guestsInThisRoom = res.guests.filter(g => g.room.id === roomId);
-
-                    // 2. Identifier le responsable (Priorité au PRINCIPAL, puis VICE)
                     const principal = guestsInThisRoom.find(g => g.role.code === 'PRINCIPAL')
                         || guestsInThisRoom.find(g => g.role.code === 'VICE');
 
-                    // 3. Construire le libellé du nom
                     let guestDisplay = '';
                     if (principal) {
-                        // Format : Grade + Nom (ex: LT Kabbaj)
                         const grade = principal.person.grade ? principal.person.grade.code : '';
-                        guestDisplay = `${grade} ${principal.person.lastName} ${principal.person.firstName}`.trim();
+                        guestDisplay = `${grade} ${principal.person.lastName}`.trim();
                     } else if (guestsInThisRoom.length > 0) {
-                        // Fallback si aucun rôle spécifique n'est trouvé
                         guestDisplay = guestsInThisRoom[0].person.lastName;
                     }
 
-                    // 4. Calculer le surplus (+X)
                     const othersCount = guestsInThisRoom.length - 1;
                     const suffix = othersCount > 0 ? ` +${othersCount}` : '';
 
                     calendarEvents.push({
-                        id: `${res.code}`, // ID unique combiné
-                        reservation: `${res}`,
-                        title: `${room.roomType.type} (${room.name}) : ${guestDisplay}${suffix}`,
+                        id: `${res.code}`,
+                        // CRITICAL: Cette propriété associe l'événement à la ligne de la chambre
+                        resourceId: roomId.toString(),
+                        title: `${guestDisplay}${suffix}`, // Plus court car le nom de la chambre est déjà sur la ligne
                         start: res.start,
                         end: res.end,
                         backgroundColor: this.getColorByStatus(res.status.code),
@@ -221,40 +275,28 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
         return calendarEvents;
     }
 
-    selectRoom(room: any): void {
-        this.selectedRoom = room;
-
-        // Fermer le drawer sur mobile après sélection
-        if (this.drawerMode === 'over') {
-            this.drawer.close();
-        }
-
-        if (this.fullCalendar) {
-            this.fullCalendar.getApi().refetchEvents();
-        }
-    }
-
     loadPavillons() {
         this._apiPavillonService.all().subscribe({
             next: (data) => {
                 this.pavillons = data;
                 if (data?.length > 0){
                     this.selectedPavillon = data[0]?.id;
-                    this.loadRooms(this.selectedPavillon);
+                    this.loadRooms();
                 }
             },
         });
     }
 
-    loadRooms(pavillonId) {
-        this._apiRoomService.all(pavillonId).subscribe({
+    loadRooms() {
+        this._apiRoomService.all().subscribe({
             next: (data) => {
-                this.rooms = data;
-                this.groupRoomsByType(data);
-                this.selectRoom(null)
-                // On force le calendrier à recharger pour filtrer sur le nouveau pavillon
-                if (this.fullCalendar) {
-                    this.fullCalendar.getApi().refetchEvents();
+                this.rooms = data; // Stocke les chambres brutes
+                //this.selectRoom(null);
+
+                if (this.fullCalendar && this.fullCalendar.getApi) {
+                    const api = this.fullCalendar.getApi();
+                    api.refetchResources(); // Va appeler buildHierarchicalResources() automatiquement
+                    api.refetchEvents();
                 }
             },
         });
@@ -290,23 +332,6 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
             default:
                 return '#cbd5e1';
         }
-    }
-
-    groupRoomsByType(rooms) {
-        this.groupedRooms = rooms.reduce((acc, room) => {
-            const typeName = room.roomType.type;
-
-            // On cherche si le groupe existe déjà
-            let group = acc.find(g => g.type === typeName);
-
-            if (!group) {
-                group = { type: typeName, items: [] };
-                acc.push(group);
-            }
-
-            group.items.push(room);
-            return acc;
-        }, []);
     }
 
 

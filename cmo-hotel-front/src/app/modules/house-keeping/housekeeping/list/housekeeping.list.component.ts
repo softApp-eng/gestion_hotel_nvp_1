@@ -12,7 +12,7 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { HighlightPipe } from '../../../../../@fuse/pipes/HighlightPipe';
 import { APP_PERMISSIONS } from '../../../../core/data/app-permissions';
 import { DisableIfNoPermissionDirective } from '../../../../core/auth/DisableIfNoPermissionDirective';
-import { DatePipe, NgClass } from '@angular/common';
+import { DatePipe, NgClass, NgIf } from '@angular/common';
 import { ApiRoomService } from '../../../pavillon/api.room.service';
 import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../../@fuse/services/confirmation';
 import { Toastr } from '../../../../core/service/toastr.service';
@@ -21,15 +21,6 @@ import { ApiHousekeepingService } from '../../api.housekeeping.service';
 import { AgentCreateModel } from '../../agent/dialog-create-agent/agent-create.model';
 import { RoomUpdateCleanStatusModel } from '../dialog-update-room-status/room-update-clean-status.model';
 import { FormsModule } from '@angular/forms';
-import {
-    MatDatepickerToggle,
-    MatDateRangeInput,
-    MatDateRangePicker,
-    MatEndDate,
-    MatStartDate,
-} from '@angular/material/datepicker';
-import { MatOption } from '@angular/material/core';
-import { MatSelect } from '@angular/material/select';
 import jspdf from 'jspdf';
 import autoTable from 'jspdf-autoTable';
 import { User } from '../../../../core/user/user.types';
@@ -52,10 +43,12 @@ import { UserService } from '../../../../core/user/user.service';
         MatSortModule,
         NgClass,
         FormsModule,
-
+        NgIf,
     ],
 })
-export class HousekeepingListComponent implements OnInit, AfterViewInit , OnDestroy{
+export class HousekeepingListComponent
+    implements OnInit, AfterViewInit, OnDestroy
+{
     user;
     rooms;
     isLoading: boolean = false;
@@ -80,7 +73,7 @@ export class HousekeepingListComponent implements OnInit, AfterViewInit , OnDest
         sale: 0,
         occupe: 0,
         horsService: 0,
-    }
+    };
 
     actionConfigDialogue: FuseConfirmationConfig = {
         title: '',
@@ -145,26 +138,29 @@ export class HousekeepingListComponent implements OnInit, AfterViewInit , OnDest
                 next: (value: any) => {
                     this.dataSource.data = this.rooms = value;
                     this.dataSource.paginator = this._paginator;
-                    this.counts = this.rooms.reduce((acc, room) => {
-                        if (room.clean) {
-                            acc.propre++;
-                        } else {
-                            acc.sale++;
-                        }
-                        if (room.reserved) {
-                            acc.occupe++;
-                        }
-                        if (!room.available) {
-                            acc.horsService++;
-                        }
+                    this.counts = this.rooms.reduce(
+                        (acc, room) => {
+                            if (room.clean) {
+                                acc.propre++;
+                            } else {
+                                acc.sale++;
+                            }
+                            if (room.reserved) {
+                                acc.occupe++;
+                            }
+                            if (!room.available) {
+                                acc.horsService++;
+                            }
 
-                        return acc;
-                    }, {
-                        propre: 0,
-                        sale: 0,
-                        occupe: 0,
-                        horsService: 0
-                    });
+                            return acc;
+                        },
+                        {
+                            propre: 0,
+                            sale: 0,
+                            occupe: 0,
+                            horsService: 0,
+                        }
+                    );
                 },
             });
     }
@@ -259,36 +255,62 @@ export class HousekeepingListComponent implements OnInit, AfterViewInit , OnDest
     exportPDF(type: 'fiche' | 'global', action: 'download' | 'print'): void {
         const doc = new jspdf('l', 'mm', 'a4');
         const dateStr = new Date().toLocaleDateString('fr-FR');
-        const hourStr = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        const hourStr = new Date().toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit',
+        });
 
         const userName = this.user?.username;
 
         doc.setFontSize(18);
         doc.setTextColor(40, 44, 52);
-        const title = type === 'fiche' ? 'FICHE DE CONTRÔLE NETTOYAGE' : 'ÉTAT GLOBAL DES CHAMBRES';
+        const title =
+            type === 'fiche'
+                ? 'FICHE DE CONTRÔLE NETTOYAGE'
+                : 'ÉTAT GLOBAL DES CHAMBRES';
         doc.text(title, 14, 15);
 
         doc.setFontSize(10);
         doc.setTextColor(100);
         const rightMargin = 283;
-        doc.text(`Généré par : ${userName}`, rightMargin, 15, { align: 'right' });
-        doc.text(`Le ${dateStr} à ${hourStr}`, rightMargin, 20, { align: 'right' });
+        doc.text(`Généré par : ${userName}`, rightMargin, 15, {
+            align: 'right',
+        });
+        doc.text(`Le ${dateStr} à ${hourStr}`, rightMargin, 20, {
+            align: 'right',
+        });
 
         //doc.text(`Établissement : Votre Hôtel`, 14, 22);
 
         if (type === 'global') {
             const stats = [
-                { label: 'PROPRE', value: this.counts.propre, color: [34, 197, 94] },
-                { label: 'SALE', value: this.counts.sale, color: [239, 68, 68] },
-                { label: 'OCCUPÉES', value: this.counts.occupe, color: [79, 70, 229] },
-                { label: 'HORS SERVICE', value: this.counts.horsService, color: [100, 116, 139] }
+                {
+                    label: 'PROPRE',
+                    value: this.counts.propre,
+                    color: [34, 197, 94],
+                },
+                {
+                    label: 'SALE',
+                    value: this.counts.sale,
+                    color: [239, 68, 68],
+                },
+                {
+                    label: 'OCCUPÉES',
+                    value: this.counts.occupe,
+                    color: [79, 70, 229],
+                },
+                {
+                    label: 'HORS SERVICE',
+                    value: this.counts.horsService,
+                    color: [100, 116, 139],
+                },
             ];
 
             let startX = 14;
             const rectWidth = 45;
             const rectHeight = 15;
 
-            stats.forEach(stat => {
+            stats.forEach((stat) => {
                 doc.setDrawColor(stat.color[0], stat.color[1], stat.color[2]);
                 doc.setLineWidth(1);
                 doc.line(startX, 28, startX, 28 + rectHeight);
@@ -315,10 +337,24 @@ export class HousekeepingListComponent implements OnInit, AfterViewInit , OnDest
                 { header: 'STATUT', dataKey: 'status' },
                 { header: 'AGENT', dataKey: 'agent' },
                 { header: 'HE / HS', dataKey: 'time' },
-                { header: 'ANOMALIES / OBSERVATIONS', dataKey: 'obs' }
+                { header: 'ANOMALIES / OBSERVATIONS', dataKey: 'obs' },
             ];
-            colStyles = { name: { cellWidth: 30 }, floor: { cellWidth: 25 }, status: { cellWidth: 35 }, agent: { cellWidth: 45 }, time: { cellWidth: 35 }, obs: { cellWidth: 'auto' } };
-            tableData = this.dataSource.data.map(r => ({ name: r.name, floor: r.floor, status: r.reserved ? 'OCCUPÉE' : 'LIBRE', agent: '', time: '', obs: '' }));
+            colStyles = {
+                name: { cellWidth: 30 },
+                floor: { cellWidth: 25 },
+                status: { cellWidth: 35 },
+                agent: { cellWidth: 45 },
+                time: { cellWidth: 35 },
+                obs: { cellWidth: 'auto' },
+            };
+            tableData = this.dataSource.data.map((r) => ({
+                name: r.name,
+                floor: r.floor,
+                status: r.reserved ? 'OCCUPÉE' : 'LIBRE',
+                agent: '',
+                time: '',
+                obs: '',
+            }));
         } else {
             columns = [
                 { header: 'CHAMBRE', dataKey: 'name' },
@@ -326,16 +362,23 @@ export class HousekeepingListComponent implements OnInit, AfterViewInit , OnDest
                 { header: 'ETAGE', dataKey: 'floor' },
                 { header: 'RESERVATION', dataKey: 'status' },
                 { header: 'PROPRETÉ', dataKey: 'clean' },
-                { header: 'DISPONIBILITÉ', dataKey: 'dispo' }
+                { header: 'DISPONIBILITÉ', dataKey: 'dispo' },
             ];
-            colStyles = { name: { cellWidth: 35 }, type: { cellWidth: 50 }, floor: { cellWidth: 25 }, status: { cellWidth: 40 }, clean: { cellWidth: 40 }, dispo: { cellWidth: 'auto' } };
-            tableData = this.dataSource.data.map(r => ({
+            colStyles = {
+                name: { cellWidth: 35 },
+                type: { cellWidth: 50 },
+                floor: { cellWidth: 25 },
+                status: { cellWidth: 40 },
+                clean: { cellWidth: 40 },
+                dispo: { cellWidth: 'auto' },
+            };
+            tableData = this.dataSource.data.map((r) => ({
                 name: r.name,
                 type: r.roomType?.type || 'Standard',
                 floor: r.floor,
                 status: r.reserved ? 'OCCUPÉE' : 'LIBRE',
                 clean: r.clean ? 'PROPRE' : 'SALE',
-                dispo: r.available ? 'OPÉRATIONNELLE' : 'HORS SERVICE'
+                dispo: r.available ? 'OPÉRATIONNELLE' : 'HORS SERVICE',
             }));
         }
 
@@ -344,18 +387,38 @@ export class HousekeepingListComponent implements OnInit, AfterViewInit , OnDest
             body: tableData,
             startY: type === 'global' ? 50 : 30,
             theme: 'grid',
-            styles: { fontSize: 9, cellPadding: 4, minCellHeight: type === 'fiche' ? 12 : 8, valign: 'middle', lineColor: [210, 210, 210], lineWidth: 0.1 },
-            headStyles: { fillColor: [45, 55, 72], textColor: [255, 255, 255], fontSize: 10, fontStyle: 'bold', halign: 'center' },
+            styles: {
+                fontSize: 9,
+                cellPadding: 4,
+                minCellHeight: type === 'fiche' ? 12 : 8,
+                valign: 'middle',
+                lineColor: [210, 210, 210],
+                lineWidth: 0.1,
+            },
+            headStyles: {
+                fillColor: [45, 55, 72],
+                textColor: [255, 255, 255],
+                fontSize: 10,
+                fontStyle: 'bold',
+                halign: 'center',
+            },
             columnStyles: colStyles,
             didParseCell: (data) => {
-                if (['name', 'floor', 'status', 'clean', 'dispo'].includes(data.column.dataKey as string)) {
+                if (
+                    ['name', 'floor', 'status', 'clean', 'dispo'].includes(
+                        data.column.dataKey as string
+                    )
+                ) {
                     data.cell.styles.halign = 'center';
                 }
-                if (data.column.dataKey === 'dispo' && data.cell.raw === 'HORS SERVICE') {
+                if (
+                    data.column.dataKey === 'dispo' &&
+                    data.cell.raw === 'HORS SERVICE'
+                ) {
                     data.cell.styles.textColor = [200, 0, 0];
                     data.cell.styles.fontStyle = 'bold';
                 }
-            }
+            },
         });
 
         const pageCount = (doc as any).internal.getNumberOfPages();
@@ -363,7 +426,12 @@ export class HousekeepingListComponent implements OnInit, AfterViewInit , OnDest
             doc.setPage(i);
             doc.setFontSize(8);
             doc.setTextColor(150);
-            doc.text(`Document confidentiel - Page ${i} sur ${pageCount}`, 148.5, 205, { align: 'center' });
+            doc.text(
+                `Document confidentiel - Page ${i} sur ${pageCount}`,
+                148.5,
+                205,
+                { align: 'center' }
+            );
         }
 
         if (action === 'download') {

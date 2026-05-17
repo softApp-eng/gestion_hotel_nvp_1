@@ -1,8 +1,8 @@
-import { AfterViewInit, Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { finalize } from 'rxjs';
+import { finalize, Subject, takeUntil } from 'rxjs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
@@ -24,6 +24,10 @@ import { AgentCreateModel } from '../agent/dialog-create-agent/agent-create.mode
 import { MatDialog } from '@angular/material/dialog';
 import { RoomUpdateCleanStatusModel } from '../housekeeping/dialog-update-room-status/room-update-clean-status.model';
 import { MatCheckbox } from '@angular/material/checkbox';
+import jspdf from 'jspdf';
+import autoTable from 'jspdf-autoTable';
+import { User } from '../../../core/user/user.types';
+import { UserService } from '../../../core/user/user.service';
 
 @Component({
     selector: 'audit',
@@ -50,7 +54,8 @@ import { MatCheckbox } from '@angular/material/checkbox';
         MatCheckbox,
     ],
 })
-export class HousekeepingHistoryComponent implements OnInit {
+export class HousekeepingHistoryComponent implements OnInit, OnDestroy {
+    user;
     displayedColumns: string[] = [
         'room',
         'agent',
@@ -103,6 +108,10 @@ export class HousekeepingHistoryComponent implements OnInit {
         },
         dismissible: true,
     };
+
+    private _unsubscribeAll: Subject<any> = new Subject<any>();
+
+
     /**
      * Constructor
      */
@@ -112,8 +121,15 @@ export class HousekeepingHistoryComponent implements OnInit {
         private _fuseConfirmationService: FuseConfirmationService,
         private _toast: Toastr,
         private _matDialog: MatDialog,
+        private _userService: UserService,
         private _utilsService: UtilsService
-    ) {}
+    ) {
+        this._userService.user$
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((user: User) => {
+                this.user = user;
+            });
+    }
 
     ngOnInit(): void {
         this.loadAgents();
@@ -298,5 +314,140 @@ export class HousekeepingHistoryComponent implements OnInit {
                             ),
                     });
         });
+    }
+
+    exportPDF(action: 'download' | 'print'): void {
+        // 1. Initialisation du document au format A4 Paysage ('l' = landscape)
+        const doc = new jspdf('l', 'mm', 'a4');
+        const dateStr = new Date().toLocaleDateString('fr-FR');
+        const hourStr = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        const userName = this.user?.username || 'Système';
+
+        // 2. En-tête du document
+        doc.setFontSize(18);
+        doc.setTextColor(15, 23, 42); // Slate 900
+        doc.setFont('helvetica', 'bold');
+        doc.text('RAPPORT DE CONTRÔLE ET NETTOYAGE DES CHAMBRES', 14, 15);
+
+        // Métadonnées à droite
+        doc.setFontSize(9);
+        doc.setTextColor(100);
+        doc.setFont('helvetica', 'normal');
+        const rightMargin = 283; // Marge droite pour le format A4 paysage (297mm - 14mm)
+        doc.text(`Généré par : ${userName}`, rightMargin, 15, { align: 'right' });
+        doc.text(`Le ${dateStr} à ${hourStr}`, rightMargin, 20, { align: 'right' });
+
+        // 3. Définition des colonnes du tableau
+        const columns = [
+            { header: 'CHAMBRE', dataKey: 'roomName' },
+            { header: 'PAVILLON', dataKey: 'pavillon' },
+            { header: 'TYPE', dataKey: 'roomType' },
+            { header: 'ETAGE', dataKey: 'floor' },
+            { header: 'AGENT', dataKey: 'agent' },
+            { header: 'DÉBUT', dataKey: 'startAt' },
+            { header: 'FIN', dataKey: 'endAt' },
+            { header: 'OBSERVATIONS / COMMENTAIRES', dataKey: 'comment' }
+        ];
+
+        // Largeurs fixes pour les données courtes, et 'auto' pour la colonne des commentaires
+        const colStyles = {
+            roomName: { cellWidth: 25 },
+            pavillon: { cellWidth: 35 },
+            roomType: { cellWidth: 40 },
+            floor: { cellWidth: 15 },
+            agent: { cellWidth: 40 },
+            startAt: { cellWidth: 32 },
+            endAt: { cellWidth: 32 },
+            comment: { cellWidth: 'auto' }
+        };
+
+        // 4. Extraction et formatage des données à partir de la collection JSON (content)
+        // Supposons que vos données se trouvent dans 'this.collectionData.content'
+        const sourceData = this.dataSource.data || [];
+
+        const tableData = sourceData.map(item => {
+            const agentName = item.agent
+                ? `${item.agent.lastName.toUpperCase()} ${item.agent.firstName}`
+                : '-';
+
+            return {
+                roomName: item.room?.name || '-',
+                pavillon: item.room?.pavillon?.name || '-',
+                roomType: item.room?.roomType?.type || '-',
+                floor: item.room?.floor !== undefined ? `Étage ${item.room.floor}` : '-',
+                agent: agentName,
+                startAt: item.startAt ? item.startAt : '-',
+                endAt: item.endAt ? item.endAt : '-',
+                comment: item.comment || ''
+            };
+        });
+
+        // 5. Génération du tableau avec jspdf-autotable
+        autoTable(doc, {
+            columns: columns,
+            body: tableData,
+            startY: 30,
+            theme: 'grid',
+            styles: {
+                fontSize: 9,
+                cellPadding: 5,
+                minCellHeight: 10,
+                valign: 'middle',
+                lineColor: [226, 232, 240], // #e2e8f0
+                lineWidth: 0.1
+            },
+            headStyles: {
+                fillColor: [15, 23, 42], // Fond sombre #0f172a (Style Institutionnel)
+                textColor: [255, 255, 255],
+                fontSize: 9,
+                fontStyle: 'bold',
+                halign: 'center'
+            },
+            //columnStyles: colStyles, // to fixe later
+            didParseCell: (data) => {
+                // Centrer le texte pour les colonnes administratives fixes
+                if (['roomName', 'pavillon', 'floor', 'startAt', 'endAt'].includes(data.column.dataKey as string)) {
+                    data.cell.styles.halign = 'center';
+                }
+                // Mettre en gras le nom de la chambre
+                if (data.column.dataKey === 'roomName') {
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.textColor = [30, 64, 175]; // Couleur bleue #1e40af
+                }
+                // Style d'alerte discret s'il y a un commentaire d'anomalie (ex: "Tv cassée")
+                if (data.column.dataKey === 'comment' && data.cell.raw !== '') {
+                    data.cell.styles.textColor = [185, 28, 28]; // Rouge brique
+                    data.cell.styles.fontStyle = 'bold';
+                }
+            }
+        });
+
+        // 6. Gestion du pied de page pour le multipage (Numérotation)
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(148, 163, 184); // #94a3b8
+            // 148.5 mm correspond au milieu d'une page A4 en mode Paysage (297mm / 2)
+            doc.text(`Document interne confidentiel - Page ${i} sur ${pageCount}`, 148.5, 202, { align: 'center' });
+        }
+
+        // 7. Action finale : Téléchargement ou impression
+        if (action === 'download') {
+            const formattedDate = dateStr.replace(/\//g, '-');
+            doc.save(`RAPPORT_CONTROLE_${formattedDate}.pdf`);
+        } else {
+            const blob = doc.output('bloburl');
+            window.open(blob, '_blank');
+        }
+    }
+
+    /**
+     * On destroy
+     */
+    ngOnDestroy(): void {
+        // Unsubscribe from all subscriptions
+        this._unsubscribeAll.next(null);
+        this._unsubscribeAll.complete();
     }
 }

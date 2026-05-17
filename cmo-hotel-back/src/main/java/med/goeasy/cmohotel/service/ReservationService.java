@@ -130,7 +130,7 @@ public class ReservationService {
                     .room(room)
                     .appliedPrice(person.appliedPrice())
                     .build();
-            reservationRepository.save(reservation);
+            reservation = reservationRepository.save(reservation);
         }
 
         activityLogService.logActivity(
