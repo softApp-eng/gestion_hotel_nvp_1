@@ -378,8 +378,8 @@
                                     }
 
                                     @if (row?.status?.code === 'PENDING') {
-                                        <button mat-menu-item [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_ACCEPT]" (click)="raiseAcceptReservation(row?.code)">
-                                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                                        <button class="text-green-800 dark:text-green-50" mat-menu-item [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_ACCEPT]" (click)="raiseAcceptReservation(row?.code)">
+                                            <mat-icon class="icon-size-5 text-green-800 dark:text-green-50" [svgIcon]="'heroicons_outline:check'"></mat-icon>
                                             <span>Check-in</span>
                                         </button>
                                     }
@@ -392,12 +392,7 @@
                                         </button>
                                     }
 
-                                    @if (row?.status?.code === 'PENDING') {
-                                        <button class="text-red-800 dark:text-red-50 " mat-menu-item (click)="deleteReservation(row)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_DELETE]">
-                                            <mat-icon class="icon-size-5 text-red-800 dark:text-red-50" [svgIcon]="'mat_solid:delete_forever'"></mat-icon>
-                                            <span>Supprimer</span>
-                                        </button>
-                                    }
+
                                     <button mat-menu-item [matMenuTriggerFor]="ficheMenu" [disabled]="loadingFicheId === row.code" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_FICHE_PDF]">
                                         <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:document-text'"></mat-icon>
                                         <span>Fiche Réservation</span>
@@ -413,7 +408,12 @@
                                             <span>Imprimer directement</span>
                                         </button>
                                     </mat-menu>
-
+                                    @if (row?.status?.code === 'PENDING') {
+                                        <button class="text-red-800 dark:text-red-50 " mat-menu-item (click)="deleteReservation(row)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_DELETE]">
+                                            <mat-icon class="icon-size-5 text-red-800 dark:text-red-50" [svgIcon]="'mat_solid:delete_forever'"></mat-icon>
+                                            <span>Supprimer</span>
+                                        </button>
+                                    }
                                 </mat-menu>
                             </td>
                         </ng-container>

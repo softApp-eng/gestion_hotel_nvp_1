@@ -88,12 +88,18 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
         events: (info, successCallback, failureCallback) => {
             this.getReservationsByRange('reservations', info.startStr, info.endStr).subscribe({
                 next: (data) => {
+                    console.log('res',data);
                     this.periodReservations = data;
                     const events = this.filterReservationsLocally();
                     successCallback(events);
                 },
                 error: (err) => failureCallback(err)
             });
+        },
+        eventDidMount: (info) => {
+            // info.event.title contient déjà la liste des clients ("CNE EL ALAMI • LT BENNANI")
+            // On l'affecte à l'attribut 'title' de l'élément HTML pour activer le tooltip natif
+            info.el.setAttribute('title', info.event.title);
         },
         eventClick: (info: any) => {
             this.raiseReservationDetailsDialog(info.event.id);
@@ -238,12 +244,13 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
             });
 
             uniqueRoomsInRes.forEach((room, roomId) => {
-                const matchPavillon = !this.selectedPavillon || room.pavillon.id === this.selectedPavillon;
-                const matchRoom = !this.selectedRoom || roomId === this.selectedRoom.id;
+                //const matchPavillon = !this.selectedPavillon || room.pavillon.id === this.selectedPavillon;
+                //const matchRoom = !this.selectedRoom || roomId === this.selectedRoom.id;
 
-                if (matchPavillon && matchRoom) {
+                //if (matchPavillon && matchRoom) {
                     const guestsInThisRoom = res.guests.filter(g => g.room.id === roomId);
-                    const principal = guestsInThisRoom.find(g => g.role.code === 'PRINCIPAL')
+
+                    /*const principal = guestsInThisRoom.find(g => g.role.code === 'PRINCIPAL')
                         || guestsInThisRoom.find(g => g.role.code === 'VICE');
 
                     let guestDisplay = '';
@@ -252,23 +259,43 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
                         guestDisplay = `${grade} ${principal.person.lastName}`.trim();
                     } else if (guestsInThisRoom.length > 0) {
                         guestDisplay = guestsInThisRoom[0].person.lastName;
-                    }
+                    }*/
 
-                    const othersCount = guestsInThisRoom.length - 1;
-                    const suffix = othersCount > 0 ? ` +${othersCount}` : '';
+                    guestsInThisRoom.sort((a, b) => {
+                        const scoreA = a.role?.code === 'PRINCIPAL' ? 2 : (a.role?.code === 'VICE' ? 1 : 0);
+                        const scoreB = b.role?.code === 'PRINCIPAL' ? 2 : (b.role?.code === 'VICE' ? 1 : 0);
+                        return scoreB - scoreA; // Ordre décroissant
+                    });
+
+                    // 3. Construire la chaîne brute pour chaque client et les combiner
+                    const guestsLabels = guestsInThisRoom.map(g => {
+                        const grade = g.person?.grade ? g.person.grade.code : '';
+                        const lastName = g.person?.lastName || '';
+                        const firstName = g.person?.firstName || '';
+
+                        // Ex: "COL KABBAJ Ahmed" ou "CIVIL ALAMI Omar"
+                        return `${grade} ${lastName} ${firstName}`.trim();
+                    });
+
+                    // 4. Joindre tous les clients par un séparateur lisible
+                    // Utilisation du point médian " • " ou d'une virgule ", "
+                    const titleDisplay = guestsLabels.join(' • ');
+
+                    //const othersCount = guestsInThisRoom.length - 1;
+                    //const suffix = othersCount > 0 ? ` +${othersCount}` : '';
 
                     calendarEvents.push({
                         id: `${res.code}`,
                         // CRITICAL: Cette propriété associe l'événement à la ligne de la chambre
                         resourceId: roomId.toString(),
-                        title: `${guestDisplay}${suffix}`, // Plus court car le nom de la chambre est déjà sur la ligne
+                        title: `${titleDisplay}`, // Plus court car le nom de la chambre est déjà sur la ligne
                         start: res.start,
                         end: res.end,
                         backgroundColor: this.getColorByStatus(res.status.code),
                         borderColor: 'transparent',
                         extendedProps: { ...res, currentRoom: room }
                     });
-                }
+                //}
             });
         });
 

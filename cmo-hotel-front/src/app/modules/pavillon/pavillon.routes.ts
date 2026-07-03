@@ -15,7 +15,9 @@ export default [
         path     : ':pavillonId/rooms',
         component: RoomListComponent,
         data: {
-            permissions:[APP_PERMISSIONS.ROOM_LIST]
+            permissions:[
+                APP_PERMISSIONS.ROOM_LIST
+            ]
         },
     },{
         path     : ':pavillonId/rooms/create',
