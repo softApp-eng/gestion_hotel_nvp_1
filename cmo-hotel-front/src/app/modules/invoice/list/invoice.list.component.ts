@@ -94,6 +94,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
     status = [];
     filters = {
         key: '',
+        room: '',
         priseEnCharge: false,
         categories: [],
         paymentModes: [],
@@ -143,6 +144,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
     get activeFiltersCount(): number {
         let count = 0;
         if (this.filters.key !== '') count++;
+        if (this.filters.room !== '') count++;
         if (this.filters.priseEnCharge) count++;
         if (this.filters.categories.length > 0) count++;
         if (this.filters.paymentModes.length > 0) count++;
@@ -154,6 +156,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
     resetFilters() {
         this.filters = {
             key: '',
+            room: '',
             priseEnCharge: false,
             categories: [],
             paymentModes: [],
@@ -216,6 +219,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
         this._apiInvoiceService
             .search(
                 this.filters.key,
+                this.filters.room,
                 this.filters.paymentModes,
                 this.filters.priseEnCharge,
                 this.filters.categories,
@@ -288,6 +292,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
 
     removeSpecificFilter(filter: string) {
         if (filter == 'key') this.filters.key = '';
+        if (filter == 'room') this.filters.room = '';
         if (filter == 'priseEnCharge') this.filters.priseEnCharge = false;
         if (filter == 'category') this.filters.categories = [];
         if (filter == 'status') this.filters.status = [];

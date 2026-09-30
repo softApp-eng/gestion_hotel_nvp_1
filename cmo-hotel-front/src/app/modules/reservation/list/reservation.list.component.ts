@@ -37,6 +37,8 @@ import { ReservationDetailsModel } from '../dialog-reservation-details/reservati
 import { CloseReservationModel } from './dialog-close-reservation/close.reservation.model';
 import { SwitchRoomModel } from './dialog-switch-room/switch.room.model';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { PaymentModel } from '../../invoice/payment-model/payment.model';
+import { ApiInvoiceService } from '../../invoice/api.invoice.service';
 
 @Component({
     selector: 'reservation-list',
@@ -65,7 +67,6 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
         MatSelect,
         MatSelectTrigger,
         DisableIfNoPermissionDirective,
-        MatProgressSpinner,
     ],
 })
 export class ReservationListComponent implements OnInit, OnDestroy {
@@ -125,6 +126,28 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         dismissible: true,
     };
 
+    actionProceedToPaymentConfigDialogue: FuseConfirmationConfig = {
+        title: 'Paiement / Encaissement',
+        message: '',
+        icon: {
+            show: true,
+            name: 'heroicons_outline:credit-card',
+            color: 'primary',
+        },
+        actions: {
+            confirm: {
+                show: true,
+                label: 'Procéder au paiement',
+                color: 'primary',
+            },
+            cancel: {
+                show: true,
+                label: 'Plus tard',
+            },
+        },
+        dismissible: true,
+    };
+
     loadingFicheId: number | null = null;
 
     /**
@@ -132,6 +155,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
      */
     constructor(
         private _apiReservationService: ApiReservationService,
+        private _apiInvoiceService: ApiInvoiceService,
         private _apiCommonService: ApiCommonService,
         private _matDialog: MatDialog,
         private _toast: Toastr,
@@ -237,6 +261,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
                 next: (value: any) => {
                     this.dataSource.data = value?.content || [];
                     this.totalRows = value?.totalElements || 0;
+                    console.log('res', value);
 
                     setTimeout(() => {
                         if (this._paginator) {
@@ -284,7 +309,6 @@ export class ReservationListComponent implements OnInit, OnDestroy {
                 label: 'Expirée',
                 class: 'bg-orange-200 text-orange-800 dark:bg-orange-600 dark:text-orange-50',
             },*/
-
         };
 
         return (
@@ -412,7 +436,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
             });
     }
 
-    raiseCloseReservation(code) {
+    /*raiseCloseReservation(code) {
         if (!code) return;
         this._matDialog
             .open(CloseReservationModel, {
@@ -425,7 +449,7 @@ export class ReservationListComponent implements OnInit, OnDestroy {
                     this.search();
                 }
             });
-    }
+    }*/
 
     raiseSwitchRoom(row) {
         console.log(row);
@@ -509,9 +533,62 @@ export class ReservationListComponent implements OnInit, OnDestroy {
                 error: (err) => {
                     console.error('Erreur PDF:', err);
                     this.loadingFicheId = null;
-                    this._toast.error("erreur de generation de la fiche de réservation")
+                    this._toast.error(
+                        'erreur de generation de la fiche de réservation'
+                    );
                     // Optionnel : Afficher un SnackBar d'erreur
                 },
+            });
+    }
+
+    raiseCloseReservation(code: string) {
+        if (!code) return;
+
+        // 1. Ouverture du modal de clôture de réservation
+        this._matDialog
+            .open(CloseReservationModel, {
+                data: { code: code },
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((result) => {
+                // Si la réservation a été clôturée avec succès
+                if (result?.reload) {
+                    this.search(); // Rafraîchir les données
+
+                    // 2. Préparation et ouverture du dialogue de confirmation
+                    this.actionProceedToPaymentConfigDialogue.title =
+                        'Clôture effectuée avec succès';
+                    this.actionProceedToPaymentConfigDialogue.message = `La réservation <b>#${code}</b> a été clôturée.<br>Voulez-vous procéder à l'encaissement maintenant ?`;
+
+                    const dialogRef = this._fuseConfirmationService.open(
+                        this.actionProceedToPaymentConfigDialogue
+                    );
+
+                    // 3. Traitement du choix de l'utilisateur
+                    dialogRef.afterClosed().subscribe((confirmationResult) => {
+                        if (confirmationResult === 'confirmed') {
+                            // 4. Si 'confirmed', ouverture du modal de paiement
+                            this._apiInvoiceService.getInvoiceByReservationCode(code).subscribe({
+                                next: value => {
+                                    this._matDialog
+                                        .open(PaymentModel, {
+                                            data: { invoice: value },
+                                            disableClose: true,
+                                        })
+                                        .afterClosed()
+                                        .subscribe((paymentResult) => {
+                                            if (paymentResult?.reload) {
+                                                this.search();
+                                            }
+                                        });
+                                }
+                            });
+
+                        }
+                        // Si 'cancel' ou fermé, le flux s'arrête proprement
+                    });
+                }
             });
     }
 }

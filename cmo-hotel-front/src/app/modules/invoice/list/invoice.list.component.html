@@ -53,6 +53,15 @@
                                 </div>
                             }
 
+                            @if (filters.room) {
+                                <div class="flex items-center bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-100 px-3 py-1 rounded-full text-xs font-medium h-8">
+                                    <span>Chambre: {{ filters.room }}</span>
+                                    <button class="ml-1.5 flex items-center" (click)="filters.room = ''; search()">
+                                        <mat-icon class="icon-size-3.5" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                                    </button>
+                                </div>
+                            }
+
                             @if (filters.priseEnCharge) {
                                 <div class="flex items-center bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-100 px-3 py-1 rounded-full text-xs font-medium h-8">
                                     <span>avec prise en charge</span>
@@ -111,6 +120,11 @@
                                 <mat-form-field class="w-full" [appearance]="'outline'">
                                     <mat-label>Mot clé</mat-label>
                                     <input matInput [(ngModel)]="filters.key" placeholder="Mot clé">
+                                </mat-form-field>
+
+                                <mat-form-field class="w-full" [appearance]="'outline'">
+                                    <mat-label>Chambre</mat-label>
+                                    <input matInput [(ngModel)]="filters.room" placeholder="Code de chambre">
                                 </mat-form-field>
 
                                 <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
@@ -238,7 +252,7 @@
                                                             <span class="text-[11px] uppercase tracking-wider text-secondary font-medium">
                                                                 {{ group.room?.roomType?.type }} :
                                                             </span>
-                                                        <span [innerHTML]="group.room?.name | highlight:filters.key" class="text-sm font-extrabold text-gray-900 dark:text-gray-100">
+                                                        <span [innerHTML]="group.room?.name | highlight:filters.room" class="text-sm font-extrabold text-gray-900 dark:text-gray-100">
                                                             </span>
                                                     </div>
                                                 </div>

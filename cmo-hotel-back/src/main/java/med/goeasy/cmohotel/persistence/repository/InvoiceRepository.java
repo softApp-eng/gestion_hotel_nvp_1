@@ -19,14 +19,34 @@ import java.util.Optional;
 
 public interface InvoiceRepository extends JpaRepository<Invoice, String> {
     Optional<Invoice> findByReservationDetails(ReservationDetails reservationDetails);
+    Optional<Invoice> findByReservationDetails_Code(Long code);
 
     @Query(value = """
-        SELECT i FROM Invoice i
+        SELECT DISTINCT i FROM Invoice i
+                LEFT JOIN i.validatedNights vn
+                LEFT JOIN vn.roomApplied r
+                LEFT JOIN i.reservationDetails rd
+                LEFT JOIN rd.reservations res
+                LEFT JOIN res.person p
         WHERE
                (:key IS NULL OR :key = '' OR (
                            upper(i.num) LIKE upper(concat('%', :key, '%'))
                            OR upper(i.priseEnChargeReference) LIKE upper(concat('%', :key, '%'))
+                           OR upper(p.firstName) LIKE upper(concat('%', :key, '%'))
+                           OR upper(p.lastName) LIKE upper(concat('%', :key, '%'))
+                           OR upper(p.matricule) LIKE upper(concat('%', :key, '%'))
+                           OR upper(p.identity) LIKE upper(concat('%', :key, '%'))
                        ))
+               AND (:room IS NULL OR :room = '' OR (
+                                     vn IS NOT NULL AND (
+                                         upper(vn.roomName) = upper(:room)
+                                         OR (r IS NOT NULL AND (
+                                             upper(r.code) = upper(:room)
+                                             OR upper(r.name) = upper(:room)
+                                         ))
+                                     )
+                                 ))
+             
                AND (:modes IS NULL OR i.paymentMode IN :modes)
                AND (:priseEnCharge IS FALSE OR i.priseEnCharge = :priseEnCharge)
                AND (:category IS NULL OR i.category IN :category)
@@ -34,8 +54,39 @@ public interface InvoiceRepository extends JpaRepository<Invoice, String> {
                AND ( :range IS FALSE OR (i.createdAt <= :end AND i.createdAt >= :start))
         ORDER BY i.createdAt DESC
         """)
+    /*
+    SELECT i FROM Invoice i LEFT JOIN i.validatedNights vn LEFT JOIN vn.roomApplied r
+        WHERE
+               (:key IS NULL OR :key = '' OR (
+                           upper(i.num) LIKE upper(concat('%', :key, '%'))
+                           OR upper(i.priseEnChargeReference) LIKE upper(concat('%', :key, '%'))
+                       ))
+
+               AND (:room IS NULL OR :room = '' OR (
+                      vn IS NOT NULL AND (
+                          upper(vn.roomName) = upper(:room)
+                          OR (r IS NOT NULL AND (
+                              upper(r.code) = upper(:room)
+                              OR upper(r.name) = upper(:room)
+                          ))
+                      )
+                  ))
+               AND (:modes IS NULL OR i.paymentMode IN :modes)
+               AND (:priseEnCharge IS FALSE OR i.priseEnCharge = :priseEnCharge)
+               AND (:category IS NULL OR i.category IN :category)
+               AND (:status IS NULL OR i.status IN :status)
+               AND ( :range IS FALSE OR (i.createdAt <= :end AND i.createdAt >= :start))
+        ORDER BY i.createdAt DESC
+    --------------è
+    AND (:room IS NULL OR :room = '' OR (
+                                      upper(vn.roomName) LIKE upper(:room)
+                                      OR upper(r.code) LIKE upper(:room)
+                                      OR upper(r.name) LIKE upper(:room)
+                                  ))
+     */
     Page<Invoice> search(
             @Param("key") String key,
+            @Param("room") String room,
             @Param("modes") List<String> paymentModes,
             @Param("priseEnCharge") Boolean priseEnCharge,
             @Param("category") List<String> category,

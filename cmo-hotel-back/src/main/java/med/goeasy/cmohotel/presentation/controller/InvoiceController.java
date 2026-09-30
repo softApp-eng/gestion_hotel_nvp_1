@@ -40,6 +40,7 @@ public class InvoiceController {
     ResponseEntity<PageDto<InvoiceResponseDto>> search(
             Authentication authentication,
             @RequestParam(required = false, defaultValue = "") String key,
+            @RequestParam(required = false, defaultValue = "") String room,
             @RequestParam(required = false) List<String> paymentModes,
             @RequestParam(required = false) Boolean priseEnCharge,
             @RequestParam(required = false) List<String> categories,
@@ -53,6 +54,7 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceService.search(
                 authentication,
                 key,
+                room,
                 paymentModes,
                 priseEnCharge != null && priseEnCharge,
                 categories,
@@ -73,8 +75,16 @@ public class InvoiceController {
         ));
     }
 
+    @GetMapping("/get-by-reservation")
+    ResponseEntity<InvoiceResponseDto> paidInvoices(
+            @RequestParam @NotNull(message = "code de reservation requis") Long code
+    ){
+        return ResponseEntity.ok(invoiceService.getInvoiceByReservationCode(
+                code
+        ));
+    }
+
     @GetMapping("/last-validated-night")
-    //@JsonFormat(pattern = "dd-MM-yyyy")
     ResponseEntity<LocalDate> getLastValidatedNight(){
         return ResponseEntity.ok(invoiceService.getLastValidatedNight());
     }

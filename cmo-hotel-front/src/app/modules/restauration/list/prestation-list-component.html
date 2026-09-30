@@ -169,7 +169,7 @@
                                     <input matInput
                                            #inputKey
                                            [value]="key"
-                                           matTooltip="Recherche par Nom, Matricule ou Identité"
+                                           matTooltip="Recherche par Nom, Matricule, Identité ou chambre"
                                            [autocomplete]="'off'"
                                            (input)="search(inputKey.value)"
                                            placeholder="Chercher...">
@@ -203,6 +203,23 @@
                                               }"
                                               [innerHTML]="row?.details?.category?.name | highlight:key">
                                         </span>
+                                        </div>
+                                    </td>
+                                </ng-container>
+
+                                <ng-container matColumnDef="room">
+                                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 12%"> CHAMBRE </th>
+                                    <td mat-cell *matCellDef="let row" class="text-center">
+                                        <div class="flex flex-col items-center justify-center py-1">
+                                            <!-- Code de la chambre (Principal) -->
+                                            <span class="text-sm font-extrabold uppercase tracking-wide text-slate-800 dark:text-slate-100 leading-tight"
+                                                  [innerHTML]="(row?.room?.code || row?.code) | highlight:key">
+            </span>
+
+                                            <!-- Nom du pavillon (Secondaire) -->
+                                            <span class="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5"
+                                                  [innerHTML]="(row?.room?.pavillon?.name || row?.pavillon?.name) | highlight:key">
+            </span>
                                         </div>
                                     </td>
                                 </ng-container>

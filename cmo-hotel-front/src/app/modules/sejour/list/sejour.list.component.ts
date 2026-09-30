@@ -24,6 +24,9 @@ import { CloseReservationModel } from '../../reservation/list/dialog-close-reser
 import { NightValidationModel } from '../night-validation/night-validation.model';
 import { TimeExtendModel } from '../time-extend/time-extend.model';
 import { Toastr } from '../../../core/service/toastr.service';
+import { PaymentModel } from '../../invoice/payment-model/payment.model';
+import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../@fuse/services/confirmation';
+import { ApiInvoiceService } from '../../invoice/api.invoice.service';
 
 @Component({
     selector: 'sejour-list',
@@ -63,7 +66,6 @@ export class SejourListComponent implements OnInit {
 
     reservations;
 
-
     @ViewChild(MatPaginator, { static: true }) _paginator: MatPaginator;
     dataSource = new MatTableDataSource<any>([]);
     totalRows = 0;
@@ -74,13 +76,37 @@ export class SejourListComponent implements OnInit {
     today = new Date();
     loadingFicheId: number | null = null;
 
+    actionProceedToPaymentConfigDialogue: FuseConfirmationConfig = {
+        title: 'Paiement / Encaissement',
+        message: '',
+        icon: {
+            show: true,
+            name: 'heroicons_outline:credit-card',
+            color: 'primary',
+        },
+        actions: {
+            confirm: {
+                show: true,
+                label: 'Procéder au paiement',
+                color: 'primary',
+            },
+            cancel: {
+                show: true,
+                label: 'Plus tard',
+            },
+        },
+        dismissible: true,
+    };
+
     /**
      * Constructor
      */
     constructor(
         private _apiReservationService: ApiReservationService,
         private _matDialog: MatDialog,
-        private _toastr: Toastr,
+        private _apiInvoiceService: ApiInvoiceService,
+        private _fuseConfirmationService: FuseConfirmationService,
+        private _toastr: Toastr
     ) {}
 
     ngOnInit(): void {
@@ -132,8 +158,7 @@ export class SejourListComponent implements OnInit {
             .subscribe();
     }
 
-
-    raiseCloseReservation(code) {
+    /*raiseCloseReservation(code) {
         if (!code) return;
         this._matDialog
             .open(CloseReservationModel, {
@@ -144,6 +169,57 @@ export class SejourListComponent implements OnInit {
             .subscribe((result) => {
                 if (result.reload) {
                     this.getSejour();
+                }
+            });
+    }*/
+    raiseCloseReservation(code: string) {
+        if (!code) return;
+
+        // 1. Ouverture du modal de clôture de réservation
+        this._matDialog
+            .open(CloseReservationModel, {
+                data: { code: code },
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((result) => {
+                // Si la réservation a été clôturée avec succès
+                if (result?.reload) {
+                    this.getSejour(); // Rafraîchir les données
+
+                    // 2. Préparation et ouverture du dialogue de confirmation
+                    this.actionProceedToPaymentConfigDialogue.title =
+                        'Clôture effectuée avec succès';
+                    this.actionProceedToPaymentConfigDialogue.message = `La réservation <b>#${code}</b> a été clôturée.<br>Voulez-vous procéder à l'encaissement maintenant ?`;
+
+                    const dialogRef = this._fuseConfirmationService.open(
+                        this.actionProceedToPaymentConfigDialogue
+                    );
+
+                    // 3. Traitement du choix de l'utilisateur
+                    dialogRef.afterClosed().subscribe((confirmationResult) => {
+                        if (confirmationResult === 'confirmed') {
+                            // 4. Si 'confirmed', ouverture du modal de paiement
+                            this._apiInvoiceService
+                                .getInvoiceByReservationCode(code)
+                                .subscribe({
+                                    next: (value) => {
+                                        this._matDialog
+                                            .open(PaymentModel, {
+                                                data: { invoice: value },
+                                                disableClose: true,
+                                            })
+                                            .afterClosed()
+                                            .subscribe((paymentResult) => {
+                                                if (paymentResult?.reload) {
+                                                    this.getSejour();
+                                                }
+                                            });
+                                    },
+                                });
+                        }
+                        // Si 'cancel' ou fermé, le flux s'arrête proprement
+                    });
                 }
             });
     }
@@ -199,8 +275,10 @@ export class SejourListComponent implements OnInit {
                 res.code,
                 res.status?.name,
                 res.category?.name,
-                res.observation
-            ].join(' ').toLowerCase();
+                res.observation,
+            ]
+                .join(' ')
+                .toLowerCase();
 
             if (basicInfo.includes(this.key)) return true;
 
@@ -218,8 +296,10 @@ export class SejourListComponent implements OnInit {
                     p?.grade?.code,
                     p?.grade?.name,
                     r?.name,
-                    r?.roomType?.type
-                ].join(' ').toLowerCase();
+                    r?.roomType?.type,
+                ]
+                    .join(' ')
+                    .toLowerCase();
 
                 return personInfo.includes(this.key);
             });
@@ -238,18 +318,28 @@ export class SejourListComponent implements OnInit {
             return "Aucune nuitée n'a encore été validée.";
         }
 
-        const details = row.validatedNights.map(n => {
-            const date = new Date(n.nightDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
-            return `• Le ${date} (${n.roomName} - ${n.roomPriceApplied} Dhs)`;
-        }).join('\n'); // Le \n sera maintenant interprété grâce au CSS global
+        const details = row.validatedNights
+            .map((n) => {
+                const date = new Date(n.nightDate).toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                });
+                return `• Le ${date} (${n.roomName} - ${n.roomPriceApplied} Dhs)`;
+            })
+            .join('\n'); // Le \n sera maintenant interprété grâce au CSS global
 
-        const totalAmount = row.validatedNights.reduce((sum, n) => sum + (n.roomPriceApplied || 0), 0);
+        const totalAmount = row.validatedNights.reduce(
+            (sum, n) => sum + (n.roomPriceApplied || 0),
+            0
+        );
 
-        return `DÉTAIL DES NUITS :\n` +
+        return (
+            `DÉTAIL DES NUITS :\n` +
             `--------------------------\n` +
             `${details}\n` +
             `--------------------------\n` +
-            `TOTAL : ${totalAmount} Dhs`;
+            `TOTAL : ${totalAmount} Dhs`
+        );
     }
 
     getUniqueNightsCount(row: any): number {
@@ -257,7 +347,7 @@ export class SejourListComponent implements OnInit {
             return 0;
         }
         const uniqueDates = new Set(
-            row.validatedNights.map(n => n.nightDate)
+            row.validatedNights.map((n) => n.nightDate)
         );
         return uniqueDates.size;
     }
@@ -310,10 +400,11 @@ export class SejourListComponent implements OnInit {
                 error: (err) => {
                     console.error('Erreur PDF:', err);
                     this.loadingFicheId = null;
-                    this._toastr.error("erreur de generation de la facture de réservation")
+                    this._toastr.error(
+                        'erreur de generation de la facture de réservation'
+                    );
                     // Optionnel : Afficher un SnackBar d'erreur
                 },
             });
     }
-
 }

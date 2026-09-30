@@ -123,55 +123,6 @@ public class InvoiceService {
         return validatedNightRepository.lastNight();
     }
 
-//    protected Person findReferencePersonForPricing(List<Reservation> reservations) {
-//        List<Person> persons = reservations.stream()
-//                .map(Reservation::getPerson)
-//                .toList();
-//
-//        // 1. Militaires d'abord (inchangé)
-//        List<Person> militaires = persons.stream()
-//                //.filter(p -> p.getGrade() != null && !p.getGrade().getCode().equalsIgnoreCase("CIVIL"))
-//                .filter(p -> p.getGrade() != null && p.getGrade().getCategory() != EGradeCategory.CIVIL)
-//                .toList();
-//
-//        if (!militaires.isEmpty()) {
-//            return militaires.stream()
-//                    .max(Comparator.comparingInt(p -> p.getGrade().getRating()))
-//                    .get();
-//        }
-//
-//        // 2. Civils : Gestion sécurisée du null pour l'âge
-//        return persons.stream()
-//                .max(Comparator.comparing(Person::getBirthDate, Comparator.nullsLast(Comparator.reverseOrder())))
-//                .orElse(persons.getFirst());
-//    }
-//
-//    protected boolean isEligibleForPricing(Person p) {
-//        // Militaire = Toujours payant selon sa catégorie
-//        if (p.getGrade() != null && p.getGrade().getCategory() != EGradeCategory.CIVIL) {
-//            return true;
-//        }
-//
-//        // Civil : Si la date est nulle, on considère qu'il est majeur par défaut (Payant)
-//        if (p.getBirthDate() == null) {
-//            //log.warn("Date de naissance manquante pour le civil {}, tarif plein appliqué par défaut", p.getId());
-//            return true;
-//        }
-//
-//        // Calcul sécurisé
-//        long age = java.time.temporal.ChronoUnit.YEARS.between(p.getBirthDate(), LocalDate.now());
-//        return age >= 18;
-//    }
-//
-//    protected Double findPriceForRoom(Room room, EGradeCategory category) {
-//        // On cherche le prix dans RoomType correspondant à la catégorie du grade
-//        return room.getRoomType().getPrices().stream()
-//                .filter(p -> p.getCategory() == category)
-//                .map(RoomPrice::getPrice)
-//                .findFirst()
-//                .orElse(0.0); // Ou un prix par défaut
-//    }
-
     private Invoice getOrCreateInvoice(ReservationDetails details) {
         return invoiceRepository.findByReservationDetails(details)
                 .orElseGet(() -> invoiceRepository.save(Invoice.builder()
@@ -208,6 +159,7 @@ public class InvoiceService {
     public PageDto<InvoiceResponseDto> search(
             Authentication authentication,
             String key,
+            String room,
             List<String> paymentModes,
             boolean priseEnCharge,
             List<String> categories,
@@ -217,6 +169,7 @@ public class InvoiceService {
             Integer page, Integer size) {
         Page<Invoice> invoices = invoiceRepository.search(
                 key,
+                room,
                 (paymentModes == null || paymentModes.isEmpty()) ? null:paymentModes,
                 priseEnCharge,
                 (categories == null || categories.isEmpty()) ? null:categories,
@@ -478,6 +431,16 @@ public class InvoiceService {
             throw new BadRequestException("Échec de la génération du PDF de la facture.");
         }
     }
+
+    //findByReservationDetails_Code
+
+    public InvoiceResponseDto getInvoiceByReservationCode(Long code) {
+        return InvoiceResponseDto.mapToDto(
+                invoiceRepository.findByReservationDetails_Code(code).orElse(null)
+        );
+    }
+
+
     /// /////////////////////////////////////////////////////////////////////////////
     ///                              EXTRAS FUNCTIONS                             ///
     /// /////////////////////////////////////////////////////////////////////////////

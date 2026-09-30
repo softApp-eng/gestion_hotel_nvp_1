@@ -417,8 +417,8 @@ public class ReservationService {
     @Transactional
     public void cancelReservation(Authentication authentication, Long code) {
         ReservationDetails reservationDetails = getReservationDetailsByCode(code);
-        if (reservationDetails.getStatus().equals(EReservationStatus.CONFIRMED) || reservationDetails.getStatus().equals(EReservationStatus.CLOSED))
-            throw new BadRequestException("reservation déja traitée");
+        if (reservationDetails.getStatus().equals(EReservationStatus.CLOSED))
+            throw new BadRequestException("reservation déja cloturée");
 
         if (reservationDetails.getStatus().equals(EReservationStatus.CANCELED))
             throw new BadRequestException("reservation déja annulée");

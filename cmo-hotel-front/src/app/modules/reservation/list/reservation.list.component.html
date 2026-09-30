@@ -385,10 +385,13 @@
                                     }
 
 
-                                    @if (row?.status?.code === 'PENDING') {
-                                        <button mat-menu-item (click)="cancelReservation(row)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_CANCEL]">
-                                            <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:cancel'"></mat-icon>
-                                            <span>Annuler</span>
+                                    @if (row?.status?.code === 'PENDING' || row?.status?.code === 'CONFIRMED') {
+                                        <button mat-menu-item
+                                                (click)="cancelReservation(row)"
+                                                [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_CANCEL]"
+                                                class="!text-red-600 dark:!text-red-400 hover:!bg-red-50 dark:hover:!bg-red-950/30">
+                                            <mat-icon class="icon-size-5 !text-red-600 dark:!text-red-400" [svgIcon]="'mat_outline:cancel'"></mat-icon>
+                                            <span class="font-medium">Annuler</span>
                                         </button>
                                     }
 

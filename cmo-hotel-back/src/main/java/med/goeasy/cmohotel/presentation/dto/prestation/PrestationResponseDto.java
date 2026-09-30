@@ -7,6 +7,7 @@ import med.goeasy.cmohotel.persistence.entity.Reservation;
 import med.goeasy.cmohotel.persistence.entity.enums.EGuestRole;
 import med.goeasy.cmohotel.presentation.dto.person.PersonResponseDto;
 import med.goeasy.cmohotel.presentation.dto.reservation.ReservationDetailsResponseDto;
+import med.goeasy.cmohotel.presentation.dto.room.RoomResponseDto;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ public record PrestationResponseDto(
         String reservationId,
         EGuestRole role,
         ReservationDetailsResponseDto details,
+        RoomResponseDto room,
         PersonResponseDto person,
         List<PrestationDetailsResponseDto> prestations
 ) {
@@ -32,6 +34,11 @@ public record PrestationResponseDto(
                                 prestations.stream()
                                         .map(PrestationDetailsResponseDto::mapToDto)
                                         .toList())
+                .room(
+                        RoomResponseDto.mapToDto(
+                                entity.getRoom()
+                        )
+                )
                 .build();
     }
 }

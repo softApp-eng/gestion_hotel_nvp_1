@@ -4,78 +4,102 @@ import {environment} from "../../../environments/environment.development";
 import { Observable } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root',
 })
 export class ApiInvoiceService {
-
     private readonly API_URL = `${environment.solidarityApi}/v1/invoices`;
 
     /**
-    * Constructor
-    */
-    constructor(private _httpClient: HttpClient)
-    {
-    }
+     * Constructor
+     */
+    constructor(private _httpClient: HttpClient) {}
 
-    validateInvoiceNight(payload): Observable<any>{
+    validateInvoiceNight(payload): Observable<any> {
         return this._httpClient.post(`${this.API_URL}/night/validate`, payload);
     }
 
-    lastValidatdNight(): Observable<any>{
+    lastValidatdNight(): Observable<any> {
         return this._httpClient.get(`${this.API_URL}/last-validated-night`);
     }
 
-    payInvoice(payload): Observable<any>{
+    payInvoice(payload): Observable<any> {
         return this._httpClient.post(`${this.API_URL}/pay`, payload);
     }
 
-    search(key='',paymentModes=[],priseEnCharge=false,categories=[],status=[],start = '',end = '',page=0,size=20): Observable<any>{
+    search(
+        key = '',
+        room = '',
+        paymentModes = [],
+        priseEnCharge = false,
+        categories = [],
+        status = [],
+        start = '',
+        end = '',
+        page = 0,
+        size = 20
+    ): Observable<any> {
         let params = new HttpParams()
             .set('key', key)
+            .set('room', room)
             .set('priseEnCharge', priseEnCharge)
             .set('start', start)
             .set('end', end)
             .set('page', page)
             .set('size', size);
         if (paymentModes && paymentModes.length > 0) {
-            paymentModes.forEach(s => {
+            paymentModes.forEach((s) => {
                 params = params.append('paymentModes', s);
             });
         }
         if (status && status.length > 0) {
-            status.forEach(s => {
+            status.forEach((s) => {
                 params = params.append('status', s);
             });
         }
         if (categories && categories.length > 0) {
-            categories.forEach(s => {
+            categories.forEach((s) => {
                 params = params.append('categories', s);
             });
         }
         return this._httpClient.get(`${this.API_URL}/search`, { params });
     }
 
-    getEncaissement(day = ''): Observable<any>{
-        let params = new HttpParams()
-            .set('day', day);
+    getEncaissement(day = ''): Observable<any> {
+        let params = new HttpParams().set('day', day);
         return this._httpClient.get(`${this.API_URL}/encaissement`, { params });
     }
 
-    generateInvoicePdf(num): Observable<any>{
-        return this._httpClient.get(`${this.API_URL}/download/invoice?num=${num}`, {
-            responseType: 'blob'
+    getInvoiceByReservationCode(code): Observable<any> {
+        let params = new HttpParams().set('code', code);
+        return this._httpClient.get(`${this.API_URL}/get-by-reservation`, {
+            params,
         });
     }
 
-    generateEtatExplicatifPdf(num): Observable<any>{
-        return this._httpClient.get(`${this.API_URL}/download/etat-explicatif?num=${num}`, {
-            responseType: 'blob'
-        });
+    generateInvoicePdf(num): Observable<any> {
+        return this._httpClient.get(
+            `${this.API_URL}/download/invoice?num=${num}`,
+            {
+                responseType: 'blob',
+            }
+        );
     }
 
-    generateEncaissementPdf(day): Observable<any>{
-        return this._httpClient.get(`${this.API_URL}/download/encaissement?day=${day}`, {
-            responseType: 'blob'
-        });
+    generateEtatExplicatifPdf(num): Observable<any> {
+        return this._httpClient.get(
+            `${this.API_URL}/download/etat-explicatif?num=${num}`,
+            {
+                responseType: 'blob',
+            }
+        );
+    }
+
+    generateEncaissementPdf(day): Observable<any> {
+        return this._httpClient.get(
+            `${this.API_URL}/download/encaissement?day=${day}`,
+            {
+                responseType: 'blob',
+            }
+        );
     }
 }

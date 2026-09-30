@@ -60,6 +60,7 @@ export class PrestationListComponent implements OnInit {
     displayedColumns: string[] = [
         'reservationCode',
         'category',
+        'room',
         'client',
         'identity',
         'totalPrice',
@@ -111,6 +112,7 @@ export class PrestationListComponent implements OnInit {
 
                 this.prestations = sortedData;
                 this.dataSource.data = sortedData;
+                console.log('rest',sortedData);
 
                 this.totalRows = sortedData.length;
 
@@ -135,6 +137,7 @@ export class PrestationListComponent implements OnInit {
             const person = item?.person;
             const details = item?.details;
             const role = item?.role;
+            const room = item?.room;
 
             const searchString = [
                 person?.identity,
@@ -143,8 +146,13 @@ export class PrestationListComponent implements OnInit {
                 person?.grade?.code,
                 person?.grade?.name,
                 details?.code?.toString(),
-                role?.name
-            ].join(' ').toLowerCase();
+                role?.name,
+                room?.name,
+                room?.code,
+                room?.pavillon?.name,
+            ]
+                .join(' ')
+                .toLowerCase();
 
             return searchString.includes(this.key);
         });
