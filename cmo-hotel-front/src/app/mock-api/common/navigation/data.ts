@@ -79,6 +79,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 icon: 'heroicons_outline:book-open',
                 link: '/managements/main/courante/list',
                 data: { permissions: [APP_PERMISSIONS.RESERVATION_MAIN_COURANTE] },
+            },{
+                id: 'reservations.depart-prevu',
+                title: 'Départ prévu',
+                type: 'basic',
+                icon: 'heroicons_outline:book-open',
+                link: '/managements/depart/list',
+                data: { permissions: [APP_PERMISSIONS.RESERVATION_MAIN_COURANTE] },
             },
         ],
     },

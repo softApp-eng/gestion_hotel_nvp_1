@@ -8,16 +8,15 @@ import { APP_MODULES } from './core/data/app-modules';
 /* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 export const appRoutes: Route[] = [
-
     // Redirect empty path to '/example'
-    {path: '', pathMatch : 'full', redirectTo: '/home'},
+    { path: '', pathMatch: 'full', redirectTo: '/home' },
 
     // Redirect signed-in user to the '/example'
     //
     // After the user signs in, the sign-in page will redirect the user to the 'signed-in-redirect'
     // path. Below is another redirection for that path to redirect the user to the desired
     // location. This is a small convenience to keep all main routes together here on this file.
-    {path: 'signed-in-redirect', pathMatch : 'full', redirectTo: 'home'},
+    { path: 'signed-in-redirect', pathMatch: 'full', redirectTo: 'home' },
 
     // Auth routes for guests
     {
@@ -26,11 +25,15 @@ export const appRoutes: Route[] = [
         //canActivateChild: [NoAuthGuard],
         component: LayoutComponent,
         data: {
-            layout: 'empty'
+            layout: 'empty',
         },
         children: [
-            {path: 'sign-in', loadChildren: () => import('app/modules/auth/sign-in/sign-in.routes')},
-        ]
+            {
+                path: 'sign-in',
+                loadChildren: () =>
+                    import('app/modules/auth/sign-in/sign-in.routes'),
+            },
+        ],
     },
 
     // Admin routes
@@ -44,36 +47,39 @@ export const appRoutes: Route[] = [
         },
         component: LayoutComponent,
         resolve: {
-            initialData: initialDataResolver
+            initialData: initialDataResolver,
         },
         children: [
             {
                 path: 'users',
                 loadChildren: () => import('app/modules/users/users.routes'),
                 data: {
-                    module:[APP_MODULES.USERS]
+                    module: [APP_MODULES.USERS],
                 },
             },
             {
                 path: 'roles',
                 loadChildren: () => import('app/modules/roles/roles.routes'),
                 data: {
-                    module:[APP_MODULES.ROLES]
+                    module: [APP_MODULES.ROLES],
                 },
-            },{
+            },
+            {
                 path: 'audit',
                 loadChildren: () => import('app/modules/audit/audit.routes'),
                 data: {
-                    module:[APP_MODULES.AUDIT]
+                    module: [APP_MODULES.AUDIT],
                 },
-            },{
+            },
+            {
                 path: 'configurations',
-                loadChildren: () => import('app/modules/configuration/configuration.routes'),
+                loadChildren: () =>
+                    import('app/modules/configuration/configuration.routes'),
                 data: {
-                    module:[APP_MODULES.CONFIGURATION]
+                    module: [APP_MODULES.CONFIGURATION],
                 },
-            }
-        ]
+            },
+        ],
     },
     {
         path: 'profile',
@@ -81,11 +87,15 @@ export const appRoutes: Route[] = [
         canActivateChild: [AuthGuard],
         component: LayoutComponent,
         resolve: {
-            initialData: initialDataResolver
+            initialData: initialDataResolver,
         },
         children: [
-            {path: 'settings', loadChildren: () => import('app/modules/settings/settings.routes'),},
-        ]
+            {
+                path: 'settings',
+                loadChildren: () =>
+                    import('app/modules/settings/settings.routes'),
+            },
+        ],
     },
 
     {
@@ -94,27 +104,29 @@ export const appRoutes: Route[] = [
         canActivateChild: [AuthGuard],
         component: LayoutComponent,
         resolve: {
-            initialData: initialDataResolver
+            initialData: initialDataResolver,
         },
         children: [
             {
                 path: 'guests',
                 loadChildren: () => import('app/modules/person/person.routes'),
                 data: {
-                    module:[APP_MODULES.PERSON]
+                    module: [APP_MODULES.PERSON],
                 },
             },
             {
                 path: 'pavillon',
-                loadChildren: () => import('app/modules/pavillon/pavillon.routes'),
+                loadChildren: () =>
+                    import('app/modules/pavillon/pavillon.routes'),
                 data: {
-                    module:[APP_MODULES.PAVILLON]
+                    module: [APP_MODULES.PAVILLON],
                 },
-            },{
+            },
+            {
                 path: 'prices',
                 loadChildren: () => import('app/modules/prices/prices.routes'),
-            }
-        ]
+            },
+        ],
     },
     {
         path: 'managements',
@@ -123,50 +135,75 @@ export const appRoutes: Route[] = [
         //data: {accountType:[AppAccountTypes.ADMINISTRATOR]},
         component: LayoutComponent,
         resolve: {
-            initialData: initialDataResolver
+            initialData: initialDataResolver,
         },
         children: [
             {
-                path: 'reservations', loadChildren: () => import('app/modules/reservation/reservation.routes'),
+                path: 'reservations',
+                loadChildren: () =>
+                    import('app/modules/reservation/reservation.routes'),
                 data: {
-                    module:[APP_MODULES.RESERVATION]
+                    module: [APP_MODULES.RESERVATION],
                 },
             },
             {
-                path: 'invoices', loadChildren: () => import('app/modules/invoice/invoice.routes'),
+                path: 'invoices',
+                loadChildren: () =>
+                    import('app/modules/invoice/invoice.routes'),
                 data: {
-                    module:[APP_MODULES.INVOICE]
+                    module: [APP_MODULES.INVOICE],
                 },
             },
             {
                 path: 'housekeeping',
                 data: {
-                    module:[APP_MODULES.HOUSEKEEPING]
+                    module: [APP_MODULES.HOUSEKEEPING],
                 },
-                loadChildren: () => import('app/modules/house-keeping/housekeeping.routes')
+                loadChildren: () =>
+                    import('app/modules/house-keeping/housekeeping.routes'),
             },
             {
-                path: 'sejours', loadChildren: () => import('app/modules/sejour/sejour.routes'),
+                path: 'sejours',
+                loadChildren: () => import('app/modules/sejour/sejour.routes'),
                 data: {
-                    module:[APP_MODULES.RESERVATION]
-                },},
-            {
-                path: 'main/courante', loadChildren: () => import('app/modules/main-courante/main-courante.routes'),
-                data: {
-                    module:[APP_MODULES.RESERVATION]
-                },},
-            {
-                path: 'calender', loadChildren: () => import('app/modules/planning-calender/planning-calender.routes'),
-                data: {
-                    module:[APP_MODULES.RESERVATION]
+                    module: [APP_MODULES.RESERVATION],
                 },
             },
-            {path: 'restauration', loadChildren: () => import('app/modules/restauration/restauration.routes'),
+            {
+                path: 'main/courante',
+                loadChildren: () =>
+                    import('app/modules/main-courante/main-courante.routes'),
                 data: {
-                    module:[APP_MODULES.PRESTATION]
+                    module: [APP_MODULES.RESERVATION],
                 },
             },
-        ]
+            {
+                path: 'depart',
+                loadChildren: () =>
+                    import('app/modules/depart-prevu/depart-prevu.routes'),
+                data: {
+                    module: [APP_MODULES.RESERVATION],
+                },
+            },
+            {
+                path: 'calender',
+                loadChildren: () =>
+                    import(
+                        'app/modules/planning-calender/planning-calender.routes'
+                    ),
+                data: {
+                    module: [APP_MODULES.RESERVATION],
+                },
+            },
+            {
+                path: 'restauration',
+                loadChildren: () =>
+                    import('app/modules/restauration/restauration.routes'),
+                data: {
+                    module: [APP_MODULES.PRESTATION],
+                },
+            },
+        ],
     },
 
     {
@@ -176,13 +213,17 @@ export const appRoutes: Route[] = [
         //data: {accountType:[AppAccountTypes.ADMINISTRATOR]},
         component: LayoutComponent,
         resolve: {
-            initialData: initialDataResolver
+            initialData: initialDataResolver,
         },
         children: [
-            {path: 'dashboard', loadChildren: () => import('app/modules/dashboard/dashboard.routes')},
-        ]
+            {
+                path: 'dashboard',
+                loadChildren: () =>
+                    import('app/modules/dashboard/dashboard.routes'),
+            },
+        ],
     },
 
     //match other urls
-    { path: '**', redirectTo: '/dashboard/home' }
+    { path: '**', redirectTo: '/dashboard/home' },
 ];

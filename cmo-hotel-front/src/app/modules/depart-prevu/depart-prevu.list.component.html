@@ -1,0 +1,366 @@
+<div class="flex min-w-0 flex-auto flex-col">
+        <!-- Header -->
+        <div class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between px-6 py-6 md:px-10 border-b bg-card dark:bg-transparent transition-all duration-200">
+            <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary-500/20 via-transparent to-transparent"></div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center space-x-2 text-secondary font-medium text-sm mb-2">
+                    <a class="hover:text-primary transition-colors cursor-pointer">Gestion</a>
+                    <mat-icon class="icon-size-4" [svgIcon]="'heroicons_mini:chevron-right'"></mat-icon>
+                    <span class="text-primary-600 dark:text-primary-400">Réservations</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="flex items-center justify-center p-3 mr-4 rounded-xl bg-primary-50 dark:bg-primary-500/10 text-primary shadow-sm">
+                        <mat-icon class="icon-size-10" [svgIcon]="'heroicons_outline:book-open'"></mat-icon>
+                    </div>
+                    <div class="flex flex-col">
+                        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-none text-slate-900 dark:text-white">
+                            Départ prévu
+                        </h2>
+                        <p class="text-secondary font-medium mt-1 text-md hidden sm:block">
+                            Suivi le départ prévu des résidents.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items list -->
+        <div class="space-y-8 p-6 md:p-8">
+            <div class="bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+                    <div class="flex items-center space-x-3">
+                        <div class="flex flex-col">
+                            <h2 class="text-xl font-semibold tracking-tight text-slate-800 dark:text-white leading-none">
+                                JOURNÉE DU {{ today | date:'dd/MM/yyyy' }}
+                            </h2>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button mat-icon-button
+                                class="text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors rounded-xl shadow-sm border border-blue-100"
+                                [matMenuTriggerFor]="ficheMenu"
+                                matTooltip="Exporter le rapport"
+                                [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_MAIN_COURANTE]">
+                            <mat-icon [svgIcon]="'heroicons_outline:arrow-down-tray'"></mat-icon>
+                        </button>
+
+                        <mat-menu #ficheMenu="matMenu" xPosition="before" class="rounded-xl shadow-xl border border-slate-100">
+                            <button mat-menu-item (click)="processDownloadEncassement('download')">
+                                <mat-icon class="text-blue-500" [svgIcon]="'heroicons_outline:document-text'"></mat-icon>
+                                <span>Télécharger (PDF)</span>
+                            </button>
+
+                            <button mat-menu-item (click)="processDownloadEncassement('print')">
+                                <mat-icon class="text-slate-500" [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                                <span>Imprimer le rapport</span>
+                            </button>
+                        </mat-menu>
+                    </div>
+                </div>
+
+
+                <div class="w-full bg-primary-50 dark:bg-transparent border rounded-xl shadow-sm overflow-x-auto ">
+                        <table mat-table [dataSource]="dataSource" class="min-w-full">
+
+                            <ng-container matColumnDef="details">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center"></th>
+                                <td mat-cell *matCellDef="let row" class="text-center">
+                                    <div class="flex items-center justify-end space-x-1">
+                                        <button mat-icon-button
+                                                (click)="raiseReservationDetailsDialog(row)"
+                                                matTooltip="Détails"
+                                                class="text-slate-400 hover:text-primary transition-colors">
+                                            <mat-icon class="icon-size-5" svgIcon="heroicons_outline:information-circle"></mat-icon>
+                                        </button>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="pax">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center">
+                                    <span class="bg-gray-50 dark:bg-transparent text-center uppercase">PAX</span>
+                                </th>
+                                <td mat-cell *matCellDef="let row" class="text-center">
+                                    <div (click)="raiseReservationDetailsDialog(row)"
+                                         class="cursor-pointer group inline-flex flex-col items-center">
+                                        <span class="text-secondary whitespace-nowrap text-md font-semibold">
+                                            {{
+                                                row?.guests?.length || 0
+                                            }}
+                                        </span>
+                                        <div class="h-[1.5px] w-0 bg-primary-500 transition-all duration-300 group-hover:w-full"></div>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="nights">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-center">
+                                    Nuitées
+                                </th>
+                                <td mat-cell class="text-center" *matCellDef="let row">
+                                    <div class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-bold leading-none cursor-help transition-all"
+                                         [ngClass]="getUniqueNightsCount(row) > 0 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500'"
+                                         [matTooltip]="getNightsTooltip(row)"
+                                         matTooltipClass="professional-tooltip"
+                                         matTooltipPosition="above">
+
+                                        <mat-icon class="icon-size-3.5 mr-1" [svgIcon]="'heroicons_outline:moon'"></mat-icon>
+                                        {{ getUniqueNightsCount(row) || 0 }}
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="period">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-md font-bold text-center">
+                                    Arrivée
+                                </th>
+                                <td mat-cell *matCellDef="let row">
+                                    <div class="flex items-center justify-center space-x-4 w-full font-medium">
+                                        <div class="flex flex-col items-center justify-center leading-tight">
+                                        <span class="text-gray-900 dark:text-gray-100 font-bold text-md">
+                                            {{ row?.checkin | date:'dd/MM/yyyy' }}
+                                        </span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="roomAndGuests">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent">
+                                    CHAMBRES & CLIENTS
+                                </th>
+                                <td mat-cell *matCellDef="let row">
+                                    @if (getGroupedRooms(row.guests); as groupedRooms) {
+                                        <div class="space-y-2 py-1">
+                                            @for (group of (row.showAll ? groupedRooms : (groupedRooms | slice:0:2)); track group.room.id) {
+                                                <div class="relative pl-4">
+                                                    <div class="flex items-center">
+                                                        <span class="absolute left-[-5px] w-1.5 h-1.5 rounded-full bg-primary-500 shadow-[0_0_8px_rgba(var(--primary-500),0.6)]"></span>
+                                                        <div class="flex items-baseline space-x-2">
+                                                            <span class="text-[11px] uppercase tracking-wider text-secondary font-medium">
+                                                                {{ group.room?.roomType?.type }} :
+                                                            </span>
+                                                            <span class="text-sm font-extrabold text-gray-900 dark:text-gray-100">
+                                                                {{group.room?.name}}
+                                                            </span>
+
+                                                            @if (row.validatedNights && row.validatedNights.length > 0) {
+                                                                <span class="text-[12px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                                                    ({{ row.validatedNights[row.validatedNights.length - 1].roomPriceApplied }} MAD)
+                                                                </span>
+                                                            }
+                                                        </div>
+                                                    </div>
+
+                                                    <ul class="space-y-1.5 ml-2">
+                                                        @for (guest of group.occupants; track guest.id) {
+                                                            <li class="flex items-center space-x-2 whitespace-nowrap group">
+                                                                <span class="text-xs font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400 px-1.5">
+                                                                {{guest.person?.grade?.code}}
+                                                                </span>
+
+                                                                <span class="text-[14px] text-gray-700 dark:text-gray-300 font-medium">
+                                                                    {{(guest.person?.firstName + ' ' + guest.person?.lastName)}}
+                                                                </span>
+
+                                                                @if (guest.person?.unite) {
+                                                                    <span class="text-[11px] text-slate-400 font-normal italic">
+                                                                    {{ guest.person.unite }}
+                                                                </span>
+                                                                }
+
+                                                                @if (row?.category?.code === 'FAMILY' && guest.role) {
+                                                                    <span class="px-1.5 py-0 text-[9px] font-bold uppercase tracking-tighter bg-indigo-50/80 text-indigo-600 border border-indigo-100/50 rounded-md shadow-sm">
+                                                                    {{guest.role.name}}
+                                                                    </span>
+                                                                }
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                </div>
+                                            }
+
+                                        </div>
+                                    }
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="category">
+                                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center"> CATEGORIE </th>
+                                <td mat-cell *matCellDef="let row" class="text-center">
+                                    <div class="inline-flex items-center space-x-2">
+                                <span class="text-[11px] font-bold uppercase tracking-wider leading-none"
+                                      [ngClass]="{
+                                          'text-blue-600 dark:text-blue-400': row.category.code === 'SINGLE',
+                                          'text-purple-600 dark:text-purple-400': row.category.code === 'FAMILY',
+                                          'text-gray-600 dark:text-gray-400': row.category.code === 'DELEGATION'
+                                      }">
+                                    {{row?.category?.name}}
+                                </span>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="pc">
+                                <th mat-header-cell *matHeaderCellDef class="font-bold text-slate-700 text-right"> MT (MAD) </th>
+                                <td mat-cell *matCellDef="let row" class="text-right font-bold text-slate-900">
+                                    <div class="flex flex-col items-center justify-center w-full">
+                                        <div class="flex flex-col items-center justify-center w-full">
+                                            {{
+                                                calculateTotalPrice(row?.validatedNights) | number:'1.2-2'
+                                            }}
+                                        </div>
+                                        <div class="text-md text-secondary">
+                                            {{
+                                                row?.priseEnCharge ? 'PC':'ESP'
+                                            }}
+                                        </div>
+                                    </div>
+
+                                </td>
+                            </ng-container>
+
+
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns" ></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns;" ></tr>
+
+                            <tr class="mat-row" *matNoDataRow>
+                                <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+
+                                    <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                                        @if (!isLoading){
+                                            Aucune ligne trouvée
+                                        } @else {
+                                            Chargement...
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                </div>
+                <mat-paginator
+                    [ngClass]="{ 'pointer-events-none': isLoading }"
+                    showFirstLastButtons="true"
+                    [length]="totalRows"
+                    [pageIndex]="currentPage"
+                    [pageSize]="pageSize"
+                    [pageSizeOptions]="pageSizeOptions"
+                ></mat-paginator>
+            </div>
+        </div>
+
+    <div class="space-y-8 p-6 md:p-8">
+        <div class="bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+                <div class="flex items-center space-x-3">
+                    <div class="flex flex-col">
+                        <h2 class="text-xl font-semibold tracking-tight text-slate-800 dark:text-white leading-none">
+                            Taux d'occupation
+                        </h2>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div *ngFor="let pavillon of occupations" class="mb-10 p-4 bg-white rounded-lg shadow">
+                <h2 class="text-xl font-bold mb-4 text-blue-900 border-b-2 border-blue-100 pb-2">
+                    PAVILLON : {{ pavillon.pavillonName }}
+                </h2>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border-collapse border border-gray-300">
+                        <thead class="bg-gray-100">
+                        <tr>
+                            <th class="border border-gray-300 p-2 text-left bg-gray-50 w-48">Désignation</th>
+                            <th *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-2 text-center">
+                                {{ type.typeName }}
+                            </th>
+                            <th class="border border-gray-300 p-2 text-center font-bold bg-blue-50">TOTAL</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- Row 2: Nombre de chambres -->
+                        <tr>
+                            <td class="border border-gray-300 p-2 font-medium">Nombre de chambres</td>
+                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-2 text-center">
+                                {{ type.totalRoomsOfType }}
+                            </td>
+                            <td class="border border-gray-300 p-2 text-center font-bold">{{ pavillon.totalRooms }}</td>
+                        </tr>
+
+                        <!-- Row 3 & 4: Mode de règlement (Labels & Valeurs) -->
+                        <tr>
+                            <td class="border border-gray-300 p-2 font-medium">Mode de règlement</td>
+                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-0">
+                                <div class="grid grid-cols-2 text-[10px] text-center border-b">
+                                    <div class="border-r p-1 bg-green-50">ESP</div>
+                                    <div class="p-1 bg-orange-50">PEC</div>
+                                </div>
+                                <div class="grid grid-cols-2 text-center">
+                                    <div class="border-r p-1">{{ type.occupantsDirectPay }}</div>
+                                    <div class="p-1">{{ type.occupantsPriseEnCharge }}</div>
+                                </div>
+                            </td>
+                            <td class="border border-gray-300 p-0 bg-blue-50">
+                                <div class="grid grid-cols-2 text-center font-bold">
+                                    <div class="border-r p-1">{{ getTotalDirect(pavillon) }}</div>
+                                    <div class="p-1">{{ getTotalPEC(pavillon) }}</div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Row 5: Nombre d'occupants -->
+                        <tr>
+                            <td class="border border-gray-300 p-2 font-medium">Total Occupants</td>
+                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-2 text-center">
+                                {{ type.occupantsDirectPay + type.occupantsPriseEnCharge }}
+                            </td>
+                            <td class="border border-gray-300 p-2 text-center font-bold">
+                                {{ getTotalDirect(pavillon) + getTotalPEC(pavillon) }}
+                            </td>
+                        </tr>
+
+                        <!-- Row 6: Chambres Libres -->
+                        <tr>
+                            <td class="border border-gray-300 p-2 font-medium">Chambres Libres</td>
+                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-2 text-center text-red-600">
+                                {{ type.totalRoomsOfType - type.occupiedRoomsOfType }}
+                            </td>
+                            <td class="border border-gray-300 p-2 text-center font-bold">
+                                {{ pavillon.totalRooms - pavillon.totalOccupiedRooms }}
+                            </td>
+                        </tr>
+
+                        <!-- Row 7: Taux % -->
+                        <tr class="bg-gray-50">
+                            <td class="border border-gray-300 p-2 font-medium">Taux d'occupation %</td>
+                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-2 text-center font-bold text-blue-700">
+                                {{ type.occupationRate | number:'1.0-2' }}%
+                            </td>
+                            <td class="border border-gray-300 p-2 text-center font-bold text-blue-800">
+                                {{ pavillon.globalOccupationRate | number:'1.0-2' }}%
+                            </td>
+                        </tr>
+
+                        <!-- Row 8: Répartition PEC / ESP % -->
+                        <tr>
+                            <td class="border border-gray-300 p-2 font-medium">Répartition (%)</td>
+                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-1 text-md text-center  font-bold">
+                                <span class="text-green-700">E: {{ getPercent(type.occupantsDirectPay, type) }}%</span> |
+                                <span class="text-orange-700">P: {{ getPercent(type.occupantsPriseEnCharge, type) }}%</span>
+                            </td>
+                            <td class="border border-gray-300 p-1 text-md text-center font-bold">
+                                ESP: {{ getGlobalPercent(pavillon, 'ESP') }}% | PEC: {{ getGlobalPercent(pavillon, 'PEC') }}%
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
