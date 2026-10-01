@@ -22,6 +22,8 @@ import { HighlightPipe } from '../../../@fuse/pipes/HighlightPipe';
 import { ReservationDetailsModel } from '../reservation/dialog-reservation-details/reservation.details.model';
 import { UtilsService } from '../../core/service/utils.service';
 import { Toastr } from '../../core/service/toastr.service';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
 @Component({
     selector: 'depart-prevu',
@@ -45,7 +47,8 @@ import { Toastr } from '../../core/service/toastr.service';
         DisableIfNoPermissionDirective,
         DecimalPipe,
         SlicePipe,
-        NgForOf,
+        MatDatepickerModule,
+        MatNativeDateModule,
     ],
 })
 export class DepartPrevuListComponent implements OnInit {
@@ -69,7 +72,7 @@ export class DepartPrevuListComponent implements OnInit {
     currentPage = 0;
     pageSizeOptions: number[] = [20, 50, 70, 100];
     today = new Date();
-    occupations: any;
+    selectedDate: Date = new Date();
 
     /**
      * Constructor
@@ -83,15 +86,25 @@ export class DepartPrevuListComponent implements OnInit {
 
     ngOnInit(): void {
         this.dataSource.paginator = this._paginator;
-        this.getSejour();
-        this.getMainCouranteOccupation();
+        this.getData();
     }
 
-    getSejour() {
+    onDateChange(newDate: Date): void {
+        if (newDate) {
+            this.selectedDate = newDate;
+            this.getData(); // Recharge les données pour la nouvelle date choisie
+        }
+    }
+
+    getData(): void {
         this.isLoading = true;
         this.dataSource.data = [];
+
+        // Formate la date au format 'dd/MM/yyyy' exigé par l'API backend
+        const formattedDate = this._utils.convertToDate(this.selectedDate);
+
         this._apiReservationService
-            .getSejours()
+            .getDepartPrevu(formattedDate)
             .pipe(
                 finalize(() => {
                     this.isLoading = false;
@@ -100,27 +113,23 @@ export class DepartPrevuListComponent implements OnInit {
             .subscribe({
                 next: (value: any) => {
                     this.dataSource.data = value || [];
-                    console.log(value);
+                },
+                error: (err) => {
+                    this._toast.error(
+                        'Erreur lors du chargement des départs prévus'
+                    );
                 },
             });
     }
 
-    getMainCouranteOccupation() {
-        this.isLoading = true;
-        this.dataSource.data = [];
-        this._apiReservationService
-            .getMainCouranteOccupation()
-            .pipe(
-                finalize(() => {
-                    this.isLoadingStatistics = false;
-                })
-            )
-            .subscribe({
-                next: (value: any) => {
-                    console.log('stats', value);
-                    this.occupations = value || [];
-                },
-            });
+    /**
+     * Utilitaire pour convertir un objet Date au format string 'dd/MM/yyyy'
+     */
+    private formatDateToISO(date: Date): string {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`; // Exemple: 2026-10-01
     }
 
     raiseReservationDetailsDialog(reservation) {

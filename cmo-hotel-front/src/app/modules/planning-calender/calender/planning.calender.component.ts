@@ -353,7 +353,7 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
             case 'CONFIRMED':
                 return '#4f46e5';
             case 'PENDING':
-                return '#f59e0b';
+                return '#64748b';
             case 'CLOSED':
                 return '#10b981';
             default:

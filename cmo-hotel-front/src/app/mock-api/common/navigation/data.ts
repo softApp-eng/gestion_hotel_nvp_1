@@ -5,11 +5,353 @@ import { APP_ROLES } from '../../../core/data/app-roles';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
 export const defaultNavigation: FuseNavigationItem[] = [
     {
-        id: 'dashboards',
-        title: 'Tableaux de bord',
-        subtitle: 'Statistiques et État des lieux',
+        id: 'dashboards-group',
+        title: 'PILOTAGE',
+        subtitle: 'Statistiques & Indicateurs',
         type: 'group',
-        icon: 'heroicons_outline:home',
+        icon: 'heroicons_outline:chart-bar',
+        children: [
+            {
+                id: 'dashboards',
+                title: 'Tableau de bord',
+                subtitle: 'Statistiques & Indicateurs',
+                type: 'collapsable',
+                icon: 'heroicons_outline:chart-bar',
+                children: [
+                    {
+                        id: 'dashboards.accueil',
+                        title: "Vue d'ensemble",
+                        type: 'basic',
+                        icon: 'heroicons_outline:home',
+                        link: '/dashboard/home',
+                    },
+                    {
+                        id: 'dashboards.reservations',
+                        title: 'Analyse Réservations',
+                        type: 'basic',
+                        icon: 'heroicons_outline:calendar-days',
+                        link: '/dashboard/reservations/analytics',
+                    },
+                    {
+                        id: 'dashboards.finance1',
+                        title: "Chiffre d'Affaires",
+                        type: 'basic',
+                        icon: 'heroicons_outline:banknotes',
+                        link: '/dashboard/finance/total',
+                    },
+                    {
+                        id: 'dashboards.finance2',
+                        title: 'Statistiques Financières',
+                        type: 'basic',
+                        icon: 'heroicons_outline:presentation-chart-line',
+                        link: '/dashboard/finance/statistics',
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        id: 'managements-group',
+        title: 'EXPLOITATION & GESTION',
+        subtitle: 'Réservation & prestation',
+        type: 'group',
+        icon: 'heroicons_outline:chart-bar',
+        data: {
+            modules: [
+                APP_MODULES.RESERVATION,
+                APP_MODULES.PRESTATION,
+                APP_MODULES.INVOICE,
+            ],
+        },
+        children: [
+            {
+                id: 'reservations',
+                title: 'Réservations & Séjours',
+                subtitle: 'Front-desk & Main courante',
+                type: 'collapsable',
+                icon: 'heroicons_outline:calendar-days',
+                data: { modules: [APP_MODULES.RESERVATION] },
+                children: [
+                    {
+                        id: 'reservations.list',
+                        title: 'Réservations',
+                        type: 'basic',
+                        icon: 'heroicons_outline:clipboard-document-list',
+                        link: '/managements/reservations',
+                        data: {
+                            permissions: [APP_PERMISSIONS.RESERVATION_LIST],
+                        },
+                    },
+                    {
+                        id: 'reservations.sejours',
+                        title: 'Séjours en cours',
+                        type: 'basic',
+                        icon: 'heroicons_outline:user-group',
+                        link: '/managements/sejours',
+                        data: {
+                            permissions: [APP_PERMISSIONS.RESERVATION_LIST],
+                        },
+                    },
+                    {
+                        id: 'reservations.calender',
+                        title: "Planning d'occupation",
+                        type: 'basic',
+                        icon: 'heroicons_outline:calendar',
+                        link: '/managements/calender',
+                        data: {
+                            permissions: [APP_PERMISSIONS.RESERVATION_LIST],
+                        },
+                    },
+                    {
+                        id: 'reservations.mainc',
+                        title: 'Main courante',
+                        type: 'basic',
+                        icon: 'heroicons_outline:book-open',
+                        link: '/managements/main/courante/list',
+                        data: {
+                            permissions: [
+                                APP_PERMISSIONS.RESERVATION_MAIN_COURANTE,
+                            ],
+                        },
+                    },
+                    {
+                        id: 'reservations.depart-prevu',
+                        title: 'Départs prévus',
+                        type: 'basic',
+                        icon: 'exit_to_app',
+                        link: '/managements/depart/list',
+                        data: {
+                            permissions: [
+                                APP_PERMISSIONS.RESERVATION_MAIN_COURANTE,
+                            ],
+                        },
+                    },
+                    {
+                        id: 'reservations.archive-mainc',
+                        title: 'Historique M.C',
+                        type: 'basic',
+                        icon: 'heroicons_outline:clock',
+                        link: '/managements/archive-main-courante/list',
+                        data: {
+                            permissions: [
+                                APP_PERMISSIONS.RESERVATION_MAIN_COURANTE,
+                            ],
+                        },
+                    },
+                ],
+            },
+            {
+                id: 'prestation',
+                title: 'Prestations & Services',
+                subtitle: 'Restauration & Extras',
+                type: 'collapsable',
+                icon: 'mat_outline:fastfood',
+                data: { modules: [APP_MODULES.PRESTATION] },
+                children: [
+                    {
+                        id: 'managements.restaurationList',
+                        title: 'Prestations & Services',
+                        type: 'basic',
+                        icon: 'mat_outline:fastfood',
+                        link: '/managements/restauration',
+                        data: {
+                            permissions: [
+                                APP_PERMISSIONS.PRESTATION_FOR_RESIDENTS,
+                            ],
+                        },
+                    },
+                ],
+            },
+            {
+                id: 'invoices',
+                title: 'Facturation',
+                subtitle: 'Gestion des factures & règlements',
+                type: 'collapsable',
+                icon: 'heroicons_outline:currency-dollar',
+                data: { modules: [APP_MODULES.INVOICE] },
+                children: [
+                    {
+                        id: 'invoices.list',
+                        title: 'Factures',
+                        type: 'basic',
+                        icon: 'heroicons_outline:document-text',
+                        link: '/managements/invoices/search',
+                        data: { permissions: [APP_PERMISSIONS.INVOICE_LIST] },
+                    },
+                    {
+                        id: 'invoices.encaissement',
+                        title: 'Encaissement',
+                        type: 'basic',
+                        icon: 'heroicons_outline:banknotes',
+                        link: '/managements/invoices/encaissement',
+                        data: {
+                            permissions: [APP_PERMISSIONS.INVOICE_ENCAISSEMENT],
+                        },
+                    },
+                ],
+            },
+            {
+                id: 'housekeeping',
+                title: "Service d'étage",
+                subtitle: 'Hygiène & Maintenance',
+                type: 'collapsable',
+                icon: 'heroicons_outline:sparkles',
+                data: { modules: [APP_MODULES.HOUSEKEEPING] },
+                children: [
+                    {
+                        id: 'housekeeping.manage',
+                        title: 'État des Chambres',
+                        type: 'basic',
+                        icon: 'heroicons_outline:check-badge',
+                        link: '/managements/housekeeping/manage',
+                    },
+                    {
+                        id: 'housekeeping.history',
+                        title: "Historique d'entretien",
+                        type: 'basic',
+                        icon: 'heroicons_outline:clock',
+                        link: '/managements/housekeeping/history',
+                    },
+                    {
+                        id: 'housekeeping.agents',
+                        title: 'Équipe de ménage',
+                        type: 'basic',
+                        icon: 'heroicons_outline:identification',
+                        link: '/managements/housekeeping/agents',
+                        data: {
+                            permissions: [
+                                APP_PERMISSIONS.HOUSE_KEEPING_AGENT_LIST,
+                            ],
+                        },
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        id: 'configuration-group',
+        title: 'CONFIGURZTION',
+        subtitle: 'Référentiels & Tarifs',
+        type: 'group',
+        icon: 'heroicons_outline:cog-6-tooth',
+        children: [
+            {
+                id: 'configuration',
+                title: 'Configuration',
+                subtitle: 'Référentiels & Tarifs',
+                type: 'collapsable',
+                icon: 'heroicons_outline:cog-6-tooth',
+                //data: { roles: [APP_ROLES.ADMIN] },
+                children: [
+                    {
+                        id: 'settings.persons',
+                        title: 'Historique Clients',
+                        type: 'basic',
+                        icon: 'heroicons_outline:users',
+                        link: '/settings/guests',
+                        data: { permissions: [APP_PERMISSIONS.PERSON_LIST] },
+                    },
+                    {
+                        id: 'settings.Hébergement',
+                        title: 'Parc Hôtelier',
+                        type: 'basic',
+                        icon: 'heroicons_outline:building-office',
+                        link: '/settings/pavillon',
+                        data: { permissions: [APP_PERMISSIONS.PAVILLON_LIST] },
+                    },
+                    {
+                        id: 'settings.prices',
+                        title: 'Grilles Tarifaires',
+                        type: 'collapsable',
+                        icon: 'heroicons_outline:currency-dollar',
+                        children: [
+                            {
+                                id: 'settings.prices.rooms',
+                                title: 'Tarifs Chambres',
+                                type: 'basic',
+                                link: '/settings/prices/room/types',
+                                data: {
+                                    permissions: [
+                                        APP_PERMISSIONS.ROOM_TYPE_LIST,
+                                    ],
+                                },
+                            },
+                            {
+                                id: 'settings.prices.meals',
+                                title: 'Tarifs Repas',
+                                type: 'basic',
+                                link: '/settings/prices/meals/types',
+                                data: {
+                                    permissions: [
+                                        APP_PERMISSIONS.MEAL_TYPES_LIST,
+                                    ],
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        id: 'Administration-group',
+        title: 'ADMINISTRATION',
+        subtitle: 'Sécurité & Contrôle',
+        type: 'group',
+        icon: 'heroicons_outline:shield-check',
+        data: { roles: [APP_ROLES.ADMIN] },
+        children: [
+            {
+                id: 'Administration',
+                title: 'Système',
+                subtitle: 'Sécurité & Contrôle',
+                type: 'collapsable',
+                icon: 'heroicons_outline:shield-check',
+                data: { roles: [APP_ROLES.ADMIN] },
+                children: [
+                    {
+                        id: 'user.list',
+                        title: 'Comptes Utilisateurs',
+                        type: 'basic',
+                        icon: 'heroicons_outline:user-circle',
+                        link: '/admin/users',
+                    },
+                    {
+                        id: 'role.list',
+                        title: 'Rôles & Permissions',
+                        type: 'basic',
+                        icon: 'heroicons_outline:key',
+                        link: '/admin/roles',
+                    },
+                    {
+                        id: 'audit.logs',
+                        title: "Journal d'Audit",
+                        type: 'basic',
+                        icon: 'heroicons_outline:eye',
+                        link: '/admin/audit/logs',
+                    },
+                    {
+                        id: 'settings.plateforme',
+                        title: 'Paramètres Plateforme',
+                        type: 'basic',
+                        icon: 'heroicons_outline:adjustments-vertical',
+                        link: '/admin/configurations/manage',
+                    },
+                ],
+            },
+        ],
+    },
+];
+
+/*
+
+export const defaultNavigation: FuseNavigationItem[] = [
+    {
+        id: 'dashboards',
+        title: 'Tableau de bord',
+        subtitle: 'Statistiques & Indicateurs',
+        type: 'collapsable',
+        icon: 'heroicons_outline:chart-bar',
         children: [
             {
                 id: 'dashboards.accueil',
@@ -20,7 +362,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
             },
             {
                 id: 'dashboards.reservations',
-                title: 'Analyse des Réservations',
+                title: 'Analyse Réservations',
                 type: 'basic',
                 icon: 'heroicons_outline:calendar-days',
                 link: '/dashboard/reservations/analytics',
@@ -80,10 +422,17 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 link: '/managements/main/courante/list',
                 data: { permissions: [APP_PERMISSIONS.RESERVATION_MAIN_COURANTE] },
             },{
+                id: 'reservations.mainc',
+                title: 'Archives M.C',
+                type: 'basic',
+                icon: 'mat_outline:find_in_page',
+                link: '/managements/archive-main-courante/list',
+                data: { permissions: [APP_PERMISSIONS.RESERVATION_MAIN_COURANTE] },
+            },{
                 id: 'reservations.depart-prevu',
                 title: 'Départ prévu',
                 type: 'basic',
-                icon: 'heroicons_outline:book-open',
+                icon: 'exit_to_app',
                 link: '/managements/depart/list',
                 data: { permissions: [APP_PERMISSIONS.RESERVATION_MAIN_COURANTE] },
             },
@@ -251,6 +600,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
         ],
     },
 ];
+ */
 export const defaultNavigation2: FuseNavigationItem[] = [
     {
         id: 'dashboards',

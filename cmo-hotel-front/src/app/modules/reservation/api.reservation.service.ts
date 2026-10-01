@@ -49,9 +49,15 @@ export class ApiReservationService {
         return this._httpClient.get(`${this.API_URL}/sejours`);
     }
 
+    getDepartPrevu(day): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/depart-prevu?day=${day}`);
+    }
 
-    getMainCourante(): Observable<any>{
-        return this._httpClient.get(`${this.API_URL}/main-courante`);
+
+    getArchiveMainCourante(day): Observable<any>{
+        return this._httpClient.get(
+            `${this.API_URL}/archive/main-courante?day=${day}`
+        );
     }
 
     getMainCouranteOccupation(): Observable<any>{

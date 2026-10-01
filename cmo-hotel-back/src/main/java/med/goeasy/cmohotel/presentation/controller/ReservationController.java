@@ -22,8 +22,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -185,6 +187,26 @@ public class ReservationController {
     @GetMapping("/sejours")
     ResponseEntity<List<ReservationDetailsResponseDto>> getSejours(Authentication authentication){
         return ResponseEntity.ok(reservationService.getSejours());
+    }
+
+    @GetMapping("/depart-prevu")
+    public ResponseEntity<List<ReservationDetailsResponseDto>> getDepartPrevu(
+            @RequestParam(name = "day", required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate day
+    ) {
+        LocalDate targetDay = (day != null) ? day : LocalDate.now();
+        LocalDateTime startOfDay = targetDay.atStartOfDay();                 // 2026-10-01T00:00:00
+        LocalDateTime endOfDay = targetDay.atTime(LocalTime.MAX);
+        return ResponseEntity.ok(reservationService.getDepartPrevu(startOfDay,endOfDay));
+    }
+
+    @GetMapping("/archive/main-courante")
+    ResponseEntity<List<ReservationDetailsResponseDto>> getArchiveMainCourante(
+            @RequestParam(name = "day", required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate day
+    ){
+        LocalDate targetDay = (day != null) ? day : LocalDate.now();
+        LocalDateTime startOfDay = targetDay.atStartOfDay();
+        LocalDateTime endOfDay = targetDay.atTime(LocalTime.MAX);
+        return ResponseEntity.ok(reservationService.getArchiveMainCourante(startOfDay,endOfDay));
     }
 
     @GetMapping("/main-courante")

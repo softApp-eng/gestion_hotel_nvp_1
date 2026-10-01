@@ -184,6 +184,13 @@ export const appRoutes: Route[] = [
                 data: {
                     module: [APP_MODULES.RESERVATION],
                 },
+            },{
+                path: 'archive-main-courante',
+                loadChildren: () =>
+                    import('app/modules/main-courante-archive/archive-main-courante.routes'),
+                data: {
+                    module: [APP_MODULES.RESERVATION],
+                },
             },
             {
                 path: 'calender',

@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -72,6 +73,26 @@ public interface ReservationDetailsRepository extends JpaRepository<ReservationD
         order by rd.code desc
         """)
     List<ReservationDetails> getSejours();
+
+    @Query(value = """
+        SELECT DISTINCT rd FROM ReservationDetails rd
+        WHERE
+            rd.status = 'CONFIRMED'
+            AND rd.plannedEnd BETWEEN :start AND :end
+        order by rd.code desc
+        """)
+    List<ReservationDetails> getDepartPrevu(@Param("start") LocalDateTime start,@Param("end") LocalDateTime end);
+
+    @Query(value = """
+    SELECT DISTINCT rd FROM ReservationDetails rd
+    WHERE rd.status IN ('CONFIRMED', 'CLOSED')
+      AND rd.checkin IS NOT NULL
+      AND rd.checkin <= :end
+      AND COALESCE(rd.checkout, rd.plannedEnd) >= :start
+    ORDER BY rd.code DESC
+    """)
+    List<ReservationDetails> getArchiveMainCourante(@Param("start") LocalDateTime start,@Param("end") LocalDateTime end);
+
 
     @Query(value = """
     SELECT DISTINCT rd FROM ReservationDetails rd

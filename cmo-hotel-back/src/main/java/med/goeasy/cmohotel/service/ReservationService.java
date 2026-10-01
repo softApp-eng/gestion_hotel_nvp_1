@@ -491,6 +491,14 @@ public class ReservationService {
         )).toList();
     }
 
+    public List<ReservationDetailsResponseDto> getDepartPrevu(LocalDateTime start, LocalDateTime end) {
+        List<ReservationDetails> reservations = reservationDetailsRepository.getDepartPrevu(start,end);
+        return reservations.stream().map(reservationDetails -> ReservationDetailsResponseDto.mapWithValidatedNightToDto(
+                reservationDetails,
+                invoiceService.getValidatedNights(reservationDetails)
+        )).toList();
+    }
+
     public List<ReservationCalenderResponseDto> getReservationForCalender(Authentication authentication,LocalDate start,LocalDate end){
         List<ReservationDetails> rangeReservations = reservationDetailsRepository.getRangeReservations(
                 List.of(EReservationStatus.PENDING, EReservationStatus.CONFIRMED),
@@ -552,6 +560,14 @@ public class ReservationService {
 
     public List<ReservationDetailsResponseDto> getMainCourante() {
         List<ReservationDetails> reservations = reservationDetailsRepository.getSejours();
+        return reservations.stream().map(reservationDetails -> ReservationDetailsResponseDto.mapWithValidatedNightToDto(
+                reservationDetails,
+                invoiceService.getValidatedNights(reservationDetails)
+        )).toList();
+    }
+
+    public List<ReservationDetailsResponseDto> getArchiveMainCourante(LocalDateTime startOfDay,LocalDateTime endOfDay) {
+        List<ReservationDetails> reservations = reservationDetailsRepository.getArchiveMainCourante(startOfDay, endOfDay);
         return reservations.stream().map(reservationDetails -> ReservationDetailsResponseDto.mapWithValidatedNightToDto(
                 reservationDetails,
                 invoiceService.getValidatedNights(reservationDetails)

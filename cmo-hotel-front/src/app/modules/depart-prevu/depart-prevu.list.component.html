@@ -10,7 +10,7 @@
                 </div>
                 <div class="flex items-center">
                     <div class="flex items-center justify-center p-3 mr-4 rounded-xl bg-primary-50 dark:bg-primary-500/10 text-primary shadow-sm">
-                        <mat-icon class="icon-size-10" [svgIcon]="'heroicons_outline:book-open'"></mat-icon>
+                        <mat-icon class="icon-size-10" [svgIcon]="'exit_to_app'"></mat-icon>
                     </div>
                     <div class="flex flex-col">
                         <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-none text-slate-900 dark:text-white">
@@ -30,20 +30,36 @@
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
                     <div class="flex items-center space-x-3">
                         <div class="flex flex-col">
-                            <h2 class="text-xl font-semibold tracking-tight text-slate-800 dark:text-white leading-none">
-                                JOURNÉE DU {{ today | date:'dd/MM/yyyy' }}
+                            <h2 class="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100 uppercase flex items-center gap-2">
+                                <span>PRÉVU LE</span>
+                                <span class="text-red-600 dark:text-red-400 font-extrabold underline decoration-red-300 dark:decoration-red-800 underline-offset-4">
+        {{ selectedDate | date:'dd/MM/yyyy' }}
+    </span>
                             </h2>
+                        </div>
+
+                        <!-- Conteneur d'ancrage pour le Datepicker -->
+                        <div class="relative">
+                            <!-- Input rendu invisible mais conservant sa position pour l'ancrage -->
+                            <input [matDatepicker]="picker"
+                                   [value]="selectedDate"
+                                   [min]="today"
+                                   (dateChange)="onDateChange($event.value)"
+                                   class="absolute opacity-0 w-0 h-0 pointer-events-none">
+
+                            <mat-datepicker #picker></mat-datepicker>
+
+                            <!-- Bouton bleu avec icône calendrier -->
+                            <button mat-icon-button
+                                    (click)="picker.open()"
+                                    matTooltip="Choisir une date"
+                                    class="!text-blue-600 dark:!text-blue-400 hover:!bg-blue-50 dark:hover:!bg-blue-950/30">
+                                <mat-icon [svgIcon]="'heroicons_outline:calendar'" class="!text-blue-600 dark:!text-blue-400"></mat-icon>
+                            </button>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-3">
-                        <button mat-icon-button
-                                class="text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors rounded-xl shadow-sm border border-blue-100"
-                                [matMenuTriggerFor]="ficheMenu"
-                                matTooltip="Exporter le rapport"
-                                [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_MAIN_COURANTE]">
-                            <mat-icon [svgIcon]="'heroicons_outline:arrow-down-tray'"></mat-icon>
-                        </button>
 
                         <mat-menu #ficheMenu="matMenu" xPosition="before" class="rounded-xl shadow-xl border border-slate-100">
                             <button mat-menu-item (click)="processDownloadEncassement('download')">
@@ -249,118 +265,4 @@
                 ></mat-paginator>
             </div>
         </div>
-
-    <div class="space-y-8 p-6 md:p-8">
-        <div class="bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-                <div class="flex items-center space-x-3">
-                    <div class="flex flex-col">
-                        <h2 class="text-xl font-semibold tracking-tight text-slate-800 dark:text-white leading-none">
-                            Taux d'occupation
-                        </h2>
-                    </div>
-                </div>
-            </div>
-
-
-
-            <div *ngFor="let pavillon of occupations" class="mb-10 p-4 bg-white rounded-lg shadow">
-                <h2 class="text-xl font-bold mb-4 text-blue-900 border-b-2 border-blue-100 pb-2">
-                    PAVILLON : {{ pavillon.pavillonName }}
-                </h2>
-
-                <div class="overflow-x-auto">
-                    <table class="min-w-full border-collapse border border-gray-300">
-                        <thead class="bg-gray-100">
-                        <tr>
-                            <th class="border border-gray-300 p-2 text-left bg-gray-50 w-48">Désignation</th>
-                            <th *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-2 text-center">
-                                {{ type.typeName }}
-                            </th>
-                            <th class="border border-gray-300 p-2 text-center font-bold bg-blue-50">TOTAL</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <!-- Row 2: Nombre de chambres -->
-                        <tr>
-                            <td class="border border-gray-300 p-2 font-medium">Nombre de chambres</td>
-                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-2 text-center">
-                                {{ type.totalRoomsOfType }}
-                            </td>
-                            <td class="border border-gray-300 p-2 text-center font-bold">{{ pavillon.totalRooms }}</td>
-                        </tr>
-
-                        <!-- Row 3 & 4: Mode de règlement (Labels & Valeurs) -->
-                        <tr>
-                            <td class="border border-gray-300 p-2 font-medium">Mode de règlement</td>
-                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-0">
-                                <div class="grid grid-cols-2 text-[10px] text-center border-b">
-                                    <div class="border-r p-1 bg-green-50">ESP</div>
-                                    <div class="p-1 bg-orange-50">PEC</div>
-                                </div>
-                                <div class="grid grid-cols-2 text-center">
-                                    <div class="border-r p-1">{{ type.occupantsDirectPay }}</div>
-                                    <div class="p-1">{{ type.occupantsPriseEnCharge }}</div>
-                                </div>
-                            </td>
-                            <td class="border border-gray-300 p-0 bg-blue-50">
-                                <div class="grid grid-cols-2 text-center font-bold">
-                                    <div class="border-r p-1">{{ getTotalDirect(pavillon) }}</div>
-                                    <div class="p-1">{{ getTotalPEC(pavillon) }}</div>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Row 5: Nombre d'occupants -->
-                        <tr>
-                            <td class="border border-gray-300 p-2 font-medium">Total Occupants</td>
-                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-2 text-center">
-                                {{ type.occupantsDirectPay + type.occupantsPriseEnCharge }}
-                            </td>
-                            <td class="border border-gray-300 p-2 text-center font-bold">
-                                {{ getTotalDirect(pavillon) + getTotalPEC(pavillon) }}
-                            </td>
-                        </tr>
-
-                        <!-- Row 6: Chambres Libres -->
-                        <tr>
-                            <td class="border border-gray-300 p-2 font-medium">Chambres Libres</td>
-                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-2 text-center text-red-600">
-                                {{ type.totalRoomsOfType - type.occupiedRoomsOfType }}
-                            </td>
-                            <td class="border border-gray-300 p-2 text-center font-bold">
-                                {{ pavillon.totalRooms - pavillon.totalOccupiedRooms }}
-                            </td>
-                        </tr>
-
-                        <!-- Row 7: Taux % -->
-                        <tr class="bg-gray-50">
-                            <td class="border border-gray-300 p-2 font-medium">Taux d'occupation %</td>
-                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-2 text-center font-bold text-blue-700">
-                                {{ type.occupationRate | number:'1.0-2' }}%
-                            </td>
-                            <td class="border border-gray-300 p-2 text-center font-bold text-blue-800">
-                                {{ pavillon.globalOccupationRate | number:'1.0-2' }}%
-                            </td>
-                        </tr>
-
-                        <!-- Row 8: Répartition PEC / ESP % -->
-                        <tr>
-                            <td class="border border-gray-300 p-2 font-medium">Répartition (%)</td>
-                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-1 text-md text-center  font-bold">
-                                <span class="text-green-700">E: {{ getPercent(type.occupantsDirectPay, type) }}%</span> |
-                                <span class="text-orange-700">P: {{ getPercent(type.occupantsPriseEnCharge, type) }}%</span>
-                            </td>
-                            <td class="border border-gray-300 p-1 text-md text-center font-bold">
-                                ESP: {{ getGlobalPercent(pavillon, 'ESP') }}% | PEC: {{ getGlobalPercent(pavillon, 'PEC') }}%
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-
-        </div>
-    </div>
 </div>
