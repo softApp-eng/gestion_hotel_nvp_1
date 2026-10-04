@@ -11,6 +11,7 @@ import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 import med.goeasy.cmohotel.presentation.dto.ApiResponse;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
 import med.goeasy.cmohotel.presentation.dto.reservation.*;
+import med.goeasy.cmohotel.presentation.dto.room.SwitchedRoomDto;
 import med.goeasy.cmohotel.presentation.dto.statistic.OccupationStatsDto;
 import med.goeasy.cmohotel.service.ReservationService;
 import org.apache.commons.lang3.EnumUtils;
@@ -22,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -105,10 +105,20 @@ public class ReservationController {
     ResponseEntity<ApiResponse> removeLastRoomSwitch(
             Authentication authentication,
             @Valid @NotBlank(message = "id de reservation requis") @RequestParam() String reservationId,
-            @Valid @NotBlank(message = "id de changement requis") @RequestParam() Long switchedRoomId
+            @Valid @NotNull(message = "id de changement requis") @RequestParam() Long switchedRoomId
     ){
         reservationService.removeLastRoomSwitch(authentication,reservationId,switchedRoomId);
         return ResponseEntity.ok(ApiResponse.builder().message("reservation bien modifiée").build());
+    }
+
+    @GetMapping("/switch-room")
+    ResponseEntity<List<SwitchedRoomDto>> getSwitchedRoom(
+            Authentication authentication,
+            @Valid @NotBlank(message = "id de reservation requis") @RequestParam() String reservationId
+    ){
+        return ResponseEntity.ok(
+                reservationService.getSwitchedRoom(authentication,reservationId)
+        );
     }
 
     @DeleteMapping("/delete")

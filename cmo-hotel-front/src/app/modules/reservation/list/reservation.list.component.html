@@ -277,6 +277,14 @@
                                                             </span>
                                                         <span [innerHTML]="group.room?.name | highlight:key" class="text-sm font-extrabold text-gray-900 dark:text-gray-100">
                                                             </span>
+                                                        @if (group.transferHistory) {
+                                                            <mat-icon
+                                                                class="icon-size-4 text-amber-600 cursor-pointer hover:text-amber-700 transition-colors"
+                                                                svgIcon="heroicons_mini:arrows-right-left"
+                                                                [matTooltip]="'transferée : ' + group.transferHistory"
+                                                                matTooltipPosition="above">
+                                                            </mat-icon>
+                                                        }
                                                     </div>
                                                 </div>
 
@@ -371,10 +379,10 @@
                                             <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:edit_calendar'"></mat-icon>
                                             <span>Check-out</span>
                                         </button>
-                                        <!--<button mat-menu-item (click)="raiseSwitchRoom(row)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_ROOM_CHANGE]">
-                                            <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:edit_calendar'"></mat-icon>
-                                            <span>switch room </span>
-                                        </button>-->
+                                        <button mat-menu-item (click)="raiseSwitchRoom(row)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_ROOM_CHANGE]">
+                                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_solid:arrows-right-left'"></mat-icon>
+                                            <span>Transférer </span>
+                                        </button>
                                     }
 
                                     @if (row?.status?.code === 'PENDING') {

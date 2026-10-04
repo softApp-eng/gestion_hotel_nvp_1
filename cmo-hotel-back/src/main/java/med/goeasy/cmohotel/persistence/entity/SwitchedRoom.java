@@ -29,6 +29,9 @@ public class SwitchedRoom {
     @ManyToOne
     private Room previousRoom;
 
+    private Double previousPrice;
+    private Double appliedPrice;
+
     @ManyToOne
     private Room newRoom;
 

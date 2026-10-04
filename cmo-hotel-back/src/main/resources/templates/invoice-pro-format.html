@@ -149,10 +149,14 @@
             <td th:text="${(res.person.identity ?: '') + ' / ' + (res.person.matricule ?: '')}">CIN / MAT</td>
 
             <td>
-                <th:block th:if="${res.room != null}">
+                <div style="font-weight: 700; color: #1e40af;"
+                     th:text="${roomChains[res.person.id] ?: room.roomName}">
+                    CH-101 -> CH-102
+                </div>
+                <!--<th:block th:if="${res.room != null}">
                     <div style="font-weight: 700; color: #1e40af;" th:text="${res.room.name}">Room</div>
                     <div style="font-size: 9px; color: #64748b;" th:text="${res.room.roomType.type}">Type</div>
-                </th:block>
+                </th:block>-->
                 <th:block th:unless="${res.room != null}">
                     <div style="color: #94a3b8; font-style: italic;">Non assignée</div>
                 </th:block>
@@ -162,7 +166,7 @@
     </table>
 </div>
 
-<div class="table-section" th:if="${estimation != null}">
+<!--<div class="table-section" th:if="${estimation != null}">
     <div class="section-title">Tarification de l'Hébergement (Estimation)</div>
     <table class="invoice-table">
         <thead>
@@ -181,6 +185,30 @@
             <td class="qty-col" th:text="${estimation.durationInDays}">1</td>
             <td class="price-col" th:text="${#numbers.formatDecimal(item.unitPrice, 1, 2) + ' MAD'}">0.00</td>
             <td class="price-col" th:text="${#numbers.formatDecimal(item.totalPrice, 1, 2) + ' MAD'}">0.00</td>
+        </tr>
+        </tbody>
+    </table>
+</div>-->
+<div class="table-section" th:if="${estimation != null}">
+    <div class="section-title">Tarification de l'Hébergement (Estimation)</div>
+    <table class="invoice-table">
+        <thead>
+        <tr>
+            <th>Chambre / Logement</th>
+            <th class="qty-col">Nuits</th>
+            <th class="price-col">Prix Journalier</th>
+            <th class="price-col">Total Estimé</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${estimation.details}">
+            <td>
+                <span style="font-weight: 700;" th:text="${item.roomName}">-</span>
+            </td>
+            <!-- Affichage du nombre de nuits réel passé dans cette chambre -->
+            <td class="qty-col" style="text-align: left;" th:text="${item.nights}">1</td>
+            <td class="price-col" style="text-align: left;" th:text="${#numbers.formatDecimal(item.unitPrice, 1, 2) + ' MAD'}">0.00 MAD</td>
+            <td class="price-col" style="text-align: left;" th:text="${#numbers.formatDecimal(item.totalPrice, 1, 2) + ' MAD'}">0.00 MAD</td>
         </tr>
         </tbody>
     </table>

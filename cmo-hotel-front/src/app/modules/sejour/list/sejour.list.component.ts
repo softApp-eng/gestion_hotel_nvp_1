@@ -358,7 +358,33 @@ export class SejourListComponent implements OnInit {
         const groups = guests.reduce((acc, guest) => {
             const roomId = guest.room.id;
             if (!acc[roomId]) {
-                acc[roomId] = { room: guest.room, occupants: [] };
+                const roomHistory: string[] = [];
+
+                if (guest.switchRooms && guest.switchRooms.length > 0) {
+                    // Ajouter les anciennes chambres dans l'ordre de transfert
+                    guest.switchRooms.forEach((sw: any) => {
+                        if (
+                            sw.previousRoom?.name &&
+                            !roomHistory.includes(sw.previousRoom.name)
+                        ) {
+                            roomHistory.push(sw.previousRoom.name);
+                        }
+                    });
+                }
+
+                // Ajouter la chambre actuelle en fin de parcours
+                if (
+                    guest.room?.name &&
+                    !roomHistory.includes(guest.room.name)
+                ) {
+                    roomHistory.push(guest.room.name);
+                }
+                acc[roomId] = {
+                    room: guest.room,
+                    occupants: [],
+                    transferHistory:
+                        roomHistory.length > 1 ? roomHistory.join(' > ') : null,
+                };
             }
             acc[roomId].occupants.push(guest);
             return acc;

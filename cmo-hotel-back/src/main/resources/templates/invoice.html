@@ -144,11 +144,19 @@
                     <div style="font-weight: 700;" th:text="${guest.gradeCode}">GRADE</div>
                     <div style="font-size: 9px; color: #64748b;" th:text="${guest.firstName + ' ' + guest.lastName}">Prénom Nom</div>
                 </td>
-                <td th:text="${guest.role}">-</td>
+                <td th:text="${guest.role?.name}">-</td>
                 <td th:text="${ (guest.identity ?: '') + ' / ' + (guest.matricule ?: '') }">CIN / MAT</td>
-                <td>
+                <!--<td>
                     <div style="font-weight: 700; color: #1e40af;" th:text="${room.roomName}">Room</div>
                     <div style="font-size: 9px; color: #64748b;" th:text="${room.roomType}">Type</div>
+                </td>-->
+                <td>
+                    <!-- Affichage de la chaîne calculée dans la Map -->
+                    <div style="font-weight: 700; color: #1e40af;"
+                         th:text="${roomChains[guest.personId] ?: room.roomName}">
+                        CH-101 -> CH-102
+                    </div>
+                    <!--<div style="font-size: 9px; color: #64748b;" th:text="${room.roomType}">Type</div>-->
                 </td>
             </tr>
         </th:block>

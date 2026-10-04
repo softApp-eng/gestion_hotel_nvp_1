@@ -46,6 +46,7 @@ public class InvoiceService {
     private final PrestationRepository prestationRepository;
     private final ReservationDetailsRepository reservationDetailsRepository;
     private final InvoiceDetailsRepository invoiceDetailsRepository;
+    private final SwitchedRoomRepository switchedRoomRepository;
     private final UtilsService utilsService;
     private final TemplateEngine templateEngine;
     private final ActivityLogService activityLogService;
@@ -286,8 +287,51 @@ public class InvoiceService {
         if (invoice.getStatus() != EInvoiceStatus.PAID)
             throw new BadRequestException("Facture pas encore payée.");
 
+        Map<String, String> roomChainsMap = new HashMap<>(); // Key: personId, Value: "CH-101 -> CH-102"
+        ReservationDetails reservationDetails = invoice.getReservationDetails();
+
+        if (reservationDetails != null && reservationDetails.getReservations() != null) {
+            for (Reservation res : reservationDetails.getReservations()) {
+                if (res.getPerson() == null || res.getPerson().getId() == null) {
+                    continue;
+                }
+
+                String personId = res.getPerson().getId();
+                List<SwitchedRoom> switches = res.getSwitchedRooms();
+
+                if (switches != null && !switches.isEmpty()) {
+                    List<String> roomNames = new ArrayList<>();
+
+                    // 1. Inverser la liste car 'switchedRooms' dans Reservation est annotée avec @OrderBy("switchTime DESC")
+                    List<SwitchedRoom> chronologicalSwitches = new ArrayList<>(switches);
+                    Collections.reverse(chronologicalSwitches);
+
+                    // 2. Ajouter la chambre initiale (previousRoom du premier transfert)
+                    Room initialRoom = chronologicalSwitches.get(0).getPreviousRoom();
+                    if (initialRoom != null) {
+                        roomNames.add(initialRoom.getName()); // ou initialRoom.getCode()
+                    }
+
+                    // 3. Ajouter chaque nouvelle chambre au fil des transferts
+                    for (SwitchedRoom sr : chronologicalSwitches) {
+                        if (sr.getNewRoom() != null) {
+                            roomNames.add(sr.getNewRoom().getName()); // ou sr.getNewRoom().getCode()
+                        }
+                    }
+
+                    // Ex: "Chambre 101 -> Chambre 105 -> Chambre 202"
+                    roomChainsMap.put(personId, String.join(" > ", roomNames));
+
+                } else if (res.getRoom() != null) {
+                    // S'il n'y a eu aucun transfert, conserver le nom de la chambre actuelle
+                    roomChainsMap.put(personId, res.getRoom().getName());
+                }
+            }
+        }
+
         Context context = new Context();
         context.setVariable("invoice", invoice);
+        context.setVariable("roomChains", roomChainsMap);
         context.setVariable("generatedBy", authentication.getName());
         context.setVariable("now", LocalDateTime.now());
         String logoBase64 = utilsService.getAppLogoAs64();

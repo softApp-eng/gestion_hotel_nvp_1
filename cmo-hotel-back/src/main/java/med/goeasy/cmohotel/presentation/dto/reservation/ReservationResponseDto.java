@@ -21,6 +21,7 @@ public record ReservationResponseDto(
         LocalDateTime exceptionalCheckout,
         EReservationStatus exceptionPersonStatus,
         LocalDateTime createdAt,
+        Double appliedPrice,
         List<SwitchRoomResponseDto> switchRooms
 ) {
     public static ReservationResponseDto mapToDto(Reservation entity){
@@ -39,6 +40,7 @@ public record ReservationResponseDto(
                 .exceptionalCheckout(entity.getExceptionalCheckout())
                 .exceptionPersonStatus(entity.getExceptionPersonStatus())
                 .createdAt(entity.getCreatedAt())
+                .appliedPrice(entity.getAppliedPrice())
                 .build();
     }
 }

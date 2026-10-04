@@ -18,4 +18,6 @@ public interface ValidatedNightRepository extends JpaRepository<ValidatedNight, 
 
     @Query("SELECT max(n.nightDate) FROM ValidatedNight n")
     LocalDate lastNight();
+
+    boolean existsByInvoiceReservationDetailsCodeAndRoomAppliedId(Long reservationDetailsCode, Long roomAppliedId);
 }

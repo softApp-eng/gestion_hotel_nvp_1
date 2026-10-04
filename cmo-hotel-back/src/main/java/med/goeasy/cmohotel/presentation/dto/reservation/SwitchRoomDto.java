@@ -10,7 +10,8 @@ public record SwitchRoomDto(
         String reservationId,
         @NotNull(message = "chambre requise")
         Long newRoomId,
-        String reason
+        String reason,
+        Double appliedPrice
         //@NotNull(message = "La date est obligatoire")
         //LocalDateTime switchTime
 ) {

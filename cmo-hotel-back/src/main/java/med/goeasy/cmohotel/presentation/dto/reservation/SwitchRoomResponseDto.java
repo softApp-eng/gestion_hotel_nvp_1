@@ -1,5 +1,6 @@
 package med.goeasy.cmohotel.presentation.dto.reservation;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import med.goeasy.cmohotel.persistence.entity.SwitchedRoom;
@@ -14,6 +15,7 @@ public record SwitchRoomResponseDto(
         RoomResponseDto previousRoom,
         RoomResponseDto newRoom,
         String reason,
+        //@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
         LocalDateTime switchTime
 ) {
         public static SwitchRoomResponseDto mapToDto(SwitchedRoom entity){

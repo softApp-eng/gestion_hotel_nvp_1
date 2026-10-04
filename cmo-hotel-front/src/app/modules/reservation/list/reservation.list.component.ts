@@ -291,24 +291,6 @@ export class ReservationListComponent implements OnInit, OnDestroy {
                 label: 'Check-out',
                 class: 'bg-slate-300 text-slate-900 dark:bg-slate-700 dark:text-slate-100',
             },
-
-            /*IN_PROGRESS: {
-                label: 'En cours',
-                class: 'bg-blue-200 text-blue-800 dark:bg-blue-600 dark:text-blue-50',
-            },
-            COMPLETED: {
-                label: 'Terminée',
-                class: 'bg-teal-200 text-teal-800 dark:bg-teal-600 dark:text-teal-50',
-            },
-
-            NO_SHOW: {
-                label: 'Non présenté',
-                class: 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-50',
-            },
-            EXPIRED: {
-                label: 'Expirée',
-                class: 'bg-orange-200 text-orange-800 dark:bg-orange-600 dark:text-orange-50',
-            },*/
         };
 
         return (
@@ -491,7 +473,31 @@ export class ReservationListComponent implements OnInit, OnDestroy {
         const groups = guests.reduce((acc, guest) => {
             const roomId = guest.room.id;
             if (!acc[roomId]) {
-                acc[roomId] = { room: guest.room, occupants: [] };
+                const roomHistory: string[] = [];
+
+                if (guest.switchRooms && guest.switchRooms.length > 0) {
+                    // Ajouter les anciennes chambres dans l'ordre de transfert
+                    guest.switchRooms.forEach((sw: any) => {
+                        if (
+                            sw.previousRoom?.name &&
+                            !roomHistory.includes(sw.previousRoom.name)
+                        ) {
+                            roomHistory.push(sw.previousRoom.name);
+                        }
+                    });
+                }
+
+                // Ajouter la chambre actuelle en fin de parcours
+                if (
+                    guest.room?.name &&
+                    !roomHistory.includes(guest.room.name)
+                ) {
+                    roomHistory.push(guest.room.name);
+                }
+                acc[roomId] = {
+                    room: guest.room,
+                    occupants: [],
+                    transferHistory: roomHistory.length > 1 ? roomHistory.join(' > ') : null };
             }
             acc[roomId].occupants.push(guest);
             return acc;

@@ -14,12 +14,13 @@ import med.goeasy.cmohotel.persistence.entity.enums.*;
 import med.goeasy.cmohotel.persistence.repository.ReservationDetailsRepository;
 import med.goeasy.cmohotel.persistence.repository.ReservationRepository;
 import med.goeasy.cmohotel.persistence.repository.RoomRepository;
-import med.goeasy.cmohotel.persistence.repository.SwitchedRoomRepository;
+import med.goeasy.cmohotel.persistence.repository.ValidatedNightRepository;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
-import med.goeasy.cmohotel.presentation.dto.person.PersonResponseDto;
 import med.goeasy.cmohotel.presentation.dto.prices.PriceEstimationResponse;
 import med.goeasy.cmohotel.presentation.dto.prices.RoomPriceDetail;
 import med.goeasy.cmohotel.presentation.dto.reservation.*;
+import med.goeasy.cmohotel.presentation.dto.room.RoomResponseDto;
+import med.goeasy.cmohotel.presentation.dto.room.SwitchedRoomDto;
 import med.goeasy.cmohotel.presentation.dto.statistic.OccupationStatsDto;
 import med.goeasy.cmohotel.presentation.dto.statistic.RoomTypeStatsDto;
 import med.goeasy.cmohotel.utils.UtilsService;
@@ -34,11 +35,10 @@ import org.thymeleaf.context.Context;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.ByteArrayOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,6 +58,7 @@ public class ReservationService {
     private final InvoiceService invoiceService;
     private final UtilsService utilsService;
     private final RoomRepository roomRepository;
+    private final ValidatedNightRepository validatedNightRepository;
 
     @Transactional
     public void create(Authentication authentication, ReservationRequestDto dto) {
@@ -275,13 +276,17 @@ public class ReservationService {
         Room nextRoom = roomService.getRoomById(dto.newRoomId());
 
         SwitchedRoom history = SwitchedRoom.builder()
+                .reservation(reservation)
                 .previousRoom(oldRoom)
                 .newRoom(nextRoom)
                 .switchTime(LocalDateTime.now())
                 .reason(dto.reason())
+                .appliedPrice(dto.appliedPrice())
+                .previousPrice(reservation.getAppliedPrice())
                 .build();
 
         reservation.setRoom(nextRoom);
+        reservation.setAppliedPrice(dto.appliedPrice());
 
         reservation.getSwitchedRooms().add(history);
 
@@ -310,36 +315,63 @@ public class ReservationService {
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException("Historique de switch non trouvé"));
 
+        // --- VÉRIFICATION : Empêcher la suppression si au moins une nuit a été validée ---
+        boolean hasValidatedNights = validatedNightRepository.existsByInvoiceReservationDetailsCodeAndRoomAppliedId(
+                reservation.getDetails().getCode(),
+                switchToRemove.getNewRoom().getId()
+        );
+
+        if (hasValidatedNights) {
+            throw new IllegalStateException(
+                    "Impossible de supprimer ce changement de chambre : des nuitées ont déjà été validées pour la chambre "
+                            + switchToRemove.getNewRoom().getCode()
+            );
+        }
+
         // 3. Supprimer l'entrée de la liste
-        // Grâce à orphanRemoval = true et CascadeType.ALL, elle sera supprimée de la DB
         reservation.getSwitchedRooms().remove(switchToRemove);
 
-        // 4. Mettre à jour la chambre actuelle de la personne
-        // On regarde s'il reste d'autres switchs après la suppression
+        // 4. Mettre à jour la chambre ET le prix de la réservation
         if (!reservation.getSwitchedRooms().isEmpty()) {
-            // Comme la liste est annotée @OrderBy("switchTime DESC"),
-            // le premier élément est maintenant le switch précédent
-            Room lastRoom = reservation.getSwitchedRooms().get(0).getNewRoom();
-            reservation.setRoom(lastRoom);
+            // En supposant une liste triée par switchTime ASC, le dernier élément resté est le plus récent
+            SwitchedRoom lastSwitch = reservation.getSwitchedRooms().get(reservation.getSwitchedRooms().size() - 1);
+
+            reservation.setRoom(lastSwitch.getNewRoom());
+            reservation.setAppliedPrice(lastSwitch.getAppliedPrice()); // <-- Réattribution du prix du dernier switch
         } else {
-            // S'il n'y a plus aucun switch, on revient à la chambre initiale.
-            // NOTE: Si vous ne stockez pas la chambre initiale ailleurs,
-            // vous pouvez utiliser 'previousRoom' de l'élément qu'on vient de supprimer.
+            // S'il n'y a plus aucun switch, on restaure la chambre ET le prix originaux
             reservation.setRoom(switchToRemove.getPreviousRoom());
+            reservation.setAppliedPrice(switchToRemove.getPreviousPrice()); // <-- Réattribution du prix initial
         }
 
         // 5. Sauvegarder
         reservationRepository.save(reservation);
+
         activityLogService.logActivity(
                 EAuditActionTarget.RESERVATION,
                 EAuditActionOperation.DELETE,
-                String.format("Suppression du Changement de la chambre de %s (%s - > %s)",
+                String.format("Suppression du Changement de la chambre de %s (%s -> %s)",
                         reservation.getPerson().getFullName(),
                         switchToRemove.getPreviousRoom().getCode(),
                         switchToRemove.getNewRoom().getCode()),
                 activityLogService.getClientIp(request),
                 authentication.getName()
         );
+    }
+
+    public List<SwitchedRoomDto> getSwitchedRoom(Authentication authentication, String reservationId) {
+        // 1. Récupérer la réservation avec ses historiques
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new EntityNotFoundException("Réservation non trouvée"));
+        return reservation.getSwitchedRooms().stream().map((r) -> SwitchedRoomDto.builder()
+                .id(r.getId())
+                .previousRoom(RoomResponseDto.mapToDto(r.getPreviousRoom()))
+                .newRoom(RoomResponseDto.mapToDto(r.getNewRoom()))
+                .switchTime(r.getSwitchTime())
+                .reason(r.getReason())
+                .appliedPrice(r.getAppliedPrice())
+                .previousPrice(r.getPreviousPrice())
+                .build()).toList();
     }
 
 
@@ -743,10 +775,52 @@ public class ReservationService {
         ReservationDetails details = reservationDetailsRepository.findById(reservationCode)
                 .orElseThrow(() -> new EntityNotFoundException("Réservation non trouvée"));
 
-        PriceEstimationResponse estimation = calculatePriceEstimation(details);
+        Map<String, String> roomChainsMap = new HashMap<>();
+
+        if (details != null && details.getReservations() != null) {
+            for (Reservation res : details.getReservations()) {
+                if (res.getPerson() == null || res.getPerson().getId() == null) {
+                    continue;
+                }
+
+                String personId = res.getPerson().getId();
+                List<SwitchedRoom> switches = res.getSwitchedRooms();
+
+                if (switches != null && !switches.isEmpty()) {
+                    List<String> roomNames = new ArrayList<>();
+
+                    // 1. Inverser la liste car 'switchedRooms' dans Reservation est annotée avec @OrderBy("switchTime DESC")
+                    List<SwitchedRoom> chronologicalSwitches = new ArrayList<>(switches);
+                    Collections.reverse(chronologicalSwitches);
+
+                    // 2. Ajouter la chambre initiale (previousRoom du premier transfert)
+                    Room initialRoom = chronologicalSwitches.get(0).getPreviousRoom();
+                    if (initialRoom != null) {
+                        roomNames.add(initialRoom.getName()); // ou initialRoom.getCode()
+                    }
+
+                    // 3. Ajouter chaque nouvelle chambre au fil des transferts
+                    for (SwitchedRoom sr : chronologicalSwitches) {
+                        if (sr.getNewRoom() != null) {
+                            roomNames.add(sr.getNewRoom().getName()); // ou sr.getNewRoom().getCode()
+                        }
+                    }
+
+                    // Ex: "Chambre 101 -> Chambre 105 -> Chambre 202"
+                    roomChainsMap.put(personId, String.join(" > ", roomNames));
+
+                } else if (res.getRoom() != null) {
+                    // S'il n'y a eu aucun transfert, conserver le nom de la chambre actuelle
+                    roomChainsMap.put(personId, res.getRoom().getName());
+                }
+            }
+        }
+
+        PriceEstimationResponse estimation = calculatePriceEstimation_new(details);
 
         Context context = new Context();
         context.setVariable("details", details);
+        context.setVariable("roomChains", roomChainsMap);
         context.setVariable("estimation", estimation);
         context.setVariable("generatedBy", authentication.getName());
         context.setVariable("now", LocalDateTime.now());
@@ -796,6 +870,127 @@ public class ReservationService {
                 .orElseThrow(()-> new BadRequestException("reservation n'existe pas"));
     }
 
+
+    protected PriceEstimationResponse calculatePriceEstimation_new(ReservationDetails details) {
+        // 1. Détermination de la période globale du séjour
+        LocalDateTime startDateTime = details.getCheckin() != null ? details.getCheckin() : details.getPlannedStart();
+        LocalDateTime endDateTime = details.getCheckout() != null ? details.getCheckout() : details.getPlannedEnd();
+
+        LocalDate globalStart = startDateTime.toLocalDate();
+        LocalDate globalEnd = endDateTime.toLocalDate();
+
+        long totalDuration = ChronoUnit.DAYS.between(globalStart, globalEnd);
+        if (totalDuration <= 0) totalDuration = 1;
+
+        // Structure : Room -> (Intervalle de dates -> Prix unitaire)
+        // Map<Chambre, Map<DateDuJour, PrixUnitaire>>
+        Map<Room, Map<LocalDate, Double>> roomDailyPrices = new HashMap<>();
+
+        // 2. Traiter chaque réservation pour remplir la grille tarifaire journalière des chambres
+        for (Reservation res : details.getReservations()) {
+            List<SwitchedRoom> switches = res.getSwitchedRooms() != null ? res.getSwitchedRooms() : Collections.emptyList();
+
+            List<SwitchedRoom> sortedSwitches = switches.stream()
+                    .filter(sr -> sr.getSwitchTime() != null)
+                    .sorted(Comparator.comparing(SwitchedRoom::getSwitchTime))
+                    .collect(Collectors.toList());
+
+            if (sortedSwitches.isEmpty()) {
+                // --- CAS SANS TRANSFERT ---
+                Room currentRoom = res.getRoom();
+                if (currentRoom != null) {
+                    Double price = res.getAppliedPrice() != null ? res.getAppliedPrice() : 0.0;
+                    assignDailyPrices(roomDailyPrices, currentRoom, globalStart, globalEnd, price);
+                }
+            } else {
+                // --- CAS AVEC TRANSFERTS ---
+                LocalDate currentSegmentStart = globalStart;
+
+                for (SwitchedRoom sr : sortedSwitches) {
+                    LocalDate switchDate = sr.getSwitchTime().toLocalDate();
+
+                    if (switchDate.isAfter(currentSegmentStart) && !switchDate.isAfter(globalEnd)) {
+                        Room prevRoom = sr.getPreviousRoom();
+                        Double prevPrice = sr.getPreviousPrice() != null ? sr.getPreviousPrice() : 0.0;
+
+                        assignDailyPrices(roomDailyPrices, prevRoom, currentSegmentStart, switchDate, prevPrice);
+                        currentSegmentStart = switchDate;
+                    }
+                }
+
+                // Segment final
+                if (currentSegmentStart.isBefore(globalEnd)) {
+                    SwitchedRoom lastSwitch = sortedSwitches.get(sortedSwitches.size() - 1);
+                    Room finalRoom = lastSwitch.getNewRoom() != null ? lastSwitch.getNewRoom() : res.getRoom();
+                    Double finalPrice = lastSwitch.getAppliedPrice() != null ? lastSwitch.getAppliedPrice() : res.getAppliedPrice();
+
+                    assignDailyPrices(roomDailyPrices, finalRoom, currentSegmentStart, globalEnd, finalPrice != null ? finalPrice : 0.0);
+                }
+            }
+        }
+
+        // 3. Agrégation : Regrouper par Chambre et par Prix Unitaire pour obtenir le vrai nombre de nuits
+        List<RoomPriceDetail> priceDetails = new ArrayList<>();
+        double totalGlobal = 0.0;
+
+        for (Map.Entry<Room, Map<LocalDate, Double>> roomEntry : roomDailyPrices.entrySet()) {
+            Room room = roomEntry.getKey();
+            if (room == null) continue;
+
+            Map<LocalDate, Double> dailyPrices = roomEntry.getValue();
+
+            // Compter combien de jours uniques sont facturés pour chaque tarif
+            Map<Double, Long> priceToNightsCount = dailyPrices.values().stream()
+                    .collect(Collectors.groupingBy(p -> p, Collectors.counting()));
+
+            for (Map.Entry<Double, Long> priceEntry : priceToNightsCount.entrySet()) {
+                Double unitPrice = priceEntry.getKey();
+                Long nights = priceEntry.getValue(); // Le nombre réel de nuits uniques pour cette chambre
+
+                double roomTotalPrice = unitPrice * nights;
+                totalGlobal += roomTotalPrice;
+
+                String roomTypeStr = room.getRoomType() != null ? room.getRoomType().getType() : "";
+                String roomLabel = roomTypeStr.isEmpty() ? room.getName() : roomTypeStr + " / " + room.getName();
+
+                priceDetails.add(new RoomPriceDetail(
+                        roomLabel,
+                        unitPrice,
+                        roomTotalPrice,
+                        nights
+                ));
+            }
+        }
+
+        return new PriceEstimationResponse(priceDetails, totalGlobal, totalDuration);
+    }
+
+    /**
+     * Assigne le tarif jour par jour pour une chambre donnée.
+     * Si plusieurs personnes occupent la chambre le même jour, le tarif du jour est conservé une seule fois (pas de double comptage).
+     */
+    private void assignDailyPrices(Map<Room, Map<LocalDate, Double>> roomDailyPrices, Room room, LocalDate start, LocalDate end, Double price) {
+        if (room == null || start == null || end == null || !start.isBefore(end)) return;
+
+        Map<LocalDate, Double> dailyMap = roomDailyPrices.computeIfAbsent(room, k -> new HashMap<>());
+
+        LocalDate current = start;
+        while (current.isBefore(end)) {
+            // En cas de conflit de prix entre occupants, on conserve le prix non nul ou le plus élevé
+            dailyMap.merge(current, price, (oldPrice, newPrice) -> newPrice > 0 ? newPrice : oldPrice);
+            current = current.plusDays(1);
+        }
+    }
+
+    /**
+     * Accumule les nuits passées dans une chambre
+     */
+    private void accumulateRoomNights(Map<Room, Map<Double, Long>> summary, Room room, Double price, long nights) {
+        if (room == null || nights <= 0) return;
+        summary.computeIfAbsent(room, k -> new HashMap<>())
+                .merge(price, nights, Long::sum);
+    }
+
     protected PriceEstimationResponse calculatePriceEstimation(ReservationDetails details) {
         // 1. Déterminer la période (Priorité au réel, sinon prévu)
         LocalDateTime start = details.getCheckin() != null ? details.getCheckin() : details.getPlannedStart();
@@ -832,7 +1027,8 @@ public class ReservationService {
             priceDetails.add(new RoomPriceDetail(
                     room.getRoomType().getType() + " / " + room.getName(),
                     unitPrice,
-                    roomTotalPrice
+                    roomTotalPrice,
+                    0
             ));
         }
 

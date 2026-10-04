@@ -8,18 +8,20 @@ import {
     ReactiveFormsModule,
     UntypedFormBuilder, UntypedFormGroup, Validators,
 } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import {
+    MAT_DIALOG_DATA,
+    MatDialog,
+    MatDialogRef,
+} from '@angular/material/dialog';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { ToastrService } from 'ngx-toastr';
-import { MatDatepicker, MatDatepickerInput, MatDatepickerToggle } from '@angular/material/datepicker';
 import { ApiReservationService } from '../../api.reservation.service';
-import { UtilsService } from '../../../../core/service/utils.service';
-import { DatePipe, NgIf } from '@angular/common';
-import { MatStep, MatStepper } from '@angular/material/stepper';
-import { MatCard, MatCardContent, MatCardHeader, MatCardSubtitle, MatCardTitle } from '@angular/material/card';
-import { MatChip, MatChipListbox } from '@angular/material/chips';
+import { DatePipe, NgClass, NgIf } from '@angular/common';
 import { MatRipple } from '@angular/material/core';
 import { MatTableModule } from '@angular/material/table';
+import { AssignRoomsModel } from '../../room-assign/assign-rooms.model';
+import { MatTooltip } from '@angular/material/tooltip';
+import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../../@fuse/services/confirmation';
 
 @Component({
     selector: 'switch-room',
@@ -35,123 +37,367 @@ import { MatTableModule } from '@angular/material/table';
         ReactiveFormsModule,
         MatToolbarModule,
         MatTableModule,
-        MatDatepicker,
-        MatDatepickerInput,
-        MatDatepickerToggle,
-        NgIf,
-        MatStepper,
-        MatStep,
-        MatCard,
-        MatCardHeader,
-        MatCardTitle,
-        MatCardSubtitle,
-        MatCardContent,
-        DatePipe,
-        MatChipListbox,
-        MatChip,
         FormsModule,
         MatRipple,
+        NgClass,
+        DatePipe,
+        MatTooltip,
     ],
 })
 export class SwitchRoomModel implements OnInit {
-    step = 0;
+
+    isReload:boolean = false;
+    step = 0; // 0: Sélection occupant, 1: Vue Historique, 2: Formulaire de transfert
     reservation: any;
-    displayedColumns: string[] = ['previous', 'new', 'pavillon', 'reason'];
     selectedGuest: any;
 
-    code;
-    date;
-    time;
-    form: UntypedFormGroup;
+    displayedColumns: string[] = [
+        'previous',
+        'new',
+        'pavillon',
+        'reason',
+        'actions',
+    ];
+    tableDataSource: any[] = [];
 
-     // Charger votre JSON ici
+    switchForm: UntypedFormGroup;
+    selectedNewRoom: any = null; // Chambre sélectionnée depuis votre picker
 
-    newRoom: any;
-    changeReason: string = '';
-
-    /**
-     * Constructor
-     */
+    cancelSwitchActionConfigDialogue: FuseConfirmationConfig = {
+        title: '',
+        message: '',
+        icon: {
+            show: true,
+            name: 'heroicons_outline:exclamation-triangle',
+            color: 'warn',
+        },
+        actions: {
+            confirm: {
+                show: true,
+                label: "Confirmer l'annulation",
+                color: 'warn',
+            },
+            cancel: {
+                show: true,
+                label: 'Conserver',
+            },
+        },
+        dismissible: true,
+    };
     constructor(
         private _formBuilder: UntypedFormBuilder,
-        private _utilsService: UtilsService,
         public matDialogRef: MatDialogRef<SwitchRoomModel>,
         private _apiReservationService: ApiReservationService,
+        private _fuseConfirmationService: FuseConfirmationService,
         private _toast: ToastrService,
-        @Inject(MAT_DIALOG_DATA)
-        public data: { reservation: any }
+        private _matDialog: MatDialog,
+        @Inject(MAT_DIALOG_DATA) public data: { reservation: any }
     ) {
         this.reservation = data.reservation;
-        console.log('passed res', this.reservation);
     }
 
     ngOnInit(): void {
-        this.form = this._formBuilder.group({
-            reservationId: [this.code, [Validators.required]],
-            newRoomId: ['', [Validators.required]],
-            date: [null, [Validators.required]],
-            time: ['12:00', [Validators.required]],
-            reason: [''],
+        this.switchForm = this._formBuilder.group({
+            reservationId: [this.reservation?.code, [Validators.required]],
+            newRoomId: [null, [Validators.required]],
+            reason: ['', [Validators.required]],
+            appliedPrice: [null, [Validators.required, Validators.min(0)]],
         });
     }
 
-    stepTo(step: number) {
-        this.step += step;
-    }
+    getAppliedPriceForPerson(room: any, person: any): number {
+        console.log('1', room);
+        console.log('2', person);
+        if (!room || !room.roomType || !room.roomType.prices || !person) {
+            return 0;
+        }
 
-    save(): void {
-        if (this.form.invalid) return;
+        // Extraction du code de catégorie du grade (ex: "OFFICIER_SUPERIEUR", "CIVIL", etc.)
+        const categoryCode = person.grade?.category?.code;
 
-        const rawDate = this.form.get('date').value;
-        const rawTime = this.form.get('time').value;
+        if (!categoryCode) {
+            return 0;
+        }
 
-        const formattedDateTime = this._utilsService.convertToLocalDateTime(
-            rawDate,
-            rawTime
+        // Recherche de la grille tarifaire correspondant à cette catégorie pour ce type de chambre
+        const priceEntry = room.roomType.prices.find(
+            (p: any) => p.category?.code === categoryCode
         );
 
+        return priceEntry ? priceEntry.price : 0;
+    }
+
+    selectGuest(guest: any): void {
+        this.selectedGuest = guest;
+
         this._apiReservationService
-            .closeReservation(this.code, formattedDateTime)
+            .getSwitchedRoom(this.selectedGuest.id)
             .subscribe({
-                next: () => {
-                    this._toast.success('Réservation cloturée');
-                    this.matDialogRef.close({ reload: true });
+                next: (switchedRooms: any[]) => {
+                    console.log('switched rooms', switchedRooms);
+                    this.buildTableDataSource(switchedRooms || []);
+                    this.step = 1;
                 },
-                error: (err) => {
-                    this._toast.error(
-                        err?.error?.description ||
-                            'Erreur lors de la validation'
-                    );
+                error: () => {
+                    // En cas d'erreur API, afficher au moins la chambre initiale
+                    this.buildTableDataSource([]);
+                    this.step = 1;
                 },
             });
     }
 
-    selectGuest(guest: any) {
-        this.selectedGuest = guest;
+    stepTo(stepIndex: number): void {
+        this.step = stepIndex;
     }
 
-    openRoomPicker() {
-        // Appel de votre modal déjà développée
-        /*const dialogRef = this.dialog.open(RoomPickerModalComponent, {
-            data: { pavillonId: this.selectedGuest.room.pavillon.id }
+    /**
+     * Recompose les lignes du tableau :
+     * Si l'historique est vide, affiche la chambre d'attribution initiale.
+     */
+    buildTableDataSource(history: any[]): void {
+        if (!this.selectedGuest) return;
+
+        const initialRoom =
+            history.length > 0
+                ? history[0].previousRoom
+                : this.selectedGuest.room;
+
+        const initialPrice =
+            history.length > 0
+                ? history[0].previousPrice
+                : this.selectedGuest.appliedPrice;
+
+        const initialRow = {
+            isInitial: true,
+            previousRoom: {
+                code: '—',
+                roomType: { type: 'Attribution initiale' },
+            },
+            newRoom: initialRoom,
+            switchTime: null,
+            reason: 'Chambre attribuée à la création',
+            appliedPrice: initialPrice,
+        };
+
+        // Normalisation des dates de l'historique
+        const formattedHistory = history.map((item) => ({
+            ...item,
+            switchTime: this.parseJacksonDate(item.switchTime),
+        }));
+
+        // Inversion : les transferts d'abord, la ligne initiale tout en bas
+        this.tableDataSource = [...formattedHistory, initialRow];
+    }
+
+    /**
+     * Ouvre votre modal de sélection de chambre éligible
+     */
+    openRoomPicker(): void {
+        if (!this.reservation) return;
+
+        const currentOccupations = this.getExistingOccupations();
+        this._matDialog
+            .open(AssignRoomsModel, {
+                data: {
+                    start: this.reservation.checkin,
+                    end: this.reservation.plannedEnd,
+                    existingOccupations: currentOccupations,
+                },
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((result) => {
+                // Extraction du payload retourné par le dialogue (result.room)
+                const chosenRoom = result?.room || result;
+
+                // 1. Vérification : Est-ce que la nouvelle chambre est la même que l'actuelle ?
+                const currentRoomId = this.selectedGuest?.room?.id;
+
+                if (currentRoomId && chosenRoom.id === currentRoomId) {
+                    this._toast.warning(
+                        "L'occupant se trouve déjà dans cette chambre. Veuillez sélectionner une chambre différente."
+                    );
+                    return; // Bloque la sélection et stoppe l'exécution
+                }
+
+                if (chosenRoom && chosenRoom.id) {
+                    this.selectedNewRoom = chosenRoom;
+
+                    // Calculer le prix appliqué pour l'occupant sélectionné
+                    const calculatedPrice = this.getAppliedPriceForPerson(
+                        chosenRoom,
+                        this.selectedGuest.person
+                    );
+
+                    console.log('applied price is ', calculatedPrice);
+
+                    // Patcher la valeur dans le FormGroup pour la validation
+                    this.switchForm.patchValue({
+                        newRoomId: chosenRoom.id,
+                        appliedPrice: calculatedPrice,
+                    });
+
+                    this.switchForm.get('newRoomId')?.markAsTouched();
+                }
+            });
+    }
+
+    private getExistingOccupations(): any[] {
+        const occupationsMap = new Map<
+            number,
+            { roomId: number; rangeOccupation: any; numberOfPersons: number }
+        >();
+
+        this.reservation.guests.forEach((p) => {
+            if (p.room && p.room.id) {
+                const roomId = p.room.id;
+                if (!occupationsMap.has(roomId)) {
+                    occupationsMap.set(roomId, {
+                        roomId: roomId,
+                        rangeOccupation: {
+                            start: this.formatToISO(this.reservation.checkin),
+                            end: this.formatToISO(this.reservation.plannedEnd),
+                        },
+                        numberOfPersons: 0,
+                    });
+                }
+                occupationsMap.get(roomId).numberOfPersons++;
+            }
         });
 
-        dialogRef.afterClosed().subscribe(result => {
-            if (result) {
-                this.newRoom = result; // La chambre choisie dans votre modal
-            }
-        });*/
+        return Array.from(occupationsMap.values());
     }
 
-    confirmChange() {
+    private formatToISO(dateInput: any): string {
+        if (!dateInput) return '';
+
+        const date = new Date(dateInput);
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        return `${year}-${month}-${day} 12:00`;
+    }
+    confirmSwitch(): void {
+        if (this.switchForm.invalid) {
+            this.switchForm.markAllAsTouched();
+            return;
+        }
+
         const payload = {
-            guestId: this.selectedGuest.id,
-            oldRoomId: this.selectedGuest.room.id,
-            newRoomId: this.newRoom.id,
-            reason: this.changeReason,
-            timestamp: new Date(),
+            reservationId: String(this.selectedGuest.id),
+            newRoomId: Number(this.switchForm.get('newRoomId').value),
+            reason: this.switchForm.get('reason').value,
+            appliedPrice: this.switchForm.get('appliedPrice').value,
         };
-        console.log('Transfert prêt :', payload);
-        // Appeler votre service de mise à jour ici
+
+        this._apiReservationService.switchRoom(payload).subscribe({
+            next: () => {
+                this._toast.success(
+                    'Changement de chambre effectué avec succès'
+                );
+                this.isReload = true;
+                this.matDialogRef.close({ reload: this.isReload });
+            },
+            error: (err) => {
+                this._toast.error(
+                    err?.error?.message ||
+                        'Erreur lors du changement de chambre'
+                );
+            },
+        });
+    }
+
+    private parseJacksonDate(dateArray: any): Date | null {
+        if (!dateArray) return null;
+        if (dateArray instanceof Date) return dateArray;
+
+        // Si c'est le tableau retourné par Spring Boot: [2026, 10, 2, 20, 22, 36, 872751000]
+        if (Array.isArray(dateArray)) {
+            const [year, month, day, hour = 0, minute = 0, second = 0] =
+                dateArray;
+            // Les mois dans Date JS vont de 0 (Janvier) à 11 (Décembre)
+            return new Date(year, month - 1, day, hour, minute, second);
+        }
+
+        return new Date(dateArray);
+    }
+
+    isLastSwitch(element: any): boolean {
+        if (!element || element.isInitial) return false;
+
+        // Récupération de la liste brute du tableau
+        const data = Array.isArray(this.tableDataSource)
+            ? this.tableDataSource
+            : [];
+
+        // Extraction de tous les switchs réels (exclut la ligne d'attribution initiale)
+        const realSwitches = data.filter((item: any) => !item.isInitial);
+
+        if (realSwitches.length === 0) return false;
+
+        // Le dernier switch est le premier élément de l'historique trié par date décroissante
+        const lastSwitch = realSwitches[0];
+
+        return element.id === lastSwitch.id;
+    }
+
+    /**
+     * Annule le dernier changement de chambre
+     */
+    cancelSwitch(element: any): void {
+        if (!this.selectedGuest?.id || !element?.id) return;
+
+        const guestName =
+            `${this.selectedGuest.person?.firstName || ''} ${this.selectedGuest.person?.lastName || ''}`.trim();
+        const previousRoom =
+            element.previousRoom?.code || 'sa chambre précédente';
+
+        this.cancelSwitchActionConfigDialogue.title =
+            'Annuler le transfert de chambre';
+        this.cancelSwitchActionConfigDialogue.message =
+            `Êtes-vous sûr de vouloir annuler le dernier transfert de chambre pour <strong>${guestName}</strong> ?<br>` +
+            `Le résident réintégrera la chambre <strong>${previousRoom}</strong>.`;
+
+        const dialogRef = this._fuseConfirmationService.open(
+            this.cancelSwitchActionConfigDialogue
+        );
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result === 'confirmed') {
+                this._apiReservationService
+                    .removeRoomSwitch(this.selectedGuest.id, element.id)
+                    .subscribe({
+                        next: () => {
+                            this._toast.success(
+                                'Le changement de chambre a été annulé avec succès'
+                            );
+
+                            // Rétablir localement la chambre précédente avant le rechargement
+                            if (element.previousRoom) {
+                                this.selectedGuest.room = element.previousRoom;
+                            }
+
+                            this.tableDataSource = this.tableDataSource.filter(
+                                (item) => item.id !== element.id
+                            );
+
+                            // 3. Optionnel : Si besoin d'une réassignation forcée pour le composant MatTable
+                            this.tableDataSource = [...this.tableDataSource];
+
+                            // Recharger l'historique pour synchroniser l'affichage
+                            this.selectGuest(this.selectedGuest);
+                            this.isReload = true;
+                        },
+                        error: (err) => {
+                            this._toast.error(
+                                err?.error?.message ||
+                                    "Erreur lors de l'annulation du changement de chambre"
+                            );
+                        },
+                    });
+            }
+        });
     }
 }

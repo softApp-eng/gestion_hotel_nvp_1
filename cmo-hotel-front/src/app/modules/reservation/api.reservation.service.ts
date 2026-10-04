@@ -88,6 +88,10 @@ export class ApiReservationService {
         return this._httpClient.post(`${this.API_URL}/switch-room`, payload);
     }
 
+    getSwitchedRoom(reservationId): Observable<any>{
+        return this._httpClient.get(`${this.API_URL}/switch-room?reservationId=${reservationId}`);
+    }
+
     removeRoomSwitch(reservationId,switchedRoomId): Observable<any>{
         return this._httpClient.delete(`${this.API_URL}/switch-room?reservationId=${reservationId}&switchedRoomId=${switchedRoomId}`, {});
     }

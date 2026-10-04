@@ -46,7 +46,7 @@ public class DynamicJobService {
 
     public void refreshSchedule() {
         // 1. Annuler la tâche existante si elle existe
-        if (scheduledTask != null) {
+        /*if (scheduledTask != null) {
             scheduledTask.cancel(false);
         }
 
@@ -62,6 +62,7 @@ public class DynamicJobService {
         );
 
         log.info("Prochaine exécution planifiée auto cleaning room à : " + cron);
+        */
     }
 
     public void updateCronTime(Authentication authentication, String time){
