@@ -208,7 +208,10 @@ export class PrestationListComponent implements OnInit {
     raiseSaveOnePrestation(row) {
         this._matDialog
             .open(PrestationMonoCreateModel, {
-                data: { reservation: row.reservationId },
+                data: {
+                    reservation: row.reservationId,
+                    category: row?.person?.grade?.category,
+                },
                 disableClose: true,
             })
             .afterClosed()

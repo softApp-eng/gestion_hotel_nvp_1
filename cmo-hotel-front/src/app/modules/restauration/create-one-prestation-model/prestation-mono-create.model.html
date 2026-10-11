@@ -15,6 +15,7 @@
         <mat-button-toggle-group
             [disabled]="prestation"
             [(ngModel)]="type"
+            (ngModelChange)="onTypeChange()"
             class="border-none bg-gray-200 dark:bg-gray-800 p-1 rounded-xl h-10 w-full max-w-xs"
             appearance="standard">
             <mat-button-toggle value="MEAL" class="flex-1 rounded-lg font-bold text-xs uppercase tracking-widest">
@@ -32,7 +33,7 @@
             @if (type == 'MEAL') {
                 <mat-form-field class="w-full p-2" appearance="outline">
                     <mat-label>Repas</mat-label>
-                    <mat-select formControlName="name">
+                    <mat-select formControlName="name" (selectionChange)="onMealChange($event.value)">
                         @for (m of meals; track m?.id) {
                             <mat-option [value]="m.name">
                                 {{ m.name }}
@@ -63,15 +64,16 @@
                 }
             </mat-form-field>
 
-            @if (type == 'SERVICE') {
-                <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
-                    <mat-label>Prix</mat-label>
-                    <input matInput [formControlName]="'price'" placeholder="Prix" type="number" min="0">
-                    @if (form.get('price').hasError('required')) {
-                        <mat-error>Champ obligatoire</mat-error>
-                    }
-                </mat-form-field>
-            }
+            <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">
+                <mat-label>Prix</mat-label>
+                <input matInput [formControlName]="'price'" placeholder="Prix" type="number" min="0">
+                @if (type == 'MEAL') {
+                    <mat-hint>Tarif auto selon la catégorie (modifiable)</mat-hint>
+                }
+                @if (form.get('price').hasError('required')) {
+                    <mat-error>Champ obligatoire</mat-error>
+                }
+            </mat-form-field>
 
 
             <mat-form-field class="w-full p-2 text-2xl" [appearance]="'outline'">

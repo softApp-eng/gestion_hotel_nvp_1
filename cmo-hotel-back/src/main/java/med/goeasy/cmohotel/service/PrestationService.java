@@ -94,7 +94,9 @@ public class PrestationService {
                     .observation(dto.observation())
                     .day(LocalDate.now())
                     .build();
-            BigDecimal unitPrice = calculateMealPrice(prestation);
+            BigDecimal unitPrice = (dto.price() != null && dto.price() > 0)
+                    ? BigDecimal.valueOf(dto.price())
+                    : calculateMealPrice(prestation);
             prestation.setPrice(unitPrice);
         } else {
             prestation = Prestation.builder()
@@ -130,7 +132,9 @@ public class PrestationService {
             //MealType meal = mealService.getMealTypeById(Long.valueOf(dto.name()));
             prestation.setName(dto.name());
             prestation.setQuantity(qty);
-            BigDecimal unitPrice = calculateMealPrice(prestation);
+            BigDecimal unitPrice = (dto.price() != null && dto.price() > 0)
+                    ? BigDecimal.valueOf(dto.price())
+                    : calculateMealPrice(prestation);
             prestation.setPrice(unitPrice);
             prestation.setObservation(dto.observation());
         } else {

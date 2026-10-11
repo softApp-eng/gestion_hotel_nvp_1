@@ -11,7 +11,10 @@ import { NgClass, NgStyle } from '@angular/common';
 import { ApiReservationService } from '../api.reservation.service';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { FormsModule } from '@angular/forms';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatDialog } from '@angular/material/dialog';
 import { ApiRestaurationService } from '../../restauration/api.restauration.service';
+import { PrestationMonoCreateModel } from '../../restauration/create-one-prestation-model/prestation-mono-create.model';
 
 @Component({
     selector: 'reservation-details-model',
@@ -25,6 +28,7 @@ import { ApiRestaurationService } from '../../restauration/api.restauration.serv
         NgClass,
         MatButtonToggleModule,
         FormsModule,
+        MatMenuModule,
     ],
 })
 export class ReservationDetailsModel implements OnInit {
@@ -40,6 +44,7 @@ export class ReservationDetailsModel implements OnInit {
     constructor(
         private _apiReservationService: ApiReservationService,
         private _apiRestaurationService: ApiRestaurationService,
+        private _matDialog: MatDialog,
         public matDialogRef: MatDialogRef<ReservationDetailsModel>,
         @Inject(MAT_DIALOG_DATA)
         public data: { reservation: any }
@@ -64,6 +69,7 @@ export class ReservationDetailsModel implements OnInit {
     }
 
     loadPrestations(code){
+        this.prestationsSummary = [];
         this._apiRestaurationService.getPrestationsForReservation(code).subscribe({
             next: (res: any) => {
                 this.prestations = res;
@@ -86,6 +92,25 @@ export class ReservationDetailsModel implements OnInit {
                 });
             }
         })
+    }
+
+    raiseAddPrestation(guest: any) {
+        const reservationId = guest?.reservationId;
+        if (!reservationId) return;
+        this._matDialog
+            .open(PrestationMonoCreateModel, {
+                data: {
+                    reservation: reservationId,
+                    category: guest?.person?.grade?.category,
+                },
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((result) => {
+                if (result?.reload) {
+                    this.loadPrestations(this.reservation.code);
+                }
+            });
     }
 
     changeMode(m: any) {

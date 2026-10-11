@@ -54,7 +54,7 @@ export class PrestationMonoCreateModel implements OnInit {
         private _apiMealServices: ApiMealTypeService,
         private _toast: ToastrService,
         @Inject(MAT_DIALOG_DATA)
-        public data: {reservation:any, prestation:any}
+        public data: {reservation:any, prestation:any, category?:any}
     ) {
         this.form = this._formBuilder.group({
             reservation: ['', [Validators.required]],
@@ -82,6 +82,7 @@ export class PrestationMonoCreateModel implements OnInit {
                 this.form.patchValue({
                     name: this.prestation.name,
                     quantity: this.prestation.quantity,
+                    price: this.prestation.price ?? 0,
                     observation: this.prestation.observation
                 });
             }
@@ -98,9 +99,46 @@ export class PrestationMonoCreateModel implements OnInit {
             next: (res) => {
                 console.log('meals', res);
                 this.meals = res;
+                // Pré-remplir le prix selon la catégorie de la personne (nouvelle prestation repas)
+                if (this.type === 'MEAL' && !this.prestation) {
+                    this.computeMealPrice();
+                }
             },
         });
     }
+
+    /**
+     * Prix du repas sélectionné pour la catégorie de grade de la personne.
+     * Le champ reste modifiable par l'utilisateur.
+     */
+    computeMealPrice(mealName?: string) {
+        const name = mealName ?? this.form.get('name')?.value;
+        const category = this.data?.category;
+        // La catégorie de grade est sérialisée en objet { code, name, description }
+        const categoryCode = typeof category === 'string' ? category : category?.code;
+        if (!name || !categoryCode) return;
+
+        const meal = (this.meals || []).find((m: any) => m.name === name);
+        const priceEntry = (meal?.prices || []).find((p: any) => {
+            const c = p?.category;
+            const code = typeof c === 'string' ? c : c?.code;
+            return code === categoryCode;
+        });
+        if (priceEntry) {
+            this.form.patchValue({ price: priceEntry.price }, { emitEvent: false });
+        }
+    }
+
+    onMealChange(mealName: string) {
+        this.computeMealPrice(mealName);
+    }
+
+    onTypeChange() {
+        if (this.type === 'MEAL') {
+            this.computeMealPrice();
+        }
+    }
+
     save() {
         // Do nothing if the form is invalid
         if (this.form.invalid) {
@@ -116,6 +154,7 @@ export class PrestationMonoCreateModel implements OnInit {
                 name: this.form.value.name,
                 quantity: this.form.value.quantity,
                 type: 'MEAL',
+                price: this.form.value.price,
                 observation: this.form.value.observation
             }
         } else if (this.type === 'SERVICE') {

@@ -394,6 +394,20 @@ public class Feeder {
             log.info("--> data-prod.sql file loaded");
             roles();
         }
+        // H2 / TEST MODE (local testing without PostgreSQL)
+        else if ("h2".equals(activeProfile) || "test".equals(activeProfile)) {
+            ResourceDatabasePopulator resourceDatabasePopulator =
+                    new ResourceDatabasePopulator(
+                            false,
+                            false,
+                            "UTF-8",
+                            new ClassPathResource("data-h2.sql")
+                    );
+            resourceDatabasePopulator.execute(dataSource);
+            initInitialConfiguration();
+            log.info("--> data-h2.sql file loaded");
+            roles();
+        }
         // DEVELOPMENT MODE
         else {
             ResourceDatabasePopulator resourceDatabasePopulator =

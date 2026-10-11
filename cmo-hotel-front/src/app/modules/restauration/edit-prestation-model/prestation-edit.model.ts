@@ -115,6 +115,9 @@ export class PrestationEditModel implements OnInit {
                 data: {
                     reservation: this.resrvation.reservationId,
                     prestation: row,
+                    category:
+                        this.resrvation?.person?.grade?.category ??
+                        row?.person?.grade?.category,
                 },
                 disableClose: true,
             })

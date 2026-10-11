@@ -15,6 +15,7 @@ import { DatePipe, NgClass, SlicePipe } from '@angular/common';
 import { MatPaginator } from '@angular/material/paginator';
 import { FormsModule } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatSelectModule } from '@angular/material/select';
 import { HighlightPipe } from '../../../../@fuse/pipes/HighlightPipe';
 import { DisableIfNoPermissionDirective } from '../../../core/auth/DisableIfNoPermissionDirective';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
@@ -27,6 +28,7 @@ import { Toastr } from '../../../core/service/toastr.service';
 import { PaymentModel } from '../../invoice/payment-model/payment.model';
 import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../@fuse/services/confirmation';
 import { ApiInvoiceService } from '../../invoice/api.invoice.service';
+import { PrestationMonoCreateModel } from '../../restauration/create-one-prestation-model/prestation-mono-create.model';
 
 @Component({
     selector: 'sejour-list',
@@ -47,6 +49,7 @@ import { ApiInvoiceService } from '../../invoice/api.invoice.service';
         MatIconModule,
         FormsModule,
         MatTabsModule,
+        MatSelectModule,
         DatePipe,
         SlicePipe,
         DisableIfNoPermissionDirective,
@@ -75,6 +78,8 @@ export class SejourListComponent implements OnInit {
     key = '';
     today = new Date();
     loadingFicheId: number | null = null;
+    roomOptions: string[] = [];
+    selectedRoom = '';
 
     actionProceedToPaymentConfigDialogue: FuseConfirmationConfig = {
         title: 'Paiement / Encaissement',
@@ -137,6 +142,7 @@ export class SejourListComponent implements OnInit {
                     });
                     this.reservations = this.dataSource.data = value || [];
                     this.totalRows = value?.length || 0;
+                    this.buildRoomOptions(value || []);
                     console.log(value);
                     setTimeout(() => {
                         if (this._paginator) {
@@ -252,6 +258,21 @@ export class SejourListComponent implements OnInit {
             });
     }
 
+    raiseAddPrestation(guest: any) {
+        if (!guest?.id) return;
+        this._matDialog
+            .open(PrestationMonoCreateModel, {
+                data: { reservation: guest.id, category: guest?.person?.grade?.category },
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((result) => {
+                if (result?.reload) {
+                    this.getSejour();
+                }
+            });
+    }
+
     isOverdue(dateString: any): boolean {
         if (!dateString) return false;
         const dateToCheck = new Date(dateString);
@@ -262,54 +283,86 @@ export class SejourListComponent implements OnInit {
 
     search(key: string): void {
         this.key = key?.trim().toLowerCase();
+        this.applyFilters();
+    }
 
-        // Si la clé est vide, on restaure la liste complète
-        if (!this.key) {
-            this.dataSource.data = this.reservations;
-            return;
+    filterByRoom(room: string): void {
+        this.selectedRoom = room || '';
+        this.applyFilters();
+    }
+
+    buildRoomOptions(rows: any[]): void {
+        const rooms = new Set<string>();
+        rows?.forEach((row) => {
+            row?.guests?.forEach((guest: any) => {
+                const code = guest?.room?.code || guest?.room?.name;
+                if (code) rooms.add(code);
+            });
+        });
+        this.roomOptions = Array.from(rooms).sort((a, b) =>
+            a.localeCompare(b, undefined, { numeric: true })
+        );
+    }
+
+    applyFilters(): void {
+        let data = this.reservations || [];
+
+        // Filtre par numéro de chambre
+        if (this.selectedRoom) {
+            data = data.filter((res) =>
+                res.guests?.some(
+                    (guest: any) =>
+                        guest?.room?.code === this.selectedRoom ||
+                        guest?.room?.name === this.selectedRoom
+                )
+            );
         }
 
-        this.dataSource.data = this.reservations?.filter((res) => {
-            // 1. Recherche dans les données de base de la réservation
-            const basicInfo = [
-                res.code,
-                res.status?.name,
-                res.category?.name,
-                res.observation,
-            ]
-                .join(' ')
-                .toLowerCase();
-
-            if (basicInfo.includes(this.key)) return true;
-
-            // 2. Recherche profonde dans les invités (Guests)
-            // .some() s'arrête dès qu'il trouve une correspondance
-            const guestMatch = res.guests?.some((guest: any) => {
-                const p = guest.person;
-                const r = guest.room;
-
-                const personInfo = [
-                    p?.firstName,
-                    p?.lastName,
-                    p?.identity,
-                    p?.matricule,
-                    p?.grade?.code,
-                    p?.grade?.name,
-                    r?.name,
-                    r?.roomType?.type,
+        // Filtre par mot-clé (personne, chambre, code...)
+        if (this.key) {
+            data = data.filter((res) => {
+                const basicInfo = [
+                    res.code,
+                    res.status?.name,
+                    res.category?.name,
+                    res.observation,
                 ]
                     .join(' ')
                     .toLowerCase();
 
-                return personInfo.includes(this.key);
-            });
+                if (basicInfo.includes(this.key)) return true;
 
-            return guestMatch;
-        });
+                return res.guests?.some((guest: any) => {
+                    const p = guest.person;
+                    const r = guest.room;
+
+                    const personInfo = [
+                        p?.firstName,
+                        p?.lastName,
+                        p?.identity,
+                        p?.matricule,
+                        p?.grade?.code,
+                        p?.grade?.name,
+                        r?.name,
+                        r?.roomType?.type,
+                    ]
+                        .join(' ')
+                        .toLowerCase();
+
+                    return personInfo.includes(this.key);
+                });
+            });
+        }
+
+        this.dataSource.data = data;
+        this.totalRows = data.length;
 
         // Retour à la première page de la pagination après filtrage
         if (this.dataSource.paginator) {
             this.dataSource.paginator.firstPage();
+        }
+        if (this._paginator) {
+            this._paginator.length = this.totalRows;
         }
     }
 

@@ -32,6 +32,46 @@
                 <div class="flex flex-auto flex-col p-2 sm:p-8">
 
                     <div class="w-full bg-card border flex flex-col rounded-2xl p-2 sm:p-8 pb-4 shadow">
+
+                        <!-- Filtres d'occupation : pavillon & numéro de chambre -->
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-4">
+                            <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded w-full sm:w-64">
+                                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:building-office-2'"></mat-icon>
+                                <mat-select
+                                    [(ngModel)]="selectedPavillon"
+                                    (selectionChange)="onPavillonChange()"
+                                    placeholder="Pavillon">
+                                    <mat-option value="">Tous les pavillons</mat-option>
+                                    @for (p of (pavillons || []); track p.id) {
+                                        <mat-option [value]="p.id">{{ p.name }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded w-full sm:w-56">
+                                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:home-modern'"></mat-icon>
+                                <mat-select
+                                    [(ngModel)]="selectedRoom"
+                                    (selectionChange)="onRoomChange()"
+                                    placeholder="N° de chambre">
+                                    <mat-option value="">Toutes les chambres</mat-option>
+                                    @for (r of roomsForSelectedPavillon; track r.id) {
+                                        <mat-option [value]="r.id">{{ r.name }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+
+                            <button
+                                mat-flat-button
+                                color="primary"
+                                class="h-12 rounded-xl font-semibold shadow-sm sm:ml-auto"
+                                matTooltip="Imprimer le planning d'occupation (par pavillon)"
+                                (click)="printOccupation()">
+                                <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                                Imprimer
+                            </button>
+                        </div>
+
                         <full-calendar #fullCalendar [options]="calendarOptions()"></full-calendar>
 
                         <div class="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t pt-4">

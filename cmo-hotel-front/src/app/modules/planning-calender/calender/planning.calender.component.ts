@@ -57,6 +57,9 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
         resourceAreaWidth: '250px', // Augmenté légèrement pour accueillir l'arborescence
         resourceAreaHeaderContent: 'CMO Hôtel',
 
+        // Ligne rouge verticale indiquant le jour / l'heure courante
+        nowIndicator: true,
+
         // --- TRI ET GRANULARITÉ ---
         slotDuration: { days: 1 },
         slotLabelFormat: [
@@ -77,8 +80,9 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
 
         // TRÈS IMPORTANT : Transformation des données en arbre (Pavillon > Type > Chambre)
         resources: (info, successCallback, failureCallback) => {
-            if (this.rooms && this.rooms.length > 0) {
-                const formattedResources = this.buildHierarchicalResources(this.rooms);
+            const filteredRooms = this.getFilteredRooms();
+            if (filteredRooms && filteredRooms.length > 0) {
+                const formattedResources = this.buildHierarchicalResources(filteredRooms);
                 successCallback(formattedResources);
             } else {
                 successCallback([]);
@@ -108,8 +112,8 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
 
     rooms;
     pavillons;
-    selectedRoom = null;
-    selectedPavillon;
+    selectedRoom: any = '';
+    selectedPavillon: any = '';
 
     @ViewChild('fullCalendar') fullCalendar: any;
 
@@ -233,6 +237,14 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
 
     filterReservationsLocally(): any[] {
         const calendarEvents = [];
+
+        const filteringActive =
+            (this.selectedPavillon !== '' && this.selectedPavillon != null) ||
+            (this.selectedRoom !== '' && this.selectedRoom != null);
+        const allowedRoomIds = filteringActive
+            ? new Set(this.getFilteredRooms().map(r => r.id.toString()))
+            : null;
+
         const filteredReservations = [...this.periodReservations];
 
         filteredReservations.forEach(res => {
@@ -244,8 +256,10 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
             });
 
             uniqueRoomsInRes.forEach((room, roomId) => {
-                //const matchPavillon = !this.selectedPavillon || room.pavillon.id === this.selectedPavillon;
-                //const matchRoom = !this.selectedRoom || roomId === this.selectedRoom.id;
+                // Ignorer les chambres masquées par le filtre pavillon / n° de chambre
+                if (allowedRoomIds && !allowedRoomIds.has(roomId.toString())) {
+                    return;
+                }
 
                 //if (matchPavillon && matchRoom) {
                     const guestsInThisRoom = res.guests.filter(g => g.room.id === roomId);
@@ -305,11 +319,10 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
     loadPavillons() {
         this._apiPavillonService.all().subscribe({
             next: (data) => {
-                this.pavillons = data;
-                if (data?.length > 0){
-                    this.selectedPavillon = data[0]?.id;
-                    this.loadRooms();
-                }
+                this.pavillons = data || [];
+                this.selectedPavillon = '';
+                this.selectedRoom = '';
+                this.loadRooms();
             },
         });
     }
@@ -327,6 +340,60 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
                 }
             },
         });
+    }
+
+    /**
+     * Chambres correspondant aux filtres courants (pavillon + n° de chambre)
+     */
+    getFilteredRooms(): any[] {
+        let rooms = this.rooms || [];
+
+        if (this.selectedPavillon !== '' && this.selectedPavillon != null) {
+            rooms = rooms.filter(
+                r => r.pavillon?.id?.toString() === this.selectedPavillon.toString()
+            );
+        }
+
+        if (this.selectedRoom !== '' && this.selectedRoom != null) {
+            rooms = rooms.filter(
+                r => r.id?.toString() === this.selectedRoom.toString()
+            );
+        }
+
+        return rooms;
+    }
+
+    /**
+     * Chambres affichables dans le sélecteur "N° de chambre" (dépend du pavillon choisi)
+     */
+    get roomsForSelectedPavillon(): any[] {
+        const rooms = this.rooms || [];
+
+        if (this.selectedPavillon === '' || this.selectedPavillon == null) {
+            return rooms;
+        }
+
+        return rooms.filter(
+            r => r.pavillon?.id?.toString() === this.selectedPavillon.toString()
+        );
+    }
+
+    onPavillonChange(): void {
+        // La chambre sélectionnée peut ne pas appartenir au nouveau pavillon
+        this.selectedRoom = '';
+        this.refreshCalendar();
+    }
+
+    onRoomChange(): void {
+        this.refreshCalendar();
+    }
+
+    refreshCalendar(): void {
+        if (this.fullCalendar && this.fullCalendar.getApi) {
+            const api = this.fullCalendar.getApi();
+            api.refetchResources();
+            api.refetchEvents();
+        }
     }
 
     getReservationsByRange(type, start, end): Observable<any> {
@@ -361,6 +428,247 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
         }
     }
 
+
+    /**
+     * Imprime un planning d'occupation (un tableau par pavillon).
+     * Respecte les filtres pavillon / n° de chambre actifs.
+     */
+    printOccupation(): void {
+        const api = this.fullCalendar?.getApi ? this.fullCalendar.getApi() : null;
+        const view = api?.view;
+
+        const start = view ? new Date(view.activeStart) : this.startOfWeek(new Date());
+        const end = view ? new Date(view.activeEnd) : this.addDays(this.startOfWeek(new Date()), 7);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(0, 0, 0, 0);
+
+        const days: Date[] = [];
+        for (let d = new Date(start); d < end; d = this.addDays(d, 1)) {
+            days.push(new Date(d));
+        }
+        if (days.length === 0) {
+            return;
+        }
+
+        // Chambres filtrées (pavillon + n° de chambre)
+        const filteredRooms = this.getFilteredRooms();
+
+        // Regroupement par pavillon
+        const groups = new Map<string, { name: string; rooms: any[] }>();
+        filteredRooms.forEach((room) => {
+            const key = room.pavillon?.id?.toString() ?? 'none';
+            const name = room.pavillon?.name ?? 'Sans pavillon';
+            if (!groups.has(key)) {
+                groups.set(key, { name, rooms: [] });
+            }
+            groups.get(key).rooms.push(room);
+        });
+
+        const sortedGroups = Array.from(groups.entries()).sort((a, b) =>
+            a[1].name.localeCompare(b[1].name, undefined, { sensitivity: 'base' })
+        );
+
+        if (sortedGroups.length === 0) {
+            return;
+        }
+
+        const html = this.buildOccupationPrintHtml(sortedGroups, days, start, end);
+        const win = window.open('', '_blank', 'width=1200,height=800');
+        if (!win) {
+            return;
+        }
+        win.document.open();
+        win.document.write(html);
+        win.document.close();
+        win.focus();
+        setTimeout(() => win.print(), 400);
+    }
+
+    private buildOccupationPrintHtml(
+        groups: Array<[string, { name: string; rooms: any[] }]>,
+        days: Date[],
+        start: Date,
+        end: Date
+    ): string {
+        const rangeLabel = `${this.formatPrintDay(start)} → ${this.formatPrintDay(this.addDays(end, -1))}`;
+        const generated = new Date();
+
+        const sections = groups
+            .map(([, group]) => {
+                const rooms = [...group.rooms].sort((a, b) =>
+                    (a.name || '').localeCompare(b.name || '', undefined, {
+                        numeric: true,
+                        sensitivity: 'base',
+                    })
+                );
+
+                const head = `<tr><th class="room-col">Chambre</th>${days
+                    .map((d) => {
+                        const isToday = this.isSameDay(d, new Date());
+                        return `<th class="${isToday ? 'today' : ''}">${this.formatPrintDayShort(d)}</th>`;
+                    })
+                    .join('')}</tr>`;
+
+                const rows = rooms
+                    .map((room) => {
+                        const cells = days
+                            .map((day) => {
+                                const occ = this.getRoomDayOccupant(room.id, day);
+                                const isToday = this.isSameDay(day, new Date());
+                                const cls = occ.text
+                                    ? `occ ${this.statusClass(occ.status)}`
+                                    : 'free';
+                                return `<td class="${cls}${isToday ? ' today' : ''}">${occ.text}</td>`;
+                            })
+                            .join('');
+                        return `<tr><td class="room-col">${room.name}</td>${cells}</tr>`;
+                    })
+                    .join('');
+
+                return `<section class="pavillon">
+                <h2>${group.name}</h2>
+                <table><thead>${head}</thead><tbody>${rows}</tbody></table>
+            </section>`;
+            })
+            .join('');
+
+        return `<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Planning d'occupation - CMO Hôtel</title>
+<style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 16px; color: #0f172a; }
+    .doc-header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid #4f46e5; padding-bottom:8px; margin-bottom:16px; }
+    .doc-header h1 { font-size: 20px; margin: 0; }
+    .doc-header .meta { text-align:right; font-size:12px; color:#475569; }
+    .pavillon { margin-bottom: 24px; page-break-after: always; }
+    .pavillon:last-child { page-break-after: auto; }
+    .pavillon h2 { font-size: 16px; margin: 0 0 8px; background:#eef2ff; color:#3730a3; padding:6px 10px; border-radius:6px; }
+    table { width:100%; border-collapse: collapse; font-size: 10px; }
+    th, td { border:1px solid #cbd5e1; padding:3px 4px; text-align:center; vertical-align:middle; }
+    th.room-col, td.room-col { text-align:left; font-weight:700; width:90px; background:#f8fafc; white-space:nowrap; }
+    thead th { background:#f1f5f9; }
+    th.today, td.today { background:#fef2f2; }
+    td.occ { color:#fff; font-weight:600; }
+    td.occ.confirmed { background:#4f46e5; }
+    td.occ.pending { background:#64748b; }
+    td.occ.closed { background:#10b981; }
+    td.free { background:#ffffff; }
+    .footer { margin-top:12px; font-size:11px; color:#64748b; text-align:right; }
+    @media print { body { margin: 8mm; } }
+</style>
+</head>
+<body>
+    <header class="doc-header">
+        <h1>Planning d'occupation — CMO Hôtel</h1>
+        <div class="meta">
+            <div><strong>Période :</strong> ${rangeLabel}</div>
+            <div>Généré le ${this.formatPrintDay(generated)} à ${generated.toLocaleTimeString('fr-FR')}</div>
+        </div>
+    </header>
+    ${sections}
+    <div class="footer">CMO Hôtel — Planning d'occupation par pavillon</div>
+</body>
+</html>`;
+    }
+
+    /**
+     * Occupant d'une chambre pour une journée donnée (issue des réservations de la période chargée).
+     */
+    private getRoomDayOccupant(
+        roomId: any,
+        dayStart: Date
+    ): { text: string; status: string } {
+        const roomIdStr = roomId?.toString();
+
+        for (const res of this.periodReservations || []) {
+            const resStart = new Date(res.start);
+            resStart.setHours(0, 0, 0, 0);
+            const resEnd = new Date(res.end);
+            resEnd.setHours(0, 0, 0, 0);
+
+            if (dayStart < resStart || dayStart >= resEnd) {
+                continue;
+            }
+
+            const guests = (res.guests || []).filter(
+                (g) => g.room?.id?.toString() === roomIdStr
+            );
+            if (guests.length === 0) {
+                continue;
+            }
+
+            guests.sort((a, b) => {
+                const sa =
+                    a.role?.code === 'PRINCIPAL' ? 2 : a.role?.code === 'VICE' ? 1 : 0;
+                const sb =
+                    b.role?.code === 'PRINCIPAL' ? 2 : b.role?.code === 'VICE' ? 1 : 0;
+                return sb - sa;
+            });
+
+            const text = guests
+                .map((g) => `${g.person?.grade?.code || ''} ${g.person?.lastName || ''}`.trim())
+                .join(' • ');
+
+            return { text, status: res.status?.code || '' };
+        }
+
+        return { text: '', status: '' };
+    }
+
+    private statusClass(status: string): string {
+        switch (status) {
+            case 'CONFIRMED':
+                return 'confirmed';
+            case 'PENDING':
+                return 'pending';
+            case 'CLOSED':
+                return 'closed';
+            default:
+                return 'pending';
+        }
+    }
+
+    private isSameDay(a: Date, b: Date): boolean {
+        return (
+            a.getFullYear() === b.getFullYear() &&
+            a.getMonth() === b.getMonth() &&
+            a.getDate() === b.getDate()
+        );
+    }
+
+    private addDays(date: Date, n: number): Date {
+        const d = new Date(date);
+        d.setDate(d.getDate() + n);
+        return d;
+    }
+
+    private startOfWeek(date: Date): Date {
+        const d = new Date(date);
+        const day = (d.getDay() + 6) % 7; // Lundi = 0
+        d.setDate(d.getDate() - day);
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }
+
+    private formatPrintDay(date: Date): string {
+        return new Intl.DateTimeFormat('fr-FR', {
+            weekday: 'long',
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+        }).format(date);
+    }
+
+    private formatPrintDayShort(date: Date): string {
+        return new Intl.DateTimeFormat('fr-FR', {
+            weekday: 'short',
+            day: '2-digit',
+            month: 'short',
+        }).format(date);
+    }
 
     raiseReservationDetailsDialog(code) {
         this._apiReservationService.getReservation(code).subscribe({

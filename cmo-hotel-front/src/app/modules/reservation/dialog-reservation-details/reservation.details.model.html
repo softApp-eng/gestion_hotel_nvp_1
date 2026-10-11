@@ -185,6 +185,23 @@
                                 <mat-icon class="mr-2 icon-size-5 text-primary" [svgIcon]="'heroicons_outline:list-bullet'"></mat-icon>
                                 Détail des consommations
                             </div>
+                            <button mat-flat-button color="primary" class="rounded-lg" [matMenuTriggerFor]="addPrestationMenu">
+                                <mat-icon class="icon-size-5 mr-1" svgIcon="heroicons_outline:plus-circle"></mat-icon>
+                                Ajouter Prestation
+                            </button>
+                            <mat-menu #addPrestationMenu="matMenu" xPosition="before" class="rounded-xl shadow-lg border border-slate-100">
+                                @for (guest of (prestations || []); track guest.reservationId) {
+                                    <button mat-menu-item (click)="raiseAddPrestation(guest)">
+                                        <mat-icon class="icon-size-5 text-emerald-500" svgIcon="heroicons_outline:user-circle"></mat-icon>
+                                        <span>
+                                            {{ guest?.person?.firstName }} {{ guest?.person?.lastName }}
+                                            @if (guest?.room?.code) {
+                                                <span class="text-secondary text-xs ml-1">({{ guest.room.code }})</span>
+                                            }
+                                        </span>
+                                    </button>
+                                }
+                            </mat-menu>
                         </div>
 
                         <table class="w-full border-collapse">

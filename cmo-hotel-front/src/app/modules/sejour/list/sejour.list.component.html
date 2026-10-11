@@ -53,6 +53,22 @@
                         </mat-form-field>
                     </div>
 
+                    <div class="w-full sm:w-60">
+                        <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded w-full">
+                            <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:home-modern'"></mat-icon>
+                            <mat-select
+                                [(ngModel)]="selectedRoom"
+                                (selectionChange)="filterByRoom($event.value)"
+                                placeholder="N° de chambre"
+                                panelClass="rounded-xl">
+                                <mat-option value="">Toutes les chambres</mat-option>
+                                @for (room of roomOptions; track room) {
+                                    <mat-option [value]="room">{{ room }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+
                 </div>
 
 
@@ -208,6 +224,25 @@
                                             <mat-icon svgIcon="heroicons_outline:calendar-days" ></mat-icon>
                                             <span>Prolonger le séjour</span>
                                         </button>
+                                        @if ((row?.guests?.length || 0) <= 1) {
+                                            <button mat-menu-item (click)="raiseAddPrestation(row?.guests?.[0])" [disableIfNoPermission]="[APP_PERMISSIONS.PRESTATION_CREATE]">
+                                                <mat-icon class="icon-size-5 text-emerald-600" svgIcon="heroicons_outline:plus-circle"></mat-icon>
+                                                <span>Ajouter Prestation</span>
+                                            </button>
+                                        } @else {
+                                            <button mat-menu-item [matMenuTriggerFor]="prestationMenu" [disableIfNoPermission]="[APP_PERMISSIONS.PRESTATION_CREATE]">
+                                                <mat-icon class="icon-size-5 text-emerald-600" svgIcon="heroicons_outline:plus-circle"></mat-icon>
+                                                <span>Ajouter Prestation</span>
+                                            </button>
+                                            <mat-menu #prestationMenu="matMenu" xPosition="before" class="rounded-xl shadow-lg border border-slate-100">
+                                                @for (guest of row.guests; track guest.id) {
+                                                    <button mat-menu-item (click)="raiseAddPrestation(guest)">
+                                                        <mat-icon class="icon-size-5 text-emerald-500" svgIcon="heroicons_outline:user-circle"></mat-icon>
+                                                        <span>{{ guest?.person?.lastName }} {{ guest?.person?.firstName }}</span>
+                                                    </button>
+                                                }
+                                            </mat-menu>
+                                        }
                                         @if (row?.status?.code === 'CONFIRMED') {
                                             <button mat-menu-item (click)="raiseCloseReservation(row?.code)" [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_CLOSE]">
                                                 <mat-icon class="icon-size-5" [svgIcon]="'mat_outline:edit_calendar'"></mat-icon>
