@@ -40,6 +40,9 @@ public class HousekeepingHistory {
     @Column(length = 500)
     private String comment;
 
+    @Column(length = 30)
+    private String status; // A_FAIRE, EN_COURS, TERMINÉE, ANOMALIE (permanence)
+
     // audit
     @CreatedBy
     private String createdBy;

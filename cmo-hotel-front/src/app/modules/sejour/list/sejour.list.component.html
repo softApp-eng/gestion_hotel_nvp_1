@@ -225,7 +225,7 @@
                                             <span>Prolonger le séjour</span>
                                         </button>
                                         @if ((row?.guests?.length || 0) <= 1) {
-                                            <button mat-menu-item (click)="raiseAddPrestation(row?.guests?.[0])" [disableIfNoPermission]="[APP_PERMISSIONS.PRESTATION_CREATE]">
+                                            <button mat-menu-item (click)="raiseAddPrestation(row?.guests?.[0], row)" [disableIfNoPermission]="[APP_PERMISSIONS.PRESTATION_CREATE]">
                                                 <mat-icon class="icon-size-5 text-emerald-600" svgIcon="heroicons_outline:plus-circle"></mat-icon>
                                                 <span>Ajouter Prestation</span>
                                             </button>
@@ -236,7 +236,7 @@
                                             </button>
                                             <mat-menu #prestationMenu="matMenu" xPosition="before" class="rounded-xl shadow-lg border border-slate-100">
                                                 @for (guest of row.guests; track guest.id) {
-                                                    <button mat-menu-item (click)="raiseAddPrestation(guest)">
+                                                    <button mat-menu-item (click)="raiseAddPrestation(guest, row)">
                                                         <mat-icon class="icon-size-5 text-emerald-500" svgIcon="heroicons_outline:user-circle"></mat-icon>
                                                         <span>{{ guest?.person?.lastName }} {{ guest?.person?.firstName }}</span>
                                                     </button>

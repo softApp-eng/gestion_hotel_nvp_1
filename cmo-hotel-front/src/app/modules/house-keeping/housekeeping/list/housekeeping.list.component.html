@@ -46,6 +46,18 @@
 
                 <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
 
+                <button mat-menu-item [routerLink]="['./planning-gouvernante']">
+                    <mat-icon class="text-purple-600" [svgIcon]="'heroicons_outline:calendar-days'"></mat-icon>
+                    <span>Planning Gouvernante</span>
+                </button>
+
+                <button mat-menu-item [routerLink]="['./permanence-femmes-chambre']">
+                    <mat-icon class="text-orange-600" [svgIcon]="'heroicons_outline:users'"></mat-icon>
+                    <span>Permanence Femmes de Chambre</span>
+                </button>
+
+                <div class="my-1 border-t border-gray-100 dark:border-gray-800"></div>
+
                 <button mat-menu-item (click)="loadRooms()">
                     <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
                     <span>Actualiser l'état</span>

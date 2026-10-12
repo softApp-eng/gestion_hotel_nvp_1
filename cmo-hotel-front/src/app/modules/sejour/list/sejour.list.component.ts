@@ -258,11 +258,17 @@ export class SejourListComponent implements OnInit {
             });
     }
 
-    raiseAddPrestation(guest: any) {
+    raiseAddPrestation(guest: any, row?: any) {
         if (!guest?.id) return;
         this._matDialog
             .open(PrestationMonoCreateModel, {
-                data: { reservation: guest.id, category: guest?.person?.grade?.category },
+                data: {
+                    reservation: guest.id,
+                    category: guest?.person?.grade?.category,
+                    beneficiary: guest?.person,
+                    room: guest?.room,
+                    code: row?.code ?? guest?.details?.code,
+                },
                 disableClose: true,
             })
             .afterClosed()

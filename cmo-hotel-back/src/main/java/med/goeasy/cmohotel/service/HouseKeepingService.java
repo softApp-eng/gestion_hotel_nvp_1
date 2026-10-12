@@ -10,16 +10,20 @@ import med.goeasy.cmohotel.exception.BadRequestException;
 import med.goeasy.cmohotel.exception.OperationNotPermittedException;
 import med.goeasy.cmohotel.persistence.entity.HousekeepingAgent;
 import med.goeasy.cmohotel.persistence.entity.HousekeepingHistory;
+import med.goeasy.cmohotel.persistence.entity.Permanence;
 import med.goeasy.cmohotel.persistence.entity.Room;
 import med.goeasy.cmohotel.persistence.entity.auth.AppUser;
 import med.goeasy.cmohotel.persistence.repository.HousekeepingAgentRepository;
 import med.goeasy.cmohotel.persistence.repository.HousekeepingHistoryRepository;
+import med.goeasy.cmohotel.persistence.repository.PermanenceRepository;
 import med.goeasy.cmohotel.persistence.repository.ReservationRepository;
 import med.goeasy.cmohotel.persistence.repository.RoomRepository;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
 import med.goeasy.cmohotel.presentation.dto.housekeeping.request.HousekeepingAgentRequestDto;
+import med.goeasy.cmohotel.presentation.dto.housekeeping.request.PermanenceRequestDto;
 import med.goeasy.cmohotel.presentation.dto.housekeeping.request.UpdateRoomCleanRequest;
 import med.goeasy.cmohotel.presentation.dto.housekeeping.response.HousekeepingAgentResponseDto;
+import med.goeasy.cmohotel.presentation.dto.housekeeping.response.PermanenceDto;
 import med.goeasy.cmohotel.presentation.dto.housekeeping.response.RoomHousekeepingDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +42,7 @@ public class HouseKeepingService {
 
     private final HousekeepingAgentRepository housekeepingAgentRepository;
     private final HousekeepingHistoryRepository housekeepingHistoryRepository;
+    private final PermanenceRepository permanenceRepository;
     private final RoomService roomService;
     private final RoomRepository roomRepository;
     private final ReservationRepository reservationRepository;
@@ -169,6 +174,76 @@ public class HouseKeepingService {
 
 
     /// /////////////////////////////////////////////////////////////////////////////
+    ///                              PERMANENCE FUNCTIONS                        ///
+    /// /////////////////////////////////////////////////////////////////////////////
+
+    public List<PermanenceDto> listPermanences(LocalDate start, LocalDate end) {
+        List<Permanence> permanences = (start != null && end != null)
+                ? permanenceRepository.findByDateBetweenOrderByDateAscCreatedAtAsc(start, end)
+                : permanenceRepository.findAll();
+        return permanences.stream().map(PermanenceDto::mapToDto).toList();
+    }
+
+    @Transactional
+    public PermanenceDto createPermanence(Authentication authentication, PermanenceRequestDto req) {
+        HousekeepingAgent agent = getAgent(req.agentId());
+        if (permanenceRepository.existsByDateAndAgent_Id(req.date(), agent.getId())) {
+            throw new BadRequestException("Cette femme de chambre est déjà en permanence ce jour");
+        }
+        Permanence permanence = Permanence.builder()
+                .date(req.date())
+                .agent(agent)
+                .build();
+        permanence = permanenceRepository.save(permanence);
+        activityLogService.logActivity(
+                EAuditActionTarget.HOUSEKEEPING,
+                EAuditActionOperation.CREATE,
+                String.format("Permanence du %s : '%s' '%s'.",
+                        req.date(), agent.getFirstName(), agent.getLastName()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+        return PermanenceDto.mapToDto(permanence);
+    }
+
+    @Transactional
+    public PermanenceDto updatePermanence(Authentication authentication, PermanenceRequestDto req, Long id) {
+        Permanence permanence = permanenceRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("permanence introuvable"));
+        HousekeepingAgent agent = getAgent(req.agentId());
+        permanence.setDate(req.date());
+        permanence.setAgent(agent);
+        permanence = permanenceRepository.save(permanence);
+        activityLogService.logActivity(
+                EAuditActionTarget.HOUSEKEEPING,
+                EAuditActionOperation.UPDATE,
+                String.format("Mise à jour de la permanence du %s : '%s' '%s'.",
+                        req.date(), agent.getFirstName(), agent.getLastName()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+        return PermanenceDto.mapToDto(permanence);
+    }
+
+    @Transactional
+    public void deletePermanence(Authentication authentication, Long id) {
+        Permanence permanence = permanenceRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("permanence introuvable"));
+        permanenceRepository.delete(permanence);
+        activityLogService.logActivity(
+                EAuditActionTarget.HOUSEKEEPING,
+                EAuditActionOperation.DELETE,
+                String.format("Suppression de la permanence du %s : '%s' '%s'.",
+                        permanence.getDate(),
+                        permanence.getAgent() != null ? permanence.getAgent().getFirstName() : "-",
+                        permanence.getAgent() != null ? permanence.getAgent().getLastName() : ""),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+    }
+
+
+    /// /////////////////////////////////////////////////////////////////////////////
     ///                              AGENTS FUNCTIONS                             ///
     /// /////////////////////////////////////////////////////////////////////////////
 
@@ -213,7 +288,8 @@ public class HouseKeepingService {
     public void deleteAgent(Authentication authentication, Long id) {
         HousekeepingAgent agent = getAgent(id);
         long historyCount = housekeepingHistoryRepository.countByAgent_Id(agent.getId());
-        if (historyCount > 0) {
+        long permanenceCount = permanenceRepository.countByAgent_Id(agent.getId());
+        if (historyCount > 0 || permanenceCount > 0) {
             agent.setArchived(true);
             housekeepingAgentRepository.save(agent);
         } else

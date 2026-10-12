@@ -1,0 +1,215 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between px-6 py-6 md:px-10 border-b bg-card dark:bg-transparent transition-all duration-200">
+        <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary-500/20 via-transparent to-transparent"></div>
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center space-x-2 text-secondary font-medium text-sm mb-2">
+                <a class="hover:text-primary transition-colors cursor-pointer">Gestion</a>
+                <mat-icon class="icon-size-4" [svgIcon]="'heroicons_mini:chevron-right'"></mat-icon>
+                <span class="text-primary-600 dark:text-primary-400">Réservations &amp; Séjours</span>
+            </div>
+            <div class="flex items-center">
+                <div class="flex items-center justify-center p-3 mr-4 rounded-xl bg-primary-50 dark:bg-primary-500/10 text-primary shadow-sm">
+                    <mat-icon class="icon-size-10" [svgIcon]="'heroicons_outline:arrows-right-left'"></mat-icon>
+                </div>
+                <div class="flex flex-col">
+                    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-none text-slate-900 dark:text-white">
+                        Délogement
+                    </h2>
+                    <p class="text-secondary font-medium mt-1 text-md hidden sm:block">
+                        Déplacer un occupant vers une autre chambre. Le nouveau tarif est repris automatiquement de la grille tarifaire du type de chambre.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center mt-6 sm:mt-0 sm:ml-4 space-x-3">
+            <a
+                mat-stroked-button
+                color="primary"
+                class="rounded-lg px-6 h-11"
+                routerLink="/settings/prices/room/types"
+                matTooltip="Consulter la grille tarifaire des chambres"
+            >
+                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:banknotes'"></mat-icon>
+                <span class="ml-2 font-semibold">Grille tarifaire</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Items list -->
+    <div class="space-y-8 p-6 md:p-8">
+        <div class="bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+            <!-- Filtres -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                    <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded w-full sm:max-w-xs">
+                        <mat-icon class="icon-size-5" matPrefix [svgIcon]="'search'"></mat-icon>
+                        <input
+                            matInput
+                            #inputKey
+                            matTooltip="Recherche : Occupant, Chambre ou Code Réservation"
+                            [autocomplete]="'off'"
+                            (keyup.enter)="search(inputKey.value)"
+                            [placeholder]="'Chercher...'">
+                    </mat-form-field>
+                </div>
+
+                <div class="w-full sm:w-60">
+                    <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded w-full">
+                        <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:home-modern'"></mat-icon>
+                        <mat-select
+                            [(ngModel)]="selectedRoom"
+                            (selectionChange)="filterByRoom($event.value)"
+                            placeholder="N° de chambre"
+                            panelClass="rounded-xl">
+                            <mat-option value="">Toutes les chambres</mat-option>
+                            @for (room of roomOptions; track room) {
+                                <mat-option [value]="room">{{ room }}</mat-option>
+                            }
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <!-- Tableau -->
+            <div class="w-full bg-primary-50 dark:bg-transparent border rounded-xl shadow-sm overflow-x-auto">
+                <table mat-table [dataSource]="dataSource" class="min-w-full">
+
+                    <!-- Réf. -->
+                    <ng-container matColumnDef="ref">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-center" style="width: 8%">
+                            Réf.
+                        </th>
+                        <td mat-cell *matCellDef="let row" class="text-center">
+                            <span class="text-secondary whitespace-nowrap text-sm font-medium"
+                                  [innerHTML]="row?.code + '' | highlight:key"></span>
+                        </td>
+                    </ng-container>
+
+                    <!-- Occupant -->
+                    <ng-container matColumnDef="guest">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase" style="width: 24%">
+                            Occupant
+                        </th>
+                        <td mat-cell *matCellDef="let row">
+                            <div class="flex items-center space-x-2 whitespace-nowrap">
+                                <span class="text-xs font-bold uppercase tracking-wide text-primary-600 dark:text-primary-400 px-1.5"
+                                      [innerHTML]="row?.person?.grade?.code | highlight:key"></span>
+                                <span class="text-[14px] text-gray-700 dark:text-gray-300 font-medium"
+                                      [innerHTML]="getOccupantName(row) | highlight:key"></span>
+                            </div>
+                            <span class="text-[11px] text-secondary font-medium pl-1.5">
+                                {{ row?.person?.grade?.category?.name }}
+                            </span>
+                        </td>
+                    </ng-container>
+
+                    <!-- Chambre actuelle -->
+                    <ng-container matColumnDef="room">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase" style="width: 22%">
+                            Chambre actuelle
+                        </th>
+                        <td mat-cell *matCellDef="let row">
+                            <div class="flex items-baseline space-x-2">
+                                <span class="text-[11px] uppercase tracking-wider text-secondary font-medium">
+                                    {{ row?.room?.roomType?.type }} :
+                                </span>
+                                <span class="text-sm font-extrabold text-gray-900 dark:text-gray-100"
+                                      [innerHTML]="row?.room?.name | highlight:key"></span>
+                            </div>
+                            <span class="text-[11px] text-secondary">
+                                Pavillon {{ row?.room?.pavillon?.name }} · Étage {{ row?.room?.floor }}
+                            </span>
+                        </td>
+                    </ng-container>
+
+                    <!-- Séjour -->
+                    <ng-container matColumnDef="period">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-center" style="width: 22%">
+                            Séjour (In - Out)
+                        </th>
+                        <td mat-cell *matCellDef="let row">
+                            <div class="flex items-center justify-center space-x-4 w-full font-medium">
+                                <div class="flex flex-col items-center justify-center leading-tight">
+                                    <span class="text-gray-900 dark:text-gray-100 font-bold text-md">
+                                        {{ row?.checkin | date:'dd/MM/yyyy' }}
+                                    </span>
+                                    <span class="text-[11px] text-secondary font-medium opacity-80">
+                                        {{ row?.checkin | date:'HH:mm' }}
+                                    </span>
+                                </div>
+                                <mat-icon class="icon-size-5 opacity-40" [svgIcon]="'heroicons_outline:arrow-long-right'"></mat-icon>
+                                <div class="flex flex-col items-center justify-center leading-tight">
+                                    <span class="text-md text-blue-600 dark:text-blue-400">
+                                        {{ row?.plannedEnd | date:'dd/MM/yyyy' }}
+                                    </span>
+                                    <span class="text-[9px] uppercase tracking-widest font-extrabold text-blue-500/80">
+                                        Prévu
+                                    </span>
+                                </div>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <!-- Tarif chambre -->
+                    <ng-container matColumnDef="price">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent uppercase text-center" style="width: 12%">
+                            Tarif chambre
+                        </th>
+                        <td mat-cell *matCellDef="let row" class="text-center">
+                            <div class="inline-flex flex-col items-center leading-tight"
+                                 [matTooltip]="isAppliedTariff(row) ? 'Tarif appliqué au séjour' : 'Tarif de la grille pour la catégorie ' + (row?.person?.grade?.category?.name || '')"
+                                 matTooltipPosition="above">
+                                <span class="text-sm font-bold text-gray-900 dark:text-gray-100">
+                                    {{ getCurrentTariff(row) | number:'1.0-2' }}
+                                    <span class="text-[10px] text-secondary font-medium">DH</span>
+                                </span>
+                                <span class="text-[9px] uppercase tracking-wider font-semibold"
+                                      [ngClass]="isAppliedTariff(row) ? 'text-emerald-600 dark:text-emerald-400' : 'text-secondary'">
+                                    {{ isAppliedTariff(row) ? 'appliqué' : 'grille' }}
+                                </span>
+                            </div>
+                        </td>
+                    </ng-container>
+
+                    <!-- Action -->
+                    <ng-container matColumnDef="action" stickyEnd>
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-transparent text-center" style="width: 12%"></th>
+                        <td mat-cell *matCellDef="let row" class="text-center bg-white">
+                            <button
+                                mat-flat-button
+                                color="primary"
+                                class="rounded-lg h-9 px-4"
+                                (click)="raiseDeloger(row)"
+                                [disableIfNoPermission]="[APP_PERMISSIONS.RESERVATION_ROOM_CHANGE]">
+                                <mat-icon class="icon-size-4" [svgIcon]="'heroicons_outline:arrows-right-left'"></mat-icon>
+                                <span class="ml-1 text-xs font-semibold">Déloger</span>
+                            </button>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                    <tr class="mat-row" *matNoDataRow>
+                        <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+                            <div class="border-t p-8 text-center text-4xl font-semibold tracking-tight sm:p-16">
+                                @if (!isLoading) {
+                                    Aucun occupant trouvé
+                                } @else {
+                                    Chargement...
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <mat-paginator
+                [ngClass]="{ 'pointer-events-none': isLoading }"
+                showFirstLastButtons="true"
+                [pageSizeOptions]="[20, 50, 100]"
+            ></mat-paginator>
+        </div>
+    </div>
+</div>

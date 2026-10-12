@@ -50,6 +50,7 @@ export class SwitchRoomModel implements OnInit {
     step = 0; // 0: Sélection occupant, 1: Vue Historique, 2: Formulaire de transfert
     reservation: any;
     selectedGuest: any;
+    dialogTitle = 'Changement de Chambre';
 
     displayedColumns: string[] = [
         'previous',
@@ -91,9 +92,13 @@ export class SwitchRoomModel implements OnInit {
         private _fuseConfirmationService: FuseConfirmationService,
         private _toast: ToastrService,
         private _matDialog: MatDialog,
-        @Inject(MAT_DIALOG_DATA) public data: { reservation: any }
+        @Inject(MAT_DIALOG_DATA)
+        public data: { reservation: any; selectedGuestId?: any; title?: string }
     ) {
         this.reservation = data.reservation;
+        if (data?.title) {
+            this.dialogTitle = data.title;
+        }
     }
 
     ngOnInit(): void {
@@ -103,6 +108,18 @@ export class SwitchRoomModel implements OnInit {
             reason: ['', [Validators.required]],
             appliedPrice: [null, [Validators.required, Validators.min(0)]],
         });
+
+        // Ouverture contextuelle : si un occupant est déjà ciblé (ex: page Délogement),
+        // on passe directement à l'historique de ses transferts.
+        const preselectedId = this.data?.selectedGuestId;
+        if (preselectedId) {
+            const guest = this.reservation?.guests?.find(
+                (g: any) => g.id === preselectedId
+            );
+            if (guest) {
+                this.selectGuest(guest);
+            }
+        }
     }
 
     getAppliedPriceForPerson(room: any, person: any): number {

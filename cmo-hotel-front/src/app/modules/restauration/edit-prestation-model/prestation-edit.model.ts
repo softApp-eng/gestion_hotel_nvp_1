@@ -20,9 +20,9 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { ApiRestaurationService } from '../api.restauration.service';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { MatTooltip } from '@angular/material/tooltip';
-import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../@fuse/services/confirmation';
 import { Toastr } from '../../../core/service/toastr.service';
 import { PrestationMonoCreateModel } from '../create-one-prestation-model/prestation-mono-create.model';
+import { PrestationDeleteModel } from '../delete-prestation-model/prestation-delete.model';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
 import { DisableIfNoPermissionDirective } from '../../../core/auth/DisableIfNoPermissionDirective';
 
@@ -50,27 +50,6 @@ import { DisableIfNoPermissionDirective } from '../../../core/auth/DisableIfNoPe
 export class PrestationEditModel implements OnInit {
     title = 'Prestations';
     resrvation;
-    actionConfigDialogue: FuseConfirmationConfig = {
-        title: '',
-        message: '',
-        icon: {
-            show: true,
-            name: 'heroicons_outline:exclamation-triangle',
-            color: 'warn',
-        },
-        actions: {
-            confirm: {
-                show: true,
-                label: 'Confirmer',
-                color: 'warn',
-            },
-            cancel: {
-                show: true,
-                label: 'Annuler',
-            },
-        },
-        dismissible: true,
-    };
 
     /**
      * Constructor
@@ -79,7 +58,6 @@ export class PrestationEditModel implements OnInit {
         private _matDialog: MatDialog,
         public matDialogRef: MatDialogRef<PrestationEditModel>,
         public _apiRestaurationService: ApiRestaurationService,
-        private _fuseConfirmationService: FuseConfirmationService,
         private _toast: Toastr,
         @Inject(MAT_DIALOG_DATA)
         public data: { reservation: any }
@@ -118,6 +96,12 @@ export class PrestationEditModel implements OnInit {
                     category:
                         this.resrvation?.person?.grade?.category ??
                         row?.person?.grade?.category,
+                    beneficiary: this.resrvation?.person ?? row?.person,
+                    room: this.resrvation?.room ?? row?.room,
+                    code:
+                        this.resrvation?.details?.code ??
+                        this.resrvation?.code ??
+                        row?.details?.code,
                 },
                 disableClose: true,
             })
@@ -144,16 +128,22 @@ export class PrestationEditModel implements OnInit {
     }
 
     deletePrestation(p: any): void {
-        this.actionConfigDialogue.title = `Confirmer la suppression de la prestation`;
-        this.actionConfigDialogue.message = `Êtes-vous sûr de vouloir supprimer cette prestation de? <br> Cette action est irréversible.`;
-        const dialogRef = this._fuseConfirmationService.open(
-            this.actionConfigDialogue
-        );
-
-        dialogRef.afterClosed().subscribe((result) => {
-            if (result === 'confirmed') {
+        // Demander le motif de suppression avant de supprimer
+        this._matDialog
+            .open(PrestationDeleteModel, {
+                data: { name: p?.name },
+                width: '460px',
+                maxWidth: '95vw',
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((reason) => {
+                // null => action annulée
+                if (reason === null || reason === undefined) {
+                    return;
+                }
                 this._apiRestaurationService
-                    .deletePrestation(p.prestationId)
+                    .deletePrestation(p.prestationId, reason)
                     .subscribe({
                         next: () => {
                             this._toast.success(
@@ -170,8 +160,7 @@ export class PrestationEditModel implements OnInit {
                                     "Une erreur s'est produite"
                             ),
                     });
-            }
-        });
+            });
     }
 
     protected readonly APP_PERMISSIONS = APP_PERMISSIONS;

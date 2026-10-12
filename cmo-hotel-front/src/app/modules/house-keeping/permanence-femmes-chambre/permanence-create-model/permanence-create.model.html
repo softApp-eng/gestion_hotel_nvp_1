@@ -1,0 +1,44 @@
+<div class="-m-6 flex flex-col overflow-hidden">
+    <mat-toolbar class="mat-accent h-14 min-h-14 px-4 m-0 flex-none">
+        <div class="flex items-center w-full justify-between">
+            <div class="flex items-center">
+                <mat-icon class="icon-size-5 mr-3 text-white" svgIcon="heroicons_outline:user-plus"></mat-icon>
+                <span class="text-lg text-white">{{ isEdit ? 'Modifier la permanence' : 'Ajouter une permanence' }}</span>
+            </div>
+            <button mat-icon-button (click)="cancel()" aria-label="fermer" class="text-white">
+                <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
+            </button>
+        </div>
+    </mat-toolbar>
+
+    <div class="p-6 md:p-8 space-y-4">
+        <mat-form-field class="w-full fuse-mat-no-subscript" appearance="outline">
+            <mat-label>Femme de chambre</mat-label>
+            <mat-icon class="icon-size-5" matPrefix svgIcon="heroicons_outline:user-circle"></mat-icon>
+            <mat-select [(ngModel)]="agentId" required>
+                <mat-option value="">Sélectionner une femme de chambre</mat-option>
+                @for (a of agents; track a.id) {
+                    <mat-option [value]="a.id">{{ a.lastName }} {{ a.firstName }}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field class="w-full fuse-mat-no-subscript" appearance="outline">
+            <mat-label>Jour de permanence</mat-label>
+            <mat-icon class="icon-size-5" matPrefix svgIcon="heroicons_outline:calendar-days"></mat-icon>
+            <input matInput [matDatepicker]="picker" [(ngModel)]="date" required>
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+    </div>
+
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t bg-gray-50 dark:bg-transparent">
+        <button mat-stroked-button class="rounded-xl" (click)="cancel()">Annuler</button>
+        <button mat-flat-button color="primary" class="rounded-xl"
+                [disabled]="!canSave() || saving"
+                (click)="save()">
+            <mat-icon class="icon-size-5 mr-1" svgIcon="heroicons_outline:check"></mat-icon>
+            {{ isEdit ? 'Enregistrer' : 'Ajouter' }}
+        </button>
+    </div>
+</div>

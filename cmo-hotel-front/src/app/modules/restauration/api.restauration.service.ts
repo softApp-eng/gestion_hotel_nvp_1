@@ -33,9 +33,12 @@ export class ApiRestaurationService {
         return this._httpClient.get<any[]>(`${this.API_URL}/reservation?code=${code}`);
     }
 
-    deletePrestation(id): Observable<void> {
-        return this._httpClient.delete<void>(`${this.API_URL}/delete?id=${id}`);
-
+    deletePrestation(id, reason?: string): Observable<void> {
+        let params = new HttpParams().set('id', id);
+        if (reason && reason.trim().length > 0) {
+            params = params.set('reason', reason.trim());
+        }
+        return this._httpClient.delete<void>(`${this.API_URL}/delete`, { params });
     }
 
 

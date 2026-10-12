@@ -77,6 +77,7 @@ export class PrestationListComponent implements OnInit {
 
     prestations = [];
     key = '';
+    roomFilter = ''; // filtre par n° de chambre
 
     rowSpans: Map<string, number> = new Map();
 
@@ -127,35 +128,56 @@ export class PrestationListComponent implements OnInit {
 
     search(key: string): void {
         this.key = key?.trim().toLowerCase();
+        this.applyFilters();
+    }
 
-        if (!this.key) {
-            this.dataSource.data = this.prestations;
-            return; // Stop ici si vide
+    roomFilterChange(value: string): void {
+        this.roomFilter = value?.trim().toLowerCase();
+        this.applyFilters();
+    }
+
+    private applyFilters(): void {
+        let data = this.prestations || [];
+
+        // Filtre recherche globale
+        if (this.key) {
+            data = data.filter((item) => {
+                const person = item?.person;
+                const details = item?.details;
+                const role = item?.role;
+                const room = item?.room;
+
+                const searchString = [
+                    person?.identity,
+                    person?.firstName,
+                    person?.lastName,
+                    person?.grade?.code,
+                    person?.grade?.name,
+                    details?.code?.toString(),
+                    role?.name,
+                    room?.name,
+                    room?.code,
+                    room?.pavillon?.name,
+                ]
+                    .join(' ')
+                    .toLowerCase();
+
+                return searchString.includes(this.key);
+            });
         }
 
-        this.dataSource.data = this.prestations?.filter((item) => {
-            const person = item?.person;
-            const details = item?.details;
-            const role = item?.role;
-            const room = item?.room;
+        // Filtre spécifique par n° de chambre
+        if (this.roomFilter) {
+            data = data.filter((item) => {
+                const room = item?.room;
+                return (
+                    room?.code?.toString().toLowerCase().includes(this.roomFilter) ||
+                    room?.name?.toLowerCase().includes(this.roomFilter)
+                );
+            });
+        }
 
-            const searchString = [
-                person?.identity,
-                person?.firstName,
-                person?.lastName,
-                person?.grade?.code,
-                person?.grade?.name,
-                details?.code?.toString(),
-                role?.name,
-                room?.name,
-                room?.code,
-                room?.pavillon?.name,
-            ]
-                .join(' ')
-                .toLowerCase();
-
-            return searchString.includes(this.key);
-        });
+        this.dataSource.data = data;
     }
 
     totalAmount(p): number {
@@ -211,6 +233,9 @@ export class PrestationListComponent implements OnInit {
                 data: {
                     reservation: row.reservationId,
                     category: row?.person?.grade?.category,
+                    beneficiary: row?.person,
+                    room: row?.room,
+                    code: row?.details?.code ?? row?.code,
                 },
                 disableClose: true,
             })

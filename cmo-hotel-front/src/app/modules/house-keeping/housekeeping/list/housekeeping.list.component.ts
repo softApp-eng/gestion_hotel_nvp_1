@@ -34,6 +34,7 @@ import { UserService } from '../../../../core/user/user.service';
     imports: [
         MatIconModule,
         MatButtonModule,
+        RouterLink,
         HighlightPipe,
         MatInputModule,
         MatMenuModule,

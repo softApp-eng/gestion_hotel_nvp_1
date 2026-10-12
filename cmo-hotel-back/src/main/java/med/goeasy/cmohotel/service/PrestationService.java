@@ -48,6 +48,24 @@ public class PrestationService {
     @Transactional
     public void createPrestation(Authentication authentication, PrestationRequestDto dto) {
         MealType meal = mealService.getMealTypeById(dto.mealId());
+
+        // Un même type de repas ne peut être enregistré qu'une seule fois par personne et par jour.
+        // Vérification avant tout enregistrement (la méthode est transactionnelle).
+        List<String> duplicates = new ArrayList<>();
+        dto.reservations().keySet().forEach(r -> {
+            Reservation reservation = reservationService.getReservationById(r);
+            if (prestationRepo.countByPersonAndDayAndTypeAndName(
+                    reservation.getId(), LocalDate.now(), EPrestationType.MEAL, meal.getName()) > 0) {
+                duplicates.add(reservation.getPerson().getFullName());
+            }
+        });
+        if (!duplicates.isEmpty()) {
+            throw new BadRequestException(String.format(
+                    "La prestation « %s » a déjà été enregistrée aujourd'hui pour : %s. "
+                            + "Un même type de repas ne peut être saisi qu'une seule fois par jour et par personne.",
+                    meal.getName(), String.join(", ", duplicates)));
+        }
+
         dto.reservations().forEach((r,q)->{
             Reservation reservation = reservationService.getReservationById(r);
             Prestation prestation = Prestation.builder()
@@ -83,6 +101,17 @@ public class PrestationService {
         Reservation reservation = reservationService.getReservationById(dto.reservation());
         Prestation prestation;
         Integer qty = (dto.quantity() == null || dto.quantity() == 0) ? 1 : dto.quantity();
+
+        // Un même type de repas ne peut être enregistré qu'une seule fois par personne et par jour
+        if (EPrestationType.MEAL.name().equals(dto.type())
+                && prestationRepo.countByPersonAndDayAndTypeAndName(
+                        reservation.getId(), LocalDate.now(), EPrestationType.MEAL, dto.name()) > 0) {
+            throw new BadRequestException(String.format(
+                    "Cette prestation « %s » a déjà été enregistrée aujourd'hui pour %s. "
+                            + "Un même type de repas ne peut être saisi qu'une seule fois par jour.",
+                    dto.name(), reservation.getPerson().getFullName()));
+        }
+
         if (EPrestationType.MEAL.name().equals(dto.type())){
             //MealType meal = mealService.getMealTypeById(Long.valueOf(dto.name()));
             prestation = Prestation.builder()
@@ -130,6 +159,14 @@ public class PrestationService {
         Integer qty = (dto.quantity() == null || dto.quantity() == 0) ? 1 : dto.quantity();
         if (EPrestationType.MEAL == prestation.getType()){
             //MealType meal = mealService.getMealTypeById(Long.valueOf(dto.name()));
+            LocalDate day = prestation.getDay() != null ? prestation.getDay() : LocalDate.now();
+            if (prestationRepo.countByPersonAndDayAndTypeAndNameExcept(
+                    prestation.getReservation().getId(), day, EPrestationType.MEAL, dto.name(), prestation.getId()) > 0) {
+                throw new BadRequestException(String.format(
+                        "Cette prestation « %s » existe déjà pour ce jour pour %s. "
+                                + "Un même type de repas ne peut être saisi qu'une seule fois par jour.",
+                        dto.name(), prestation.getReservation().getPerson().getFullName()));
+            }
             prestation.setName(dto.name());
             prestation.setQuantity(qty);
             BigDecimal unitPrice = (dto.price() != null && dto.price() > 0)
@@ -187,15 +224,17 @@ public class PrestationService {
     }
 
     @Transactional
-    public void deletePrestation(Authentication authentication, String id) {
+    public void deletePrestation(Authentication authentication, String id, String reason) {
         Prestation prestation = getPrestationById(id);
+        String motif = (reason != null && !reason.isBlank()) ? reason.trim() : "non précisé";
         prestationRepo.delete(prestation);
         activityLogService.logActivity(
                 EAuditActionTarget.PRESTATION,
                 EAuditActionOperation.DELETE,
-                String.format("Suppression de la préstation de Mr (%s) pour le %s.",
+                String.format("Suppression de la préstation de Mr (%s) pour le %s. Motif : %s.",
                         prestation.getReservation().getPerson().getFullName(),
-                        prestation.getName()
+                        prestation.getName(),
+                        motif
                 ),
                 activityLogService.getClientIp(request),
                 authentication.getName()

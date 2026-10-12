@@ -170,6 +170,14 @@ export const appRoutes: Route[] = [
                 },
             },
             {
+                path: 'delogement',
+                loadChildren: () =>
+                    import('app/modules/delogement/delogement.routes'),
+                data: {
+                    module: [APP_MODULES.RESERVATION],
+                },
+            },
+            {
                 path: 'main/courante',
                 loadChildren: () =>
                     import('app/modules/main-courante/main-courante.routes'),

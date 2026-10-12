@@ -7,8 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import med.goeasy.cmohotel.presentation.dto.ApiResponse;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
 import med.goeasy.cmohotel.presentation.dto.housekeeping.request.HousekeepingAgentRequestDto;
+import med.goeasy.cmohotel.presentation.dto.housekeeping.request.PermanenceRequestDto;
 import med.goeasy.cmohotel.presentation.dto.housekeeping.request.UpdateRoomCleanRequest;
 import med.goeasy.cmohotel.presentation.dto.housekeeping.response.HousekeepingAgentResponseDto;
+import med.goeasy.cmohotel.presentation.dto.housekeeping.response.PermanenceDto;
 import med.goeasy.cmohotel.presentation.dto.housekeeping.response.RoomHousekeepingDto;
 import med.goeasy.cmohotel.service.HouseKeepingService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -95,6 +97,45 @@ public class HousekeepingController {
     ){
         houseKeepingService.deleteHistory(authentication,id);
         return ResponseEntity.ok(ApiResponse.builder().message("supprimé").build());
+    }
+
+
+    /// /////////////////////////////////////////////////////////////////////////////
+    ///                            PERMANENCE FUNCTIONS                           ///
+    /// /////////////////////////////////////////////////////////////////////////////
+
+    @GetMapping("/permanence/list")
+    ResponseEntity<List<PermanenceDto>> listPermanence(
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate start,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate end
+    ){
+        return ResponseEntity.ok(houseKeepingService.listPermanences(start, end));
+    }
+
+    @PostMapping("/permanence/create")
+    ResponseEntity<PermanenceDto> createPermanence(
+            Authentication authentication,
+            @Valid @RequestBody() PermanenceRequestDto dto
+    ){
+        return ResponseEntity.ok(houseKeepingService.createPermanence(authentication, dto));
+    }
+
+    @PutMapping("/permanence/update")
+    ResponseEntity<PermanenceDto> updatePermanence(
+            Authentication authentication,
+            @Valid @NotNull(message = "id requis") @RequestParam() Long id,
+            @Valid @RequestBody() PermanenceRequestDto dto
+    ){
+        return ResponseEntity.ok(houseKeepingService.updatePermanence(authentication, dto, id));
+    }
+
+    @DeleteMapping("/permanence/delete")
+    ResponseEntity<ApiResponse> deletePermanence(
+            Authentication authentication,
+            @Valid @NotNull(message = "id requis") @RequestParam() Long id
+    ){
+        houseKeepingService.deletePermanence(authentication, id);
+        return ResponseEntity.ok(ApiResponse.builder().message("permanence supprimée").build());
     }
 
 

@@ -18,7 +18,8 @@ public record RoomHousekeepingDto(
         LocalDateTime startAt,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
         LocalDateTime endAt,
-        String comment
+        String comment,
+        String status
 ) {
     public static RoomHousekeepingDto mapToDto(HousekeepingHistory entity){
         if (entity == null)
@@ -28,6 +29,7 @@ public record RoomHousekeepingDto(
                 .startAt(entity.getStartAt())
                 .endAt(entity.getEndAt())
                 .comment(entity.getComment())
+                .status(entity.getStatus())
                 .room(RoomResponseDto.mapToDto(entity.getRoom()))
                 .agent(HousekeepingAgentResponseDto.mapToDto(entity.getAgent()))
                 .build();

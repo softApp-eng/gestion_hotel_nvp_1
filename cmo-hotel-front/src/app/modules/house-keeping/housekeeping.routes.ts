@@ -3,6 +3,8 @@ import { APP_PERMISSIONS } from '../../core/data/app-permissions';
 import { HousekeepingAgentsComponent } from './agent/housekeeping-agents.component';
 import { HousekeepingListComponent } from './housekeeping/list/housekeeping.list.component';
 import { HousekeepingHistoryComponent } from './history/housekeeping.history.component';
+import { PlanningGouvernanteComponent } from './planning-gouvernante/planning-gouvernante.component';
+import { PermanenceFemmesChambreComponent } from './permanence-femmes-chambre/permanence-femmes-chambre.component';
 
 export default [
     {
@@ -18,11 +20,26 @@ export default [
         data: {
             permissions:[APP_PERMISSIONS.ROOM_GRANTED]
         },
-    },{
+    },
+    {
         path     : 'history',
         component: HousekeepingHistoryComponent,
         data: {
             permissions:[APP_PERMISSIONS.HOUSE_KEEPING_HISTORY_SEARCH]
+        },
+    },
+    {
+        path     : 'planning-gouvernante',
+        component: PlanningGouvernanteComponent,
+        data: {
+            permissions:[APP_PERMISSIONS.ROOM_GRANTED]
+        },
+    },
+    {
+        path     : 'permanence-femmes-chambre',
+        component: PermanenceFemmesChambreComponent,
+        data: {
+            permissions:[APP_PERMISSIONS.ROOM_GRANTED]
         },
     },
 ] as Route[];

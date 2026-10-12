@@ -54,8 +54,9 @@ public class PrestationController {
     @DeleteMapping("/delete")
     ResponseEntity<ApiResponse> delete(
             Authentication authentication,
-            @Valid @NotBlank(message = "prestation id requis") @RequestParam() String id) {
-        prestationService.deletePrestation(authentication, id);
+            @Valid @NotBlank(message = "prestation id requis") @RequestParam() String id,
+            @RequestParam(required = false) String reason) {
+        prestationService.deletePrestation(authentication, id, reason);
         return ResponseEntity.ok(ApiResponse.builder().message("Prestation supprimée").build());
     }
 

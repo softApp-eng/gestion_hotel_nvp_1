@@ -77,4 +77,25 @@ export class ApiHousekeepingService {
         return this._httpClient.put(`${this.API_URL}/housekeeping/history/update?id=${id}`, payload);
     }
 
+    createPermanence(payload): Observable<any>{
+        return this._httpClient.post(`${this.API_URL}/permanence/create`, payload);
+    }
+
+    updatePermanence(id,payload): Observable<any>{
+        let params = new HttpParams().set('id', id);
+        return this._httpClient.put(`${this.API_URL}/permanence/update`, payload, { params });
+    }
+
+    deletePermanence(id): Observable<any>{
+        let params = new HttpParams().set('id', id);
+        return this._httpClient.delete(`${this.API_URL}/permanence/delete`, { params });
+    }
+
+    listPermanences(start = '', end = ''): Observable<any>{
+        let params = new HttpParams();
+        if (start) params = params.set('start', start);
+        if (end) params = params.set('end', end);
+        return this._httpClient.get(`${this.API_URL}/permanence/list`, { params });
+    }
+
 }

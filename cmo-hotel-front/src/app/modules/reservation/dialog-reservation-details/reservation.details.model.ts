@@ -102,6 +102,9 @@ export class ReservationDetailsModel implements OnInit {
                 data: {
                     reservation: reservationId,
                     category: guest?.person?.grade?.category,
+                    beneficiary: guest?.person,
+                    room: guest?.room,
+                    code: this.reservation?.code,
                 },
                 disableClose: true,
             })

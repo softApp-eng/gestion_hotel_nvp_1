@@ -59,6 +59,15 @@ export class AuthService {
         return this.jwtHelper.decodeToken(this.accessToken)?.roles || null;
     }
 
+    /**
+     * Nom de l'utilisateur connecté (claim "sub" du JWT)
+     */
+    get username(): string
+    {
+        const decoded = this.jwtHelper.decodeToken(this.accessToken);
+        return decoded?.sub ?? decoded?.username ?? '';
+    }
+
     get permissions(): string[]
     {
         return this.jwtHelper.decodeToken(this.accessToken)?.permissions || null;

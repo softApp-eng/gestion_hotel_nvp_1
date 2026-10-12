@@ -93,6 +93,16 @@ export const defaultNavigation: FuseNavigationItem[] = [
                         },
                     },
                     {
+                        id: 'reservations.delogement',
+                        title: 'Délogement',
+                        type: 'basic',
+                        icon: 'heroicons_outline:arrows-right-left',
+                        link: '/managements/delogement',
+                        data: {
+                            permissions: [APP_PERMISSIONS.RESERVATION_LIST],
+                        },
+                    },
+                    {
                         id: 'reservations.calender',
                         title: "Planning d'occupation",
                         type: 'basic',
@@ -223,6 +233,20 @@ export const defaultNavigation: FuseNavigationItem[] = [
                                 APP_PERMISSIONS.HOUSE_KEEPING_AGENT_LIST,
                             ],
                         },
+                    },
+                    {
+                        id: 'housekeeping.planningGouvernante',
+                        title: 'Planning Gouvernante',
+                        type: 'basic',
+                        icon: 'heroicons_outline:calendar-days',
+                        link: '/managements/housekeeping/planning-gouvernante',
+                    },
+                    {
+                        id: 'housekeeping.permanence',
+                        title: 'Permanence Femmes de Chambre',
+                        type: 'basic',
+                        icon: 'heroicons_outline:users',
+                        link: '/managements/housekeeping/permanence-femmes-chambre',
                     },
                 ],
             },
@@ -494,6 +518,20 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 link: '/managements/housekeeping/agents',
                 data: { permissions: [APP_PERMISSIONS.HOUSE_KEEPING_AGENT_LIST] },
             },
+            {
+                id: 'housekeeping.planningGouvernante',
+                title: 'Planning Gouvernante',
+                type: 'basic',
+                icon: 'heroicons_outline:calendar-days',
+                link: '/managements/housekeeping/planning-gouvernante',
+            },
+            {
+                id: 'housekeeping.permanence',
+                title: 'Permanence Femmes de Chambre',
+                type: 'basic',
+                icon: 'heroicons_outline:users',
+                link: '/managements/housekeeping/permanence-femmes-chambre',
+            },
         ],
     },
     {
@@ -694,6 +732,18 @@ export const defaultNavigation2: FuseNavigationItem[] = [
                         data: {
                             permissions:[APP_PERMISSIONS.HOUSE_KEEPING_AGENT_LIST]
                         },
+                    },
+                    {
+                        id: 'housekeeping.housekeeping.planningGouvernante',
+                        title: 'Planning Gouvernante',
+                        type: 'basic',
+                        link: '/managements/housekeeping/planning-gouvernante',
+                    },
+                    {
+                        id: 'housekeeping.housekeeping.permanence',
+                        title: 'Permanence Femmes de Chambre',
+                        type: 'basic',
+                        link: '/managements/housekeeping/permanence-femmes-chambre',
                     },
 
 
