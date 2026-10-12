@@ -201,7 +201,7 @@
         <tbody>
         <tr th:each="presta : ${invoice.invoicePrestations}">
             <td th:text="${presta.name}">Extra</td>
-            <td th:text="${(presta.type == 'MEAL' ? 'REPAS' : 'SERVICE EXTRA') }">SERVICE</td>
+            <td th:text="${(presta.type?.name() == 'MEAL' ? 'REPAS' : 'SERVICE EXTRA') }">SERVICE</td>
             <td class="price-col" th:text="${#numbers.formatDecimal(presta.price, 1, 2) + ' MAD'}">0.00</td>
         </tr>
         </tbody>
@@ -245,7 +245,7 @@
 </div>
 
 <div class="footer">
-    CMO-HOTEL MANAGER - Facture éditée par <span th:text="${createdBy}">Admin</span>. Tous droits réservés.
+    CMO-HOTEL MANAGER - Facture éditée par <span th:text="${generatedBy}">Admin</span>. Tous droits réservés.
 </div>
 
 </body>
