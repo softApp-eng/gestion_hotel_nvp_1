@@ -98,11 +98,30 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'resourceTimelineWeek'
+            right: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth'
         },
         buttonText: {
             today:    "Aujourd'hui",
-            week:     "Semaine",
+            day:      'Jour',
+            week:     'Semaine',
+            month:    'Mois',
+        },
+
+        // Rendu spécifique selon l'échelle choisie (jour / semaine / mois)
+        views: {
+            resourceTimelineDay: {
+                slotDuration: { hours: 1 },
+                slotLabelFormat: [{ hour: '2-digit', minute: '2-digit' }],
+                slotMinWidth: 55,
+            },
+            resourceTimelineMonth: {
+                slotDuration: { days: 1 },
+                slotMinWidth: 38,
+                slotLabelFormat: [
+                    { weekday: 'narrow' },
+                    { day: 'numeric' },
+                ],
+            },
         },
 
         // TRÈS IMPORTANT : Transformation des données en arbre (Pavillon > Type > Chambre)
