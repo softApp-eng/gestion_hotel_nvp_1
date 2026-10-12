@@ -9,7 +9,7 @@ import { CalendarOptions } from '@fullcalendar/core';
 import interactionPlugin from '@fullcalendar/interaction';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import { ApiReservationService } from '../../reservation/api.reservation.service';
-import { Observable, of, Subject, takeUntil } from 'rxjs';
+import { forkJoin, Observable, of, Subject, takeUntil } from 'rxjs';
 import { UtilsService } from '../../../core/service/utils.service';
 import {ApiRoomService} from "../../pavillon/api.room.service";
 import {ApiPavillonService} from "../../pavillon/api.pavillon.service";
@@ -23,6 +23,12 @@ import { ReservationDetailsModel } from '../../reservation/dialog-reservation-de
 import { MatDialog } from '@angular/material/dialog';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
+import { ActivatedRoute } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
+import {
+    FuseConfirmationConfig,
+    FuseConfirmationService,
+} from '../../../../@fuse/services/confirmation';
 
 
 @Component({
@@ -59,6 +65,27 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
 
         // Ligne rouge verticale indiquant le jour / l'heure courante
         nowIndicator: true,
+
+        // --- ÉDITION (activée uniquement sur le Planning des chambres) ---
+        editable: false,
+        eventStartEditable: false, // Le déplacement horizontal (dates d'arrivée) n'est pas autorisé
+        eventDurationEditable: false, // Redimensionnement de la durée (bord droit) : activé en mode éditable
+        eventResourceEditable: false, // Glisser-déposer entre lignes de chambres : activé en mode éditable
+        eventDrop: (info: any) => this.onEventDrop(info),
+        eventResize: (info: any) => this.onEventResize(info),
+
+        // --- STYLES DYNAMIQUES (couleur par statut / par niveau de ressource) ---
+        eventClassNames: (arg: any) => {
+            const status =
+                arg?.event?.extendedProps?.status?.code ??
+                arg?.event?.extendedProps?.status ??
+                'PENDING';
+            return `cm-ev cm-ev-${String(status).toLowerCase()}`;
+        },
+        resourceLabelClassNames: (arg: any) =>
+            `cm-res cm-res-${arg?.resource?.extendedProps?.level || 'room'}`,
+        resourceLaneClassNames: (arg: any) =>
+            `cm-lane cm-lane-${arg?.resource?.extendedProps?.level || 'room'}`,
 
         // --- TRI ET GRANULARITÉ ---
         slotDuration: { days: 1 },
@@ -115,6 +142,13 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
     selectedRoom: any = '';
     selectedPavillon: any = '';
 
+    // Mode édition (Planning des chambres) : glisser-déposer + redimensionnement persistés
+    isEditable = false;
+    pageTitle = 'Occupation';
+    pageSubtitle =
+        "Calendrier interactif des disponibilités et suivi temporel de l'occupation des chambres par pavillon.";
+    private readonly moveReason = 'Délogement via le planning des chambres';
+
     @ViewChild('fullCalendar') fullCalendar: any;
 
     private periodReservations: any[] = [];
@@ -134,9 +168,14 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
         private _matDialog: MatDialog,
         private _utilsService: UtilsService,
         private _breakpointObserver: BreakpointObserver,
+        private _route: ActivatedRoute,
+        private _fuseConfirmationService: FuseConfirmationService,
+        private _toast: ToastrService,
     ) {}
 
     ngOnInit(): void {
+        this.initEditMode();
+
         this.loadPavillons();
 
         this._breakpointObserver.observe([Breakpoints.Handset])
@@ -163,6 +202,29 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
             });
     }
 
+    /**
+     * Applique le mode défini par la route : "Planning des chambres" est éditable,
+     * "Planning d'occupation" reste en lecture seule.
+     */
+    private initEditMode(): void {
+        const data = this._route?.snapshot?.data || {};
+        this.isEditable = !!data['editable'];
+
+        if (data['title']) {
+            this.pageTitle = data['title'];
+        }
+        if (data['subtitle']) {
+            this.pageSubtitle = data['subtitle'];
+        }
+
+        this.calendarOptions.update((options) => ({
+            ...options,
+            editable: this.isEditable,
+            eventDurationEditable: this.isEditable,
+            eventResourceEditable: this.isEditable,
+        }));
+    }
+
     buildHierarchicalResources(rooms: any[]): any[] {
         const tree = [];
 
@@ -177,6 +239,7 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
                 pavillonsMap.set(pavillonName, {
                     id: `pav-${room.pavillon?.id || 'unknown'}`,
                     title: pavillonName,
+                    extendedProps: { level: 'pavillon' },
                     childrenMap: new Map()
                 });
             }
@@ -188,6 +251,7 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
                 pavillonNode.childrenMap.set(typeName, {
                     id: `type-${room.pavillon?.id}-${room.roomType?.id}`,
                     title: typeName,
+                    extendedProps: { level: 'type' },
                     children: []
                 });
             }
@@ -197,7 +261,8 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
             // 3. Ajouter la chambre (l'élément final)
             typeNode.children.push({
                 id: room.id.toString(),
-                title: room.name // Utilisé par resourceOrder: 'title' pour le tri
+                title: room.name, // Utilisé par resourceOrder: 'title' pour le tri
+                extendedProps: { level: 'room' }
             });
         });
 
@@ -221,6 +286,7 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
                 typesList.push({
                     id: tNode.id,
                     title: tNode.title,
+                    extendedProps: tNode.extendedProps,
                     children: tNode.children
                 });
             });
@@ -228,6 +294,7 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
             tree.push({
                 id: pavNode.id,
                 title: pavNode.title,
+                extendedProps: pavNode.extendedProps,
                 children: typesList
             });
         });
@@ -396,6 +463,241 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
         }
     }
 
+    /**
+     * Force le rechargement des réservations depuis le serveur (après une mutation).
+     */
+    private reloadFromServer(): void {
+        // Invalide le cache local pour forcer un nouvel appel API
+        this.periodReservations = [];
+        this.start = undefined;
+        this.end = undefined;
+        this.refreshCalendar();
+    }
+
+    private findReservation(code: any): any {
+        return (this.periodReservations || []).find(
+            (r) => String(r.code) === String(code)
+        );
+    }
+
+    private findRoomById(roomId: any): any {
+        return (this.rooms || []).find(
+            (r) => String(r.id) === String(roomId)
+        );
+    }
+
+    /**
+     * Tarif de la grille tarifaire pour une catégorie de grade donnée.
+     * (Même logique que le dialogue de changement de chambre.)
+     */
+    getAppliedPriceForPerson(room: any, person: any): number {
+        if (!room?.roomType?.prices || !person) {
+            return 0;
+        }
+
+        const categoryCode = person.grade?.category?.code;
+        if (!categoryCode) {
+            return 0;
+        }
+
+        const priceEntry = room.roomType.prices.find(
+            (p: any) => p.category?.code === categoryCode
+        );
+
+        return priceEntry ? priceEntry.price : 0;
+    }
+
+    /**
+     * Glisser-déposer d'une réservation vers une autre chambre (délogement).
+     */
+    onEventDrop(info: any): void {
+        if (!this.isEditable) {
+            return;
+        }
+
+        const oldResourceId = info.oldEvent?.resourceId;
+        const newResourceId = info.event?.resourceId;
+
+        // Un déplacement horizontal (changement de dates) n'est pas autorisé ici :
+        // on annule et on oriente l'utilisateur vers le redimensionnement.
+        const timeChanged =
+            (info.oldEvent?.start?.getTime?.() ?? null) !==
+                (info.event?.start?.getTime?.() ?? null) ||
+            (info.oldEvent?.end?.getTime?.() ?? null) !==
+                (info.event?.end?.getTime?.() ?? null);
+
+        if (timeChanged) {
+            info.revert();
+            this._toast.warning(
+                "Pour modifier les dates, redimensionnez le séjour depuis son bord droit."
+            );
+            return;
+        }
+
+        if (String(oldResourceId) === String(newResourceId)) {
+            return;
+        }
+
+        const code = info.event.id;
+        const oldRoom = this.findRoomById(oldResourceId);
+        const newRoom = this.findRoomById(newResourceId);
+
+        const config: FuseConfirmationConfig = {
+            title: 'Déloger la réservation',
+            message:
+                `Déplacer la réservation <strong>#${code}</strong> de la chambre ` +
+                `<strong>${oldRoom?.name ?? oldResourceId}</strong> vers ` +
+                `<strong>${newRoom?.name ?? newResourceId}</strong> ?<br>` +
+                `Le tarif appliqué sera recalculé automatiquement depuis la grille tarifaire.`,
+            icon: {
+                show: true,
+                name: 'heroicons_outline:arrows-right-left',
+                color: 'primary',
+            },
+            actions: {
+                confirm: { show: true, label: 'Déloger', color: 'primary' },
+                cancel: { show: true, label: 'Annuler' },
+            },
+            dismissible: true,
+        };
+
+        this._fuseConfirmationService
+            .open(config)
+            .afterClosed()
+            .subscribe((result) => {
+                if (result !== 'confirmed') {
+                    info.revert();
+                    return;
+                }
+                this.persistRoomChange(
+                    code,
+                    oldResourceId,
+                    newResourceId,
+                    info
+                );
+            });
+    }
+
+    /**
+     * Enregistre le changement de chambre pour tous les occupants de la chambre d'origine.
+     */
+    private persistRoomChange(
+        code: any,
+        oldResourceId: any,
+        newResourceId: any,
+        info: any
+    ): void {
+        const reservation = this.findReservation(code);
+        const newRoom = this.findRoomById(newResourceId);
+
+        if (!reservation || !newRoom) {
+            info.revert();
+            this._toast.error('Réservation ou chambre introuvable');
+            return;
+        }
+
+        const guests = (reservation.guests || []).filter(
+            (g: any) => String(g.room?.id) === String(oldResourceId)
+        );
+
+        if (guests.length === 0) {
+            info.revert();
+            this._toast.error('Aucun occupant à déloger dans cette chambre');
+            return;
+        }
+
+        const calls = guests.map((guest: any) =>
+            this._apiReservationService.switchRoom({
+                reservationId: String(guest.id),
+                newRoomId: Number(newResourceId),
+                reason: this.moveReason,
+                appliedPrice: this.getAppliedPriceForPerson(
+                    newRoom,
+                    guest.person
+                ),
+            })
+        );
+
+        forkJoin(calls).subscribe({
+            next: () => {
+                this._toast.success('Délogement effectué avec succès');
+                this.reloadFromServer();
+            },
+            error: (err) => {
+                info.revert();
+                this._toast.error(
+                    err?.error?.message || 'Erreur lors du délogement'
+                );
+                this.reloadFromServer();
+            },
+        });
+    }
+
+    /**
+     * Redimensionnement de la durée d'un séjour (prolongation de la date de fin).
+     */
+    onEventResize(info: any): void {
+        if (!this.isEditable) {
+            return;
+        }
+
+        const code = info.event.id;
+        const oldEnd = info.oldEvent?.end;
+        const newEnd = info.event?.end;
+
+        if (!newEnd || (oldEnd && oldEnd.getTime() === newEnd.getTime())) {
+            return;
+        }
+
+        const endLabel = this.formatPrintDay(newEnd);
+
+        const config: FuseConfirmationConfig = {
+            title: 'Modifier la durée du séjour',
+            message:
+                `Prolonger la réservation <strong>#${code}</strong> jusqu'au ` +
+                `<strong>${endLabel}</strong> ?`,
+            icon: {
+                show: true,
+                name: 'heroicons_outline:calendar-days',
+                color: 'primary',
+            },
+            actions: {
+                confirm: { show: true, label: 'Enregistrer', color: 'primary' },
+                cancel: { show: true, label: 'Annuler' },
+            },
+            dismissible: true,
+        };
+
+        this._fuseConfirmationService
+            .open(config)
+            .afterClosed()
+            .subscribe((result) => {
+                if (result !== 'confirmed') {
+                    info.revert();
+                    return;
+                }
+
+                this._apiReservationService
+                    .extendReservation(
+                        code,
+                        this._utilsService.convertToDate(newEnd)
+                    )
+                    .subscribe({
+                        next: () => {
+                            this._toast.success('Durée du séjour mise à jour');
+                            this.reloadFromServer();
+                        },
+                        error: (err) => {
+                            info.revert();
+                            this._toast.error(
+                                err?.error?.message ||
+                                    'Erreur lors de la modification de la durée'
+                            );
+                        },
+                    });
+            });
+    }
+
     getReservationsByRange(type, start, end): Observable<any> {
         // Si on a déjà les données pour EXACTEMENT cette période, on renvoie le cache
         if (this.periodReservations.length > 0 && this.start === start && this.end === end) {
@@ -492,6 +794,9 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
     ): string {
         const rangeLabel = `${this.formatPrintDay(start)} → ${this.formatPrintDay(this.addDays(end, -1))}`;
         const generated = new Date();
+        const docTitle = this.isEditable
+            ? 'Planning des chambres'
+            : "Planning d'occupation";
 
         const sections = groups
             .map(([, group]) => {
@@ -536,7 +841,7 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<title>Planning d'occupation - CMO Hôtel</title>
+<title>${docTitle} - CMO Hôtel</title>
 <style>
     * { box-sizing: border-box; }
     body { font-family: 'Segoe UI', Arial, sans-serif; margin: 16px; color: #0f172a; }
@@ -562,14 +867,14 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
 </head>
 <body>
     <header class="doc-header">
-        <h1>Planning d'occupation — CMO Hôtel</h1>
+        <h1>${docTitle} — CMO Hôtel</h1>
         <div class="meta">
             <div><strong>Période :</strong> ${rangeLabel}</div>
             <div>Généré le ${this.formatPrintDay(generated)} à ${generated.toLocaleTimeString('fr-FR')}</div>
         </div>
     </header>
     ${sections}
-    <div class="footer">CMO Hôtel — Planning d'occupation par pavillon</div>
+    <div class="footer">CMO Hôtel — ${docTitle} par pavillon</div>
 </body>
 </html>`;
     }

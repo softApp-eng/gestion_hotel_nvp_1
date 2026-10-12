@@ -1,4 +1,4 @@
-<div class="flex min-w-0 flex-auto flex-col">
+<div class="flex min-w-0 flex-auto flex-col" [class.planning-editable]="isEditable">
     <!-- Header -->
     <div class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between px-6 py-6 md:px-10 border-b bg-card dark:bg-transparent transition-all duration-200">
         <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary-500/20 via-transparent to-transparent"></div>
@@ -13,11 +13,19 @@
                     <mat-icon class="icon-size-10" [svgIcon]="'heroicons_solid:calendar-days'"></mat-icon>
                 </div>
                 <div class="flex flex-col">
-                    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-none text-slate-900 dark:text-white">
-                        Occupation
-                    </h2>
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+                        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-none text-slate-900 dark:text-white">
+                            {{ pageTitle }}
+                        </h2>
+                        @if (isEditable) {
+                            <span class="inline-flex items-center gap-1 rounded-full bg-primary-50 dark:bg-primary-500/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary-700 dark:text-primary-300 ring-1 ring-primary-200 dark:ring-primary-500/30">
+                                <mat-icon class="icon-size-4" [svgIcon]="'heroicons_solid:pencil-square'"></mat-icon>
+                                Édition
+                            </span>
+                        }
+                    </div>
                     <p class="text-secondary font-medium mt-1 text-md hidden sm:block">
-                        Calendrier interactif des disponibilités et suivi temporel de l'occupation des chambres par pavillon.
+                        {{ pageSubtitle }}
                     </p>
                 </div>
             </div>
@@ -72,18 +80,33 @@
                             </button>
                         </div>
 
+                        @if (isEditable) {
+                            <div class="mb-4 flex items-start gap-2 rounded-xl bg-primary-50 dark:bg-primary-500/10 px-4 py-3 text-sm text-primary-800 dark:text-primary-300">
+                                <mat-icon class="icon-size-5 shrink-0" [svgIcon]="'heroicons_outline:information-circle'"></mat-icon>
+                                <span>
+                                    Glissez une réservation vers une autre chambre pour la déloger, ou étirez son bord droit pour prolonger le séjour.
+                                    Chaque modification est confirmée puis enregistrée.
+                                </span>
+                            </div>
+                        }
+
                         <full-calendar #fullCalendar [options]="calendarOptions()"></full-calendar>
 
                         <div class="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t pt-4">
 
                             <div class="flex items-center" matTooltip="La réservation est validée, la chambre est officiellement occupée.">
-                                <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background-color: #4f46e5;"></div>
+                                <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background: linear-gradient(135deg, #6366f1, #4338ca);"></div>
                                 <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Confirmé</span>
                             </div>
 
                             <div class="flex items-center" matTooltip="La demande d'occupation est enregistrée mais en attente de traitement.">
-                                <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background-color: #64748b;"></div>
+                                <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background: linear-gradient(135deg, #94a3b8, #64748b);"></div>
                                 <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">En attente</span>
+                            </div>
+
+                            <div class="flex items-center" matTooltip="Le séjour est terminé, la chambre a été libérée.">
+                                <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background: linear-gradient(135deg, #34d399, #059669);"></div>
+                                <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Terminé</span>
                             </div>
 
                         </div>

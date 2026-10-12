@@ -113,6 +113,16 @@ export const defaultNavigation: FuseNavigationItem[] = [
                         },
                     },
                     {
+                        id: 'reservations.roomsPlanning',
+                        title: 'Planning des chambres',
+                        type: 'basic',
+                        icon: 'heroicons_outline:view-columns',
+                        link: '/managements/calender/rooms',
+                        data: {
+                            permissions: [APP_PERMISSIONS.RESERVATION_LIST],
+                        },
+                    },
+                    {
                         id: 'reservations.mainc',
                         title: 'Main courante',
                         type: 'basic',
@@ -254,7 +264,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
     },
     {
         id: 'configuration-group',
-        title: 'CONFIGURZTION',
+        title: 'CONFIGURATION',
         subtitle: 'Référentiels & Tarifs',
         type: 'group',
         icon: 'heroicons_outline:cog-6-tooth',
