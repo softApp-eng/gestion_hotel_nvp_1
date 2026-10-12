@@ -156,7 +156,8 @@
                          th:text="${roomChains[guest.personId] ?: room.roomName}">
                         CH-101 -> CH-102
                     </div>
-                    <!--<div style="font-size: 9px; color: #64748b;" th:text="${room.roomType}">Type</div>-->
+                    <div th:if="${roomChains[guest.personId] != null and #strings.contains(roomChains[guest.personId], ' > ')}"
+                         style="font-size: 8px; color: #b45309; font-weight: 700;">(Délogement : parcours des chambres)</div>
                 </td>
             </tr>
         </th:block>
@@ -193,6 +194,7 @@
     <table class="invoice-table">
         <thead>
         <tr>
+            <th>Résident</th>
             <th>Désignation de la Prestation</th>
             <th>Type</th>
             <th class="price-col">Montant Facturé</th>
@@ -200,6 +202,7 @@
         </thead>
         <tbody>
         <tr th:each="presta : ${invoice.invoicePrestations}">
+            <td th:text="${presta.guestName ?: '-'}">Résident</td>
             <td th:text="${presta.name}">Extra</td>
             <td th:text="${(presta.type?.name() == 'MEAL' ? 'REPAS' : 'SERVICE EXTRA') }">SERVICE</td>
             <td class="price-col" th:text="${#numbers.formatDecimal(presta.price, 1, 2) + ' MAD'}">0.00</td>

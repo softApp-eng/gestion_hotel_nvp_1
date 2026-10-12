@@ -31,6 +31,9 @@ public class InvoicePrestation {
 
     @Column(nullable = false)
     private String name;
+
+    /** Nom du résident bénéficiaire (snapshot au moment de la facturation). */
+    private String guestName;
     private Integer quantity;
 
     private LocalDate day;

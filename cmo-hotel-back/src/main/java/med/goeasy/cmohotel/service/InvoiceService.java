@@ -279,6 +279,55 @@ public class InvoiceService {
         );
     }
 
+    /**
+     * Construit, pour chaque personne (réservation), le parcours de chambre
+     * (chambre initiale puis chambres successives après délogement(s)).
+     * Clé = personId, Valeur = "CH-101 > CH-102".
+     */
+    private Map<String, String> buildRoomChains(ReservationDetails reservationDetails) {
+        Map<String, String> roomChainsMap = new HashMap<>();
+        if (reservationDetails == null || reservationDetails.getReservations() == null) {
+            return roomChainsMap;
+        }
+
+        for (Reservation res : reservationDetails.getReservations()) {
+            if (res.getPerson() == null || res.getPerson().getId() == null) {
+                continue;
+            }
+
+            String personId = res.getPerson().getId();
+            List<SwitchedRoom> switches = res.getSwitchedRooms();
+
+            if (switches != null && !switches.isEmpty()) {
+                List<String> roomNames = new ArrayList<>();
+
+                // 'switchedRooms' est annotée @OrderBy("switchTime DESC") : on remet l'ordre chronologique
+                List<SwitchedRoom> chronologicalSwitches = new ArrayList<>(switches);
+                Collections.reverse(chronologicalSwitches);
+
+                // Chambre initiale (previousRoom du premier transfert)
+                Room initialRoom = chronologicalSwitches.get(0).getPreviousRoom();
+                if (initialRoom != null) {
+                    roomNames.add(initialRoom.getName());
+                }
+
+                // Chaque nouvelle chambre au fil des transferts
+                for (SwitchedRoom sr : chronologicalSwitches) {
+                    if (sr.getNewRoom() != null) {
+                        roomNames.add(sr.getNewRoom().getName());
+                    }
+                }
+
+                roomChainsMap.put(personId, String.join(" > ", roomNames));
+
+            } else if (res.getRoom() != null) {
+                // Aucun transfert : chambre actuelle
+                roomChainsMap.put(personId, res.getRoom().getName());
+            }
+        }
+        return roomChainsMap;
+    }
+
     public byte[] generateInvoicePdf(Authentication authentication, String num) throws Exception {
         // 1. Récupération de la facture (Invoice)
         Invoice invoice = invoiceRepository.findById(num)
@@ -287,47 +336,7 @@ public class InvoiceService {
         if (invoice.getStatus() != EInvoiceStatus.PAID)
             throw new BadRequestException("Facture pas encore payée.");
 
-        Map<String, String> roomChainsMap = new HashMap<>(); // Key: personId, Value: "CH-101 -> CH-102"
-        ReservationDetails reservationDetails = invoice.getReservationDetails();
-
-        if (reservationDetails != null && reservationDetails.getReservations() != null) {
-            for (Reservation res : reservationDetails.getReservations()) {
-                if (res.getPerson() == null || res.getPerson().getId() == null) {
-                    continue;
-                }
-
-                String personId = res.getPerson().getId();
-                List<SwitchedRoom> switches = res.getSwitchedRooms();
-
-                if (switches != null && !switches.isEmpty()) {
-                    List<String> roomNames = new ArrayList<>();
-
-                    // 1. Inverser la liste car 'switchedRooms' dans Reservation est annotée avec @OrderBy("switchTime DESC")
-                    List<SwitchedRoom> chronologicalSwitches = new ArrayList<>(switches);
-                    Collections.reverse(chronologicalSwitches);
-
-                    // 2. Ajouter la chambre initiale (previousRoom du premier transfert)
-                    Room initialRoom = chronologicalSwitches.get(0).getPreviousRoom();
-                    if (initialRoom != null) {
-                        roomNames.add(initialRoom.getName()); // ou initialRoom.getCode()
-                    }
-
-                    // 3. Ajouter chaque nouvelle chambre au fil des transferts
-                    for (SwitchedRoom sr : chronologicalSwitches) {
-                        if (sr.getNewRoom() != null) {
-                            roomNames.add(sr.getNewRoom().getName()); // ou sr.getNewRoom().getCode()
-                        }
-                    }
-
-                    // Ex: "Chambre 101 -> Chambre 105 -> Chambre 202"
-                    roomChainsMap.put(personId, String.join(" > ", roomNames));
-
-                } else if (res.getRoom() != null) {
-                    // S'il n'y a eu aucun transfert, conserver le nom de la chambre actuelle
-                    roomChainsMap.put(personId, res.getRoom().getName());
-                }
-            }
-        }
+        Map<String, String> roomChainsMap = buildRoomChains(invoice.getReservationDetails()); // Key: personId, Value: "CH-101 > CH-102"
 
         Context context = new Context();
         context.setVariable("invoice", invoice);
@@ -371,6 +380,9 @@ public class InvoiceService {
         if (!invoice.getReservationDetails().isPriseEnCharge())
             throw new BadRequestException("Facture non prise en charge.");
 
+        // Parcours des chambres (délogements) par personne : personId -> "CH-101 > CH-102"
+        Map<String, String> roomChains = buildRoomChains(invoice.getReservationDetails());
+
         // trie des client par role
         List<Map<String, Object>> guestsWithRoom = invoice.getDetails().getInvoiceRooms().stream()
                 .flatMap(room -> room.getGuests().stream().map(guest -> {
@@ -380,6 +392,9 @@ public class InvoiceService {
                     map.put("role", guest.getRole());
                     map.put("gradeCode", guest.getGradeCode());
                     map.put("roomName", room.getRoomName()); // On récupère le nom depuis le parent 'room'
+                    map.put("personId", guest.getPersonId());
+                    // Affiche le parcours complet si délogement, sinon la chambre seule
+                    map.put("roomChain", roomChains.getOrDefault(guest.getPersonId(), room.getRoomName()));
                     return map;
                 })).sorted(Comparator.comparingInt(m -> ((EGuestRole) m.get("role")).getOrder())).collect(Collectors.toList());
 
@@ -402,14 +417,17 @@ public class InvoiceService {
                     Map<String, Object> dayMap = new HashMap<>();
                     dayMap.put("date", entry.getKey());
 
-                    // Groupement par nom et calcul immédiat des totaux par ligne
+                    // Groupement par résident puis par prestation : chaque personne conserve sa propre ligne
                     List<Map<String, Object>> lines = entry.getValue().stream()
-                            .collect(Collectors.groupingBy(InvoicePrestation::getName))
+                            .collect(Collectors.groupingBy(p ->
+                                    (p.getGuestName() != null ? p.getGuestName() : "Sans nom") + "|" + p.getName()))
                             .entrySet().stream()
                             .map(nameEntry -> {
                                 Map<String, Object> line = new HashMap<>();
-                                line.put("name", nameEntry.getKey());
-                                line.put("type", nameEntry.getValue().get(0).getType().name());
+                                InvoicePrestation first = nameEntry.getValue().get(0);
+                                line.put("guestName", first.getGuestName());
+                                line.put("name", first.getName());
+                                line.put("type", first.getType().name());
 
                                 // Somme des quantités
                                 int totalQty = nameEntry.getValue().stream()
@@ -445,6 +463,7 @@ public class InvoiceService {
         context.setVariable("nightsByDate", nightsByDate);
         context.setVariable("prestationsData", prestationsData);
         context.setVariable("allGuests", guestsWithRoom);
+        context.setVariable("roomChains", roomChains);
         context.setVariable("generatedBy", authentication.getName());
         context.setVariable("now", LocalDateTime.now());
         String logoBase64 = utilsService.getAppLogoAs64();
@@ -563,14 +582,18 @@ public class InvoiceService {
 
         // 3. Mapper vers InvoicePrestation
         List<InvoicePrestation> invoicePrestations = activePrestations.stream()
-                .map(p -> InvoicePrestation.builder()
-                        .invoice(invoice)
-                        .type(p.getType())
-                        .name(p.getName())
-                        .quantity(p.getQuantity())
-                        .price(p.getPrice().multiply(BigDecimal.valueOf(p.getQuantity())).doubleValue())
-                        .day(p.getDay())
-                        .build())
+                .map(p -> {
+                    Person guest = (p.getReservation() != null) ? p.getReservation().getPerson() : null;
+                    return InvoicePrestation.builder()
+                            .invoice(invoice)
+                            .type(p.getType())
+                            .name(p.getName())
+                            .guestName(guest != null ? guest.getFullName() : null)
+                            .quantity(p.getQuantity())
+                            .price(p.getPrice().multiply(BigDecimal.valueOf(p.getQuantity())).doubleValue())
+                            .day(p.getDay())
+                            .build();
+                })
                 .toList();
 
         invoice.getInvoicePrestations().clear();
