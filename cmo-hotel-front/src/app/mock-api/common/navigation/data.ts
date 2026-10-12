@@ -103,24 +103,44 @@ export const defaultNavigation: FuseNavigationItem[] = [
                         },
                     },
                     {
-                        id: 'reservations.calender',
-                        title: "Planning d'occupation",
-                        type: 'basic',
-                        icon: 'heroicons_outline:calendar',
-                        link: '/managements/calender',
+                        id: 'reservations.planning',
+                        title: 'Planning',
+                        subtitle: 'Occupation & chambres',
+                        type: 'collapsable',
+                        icon: 'heroicons_outline:calendar-days',
                         data: {
                             permissions: [APP_PERMISSIONS.RESERVATION_LIST],
                         },
-                    },
-                    {
-                        id: 'reservations.roomsPlanning',
-                        title: 'Planning des chambres',
-                        type: 'basic',
-                        icon: 'heroicons_outline:view-columns',
-                        link: '/managements/calender/rooms',
-                        data: {
-                            permissions: [APP_PERMISSIONS.RESERVATION_LIST],
-                        },
+                        children: [
+                            {
+                                id: 'reservations.calender',
+                                title: "Planning d'occupation",
+                                type: 'basic',
+                                icon: 'heroicons_outline:calendar',
+                                link: '/managements/calender',
+                                // Évite que "Planning des chambres"
+                                // (/managements/calender/rooms) marque aussi
+                                // ce lien comme actif.
+                                exactMatch: true,
+                                data: {
+                                    permissions: [
+                                        APP_PERMISSIONS.RESERVATION_LIST,
+                                    ],
+                                },
+                            },
+                            {
+                                id: 'reservations.roomsPlanning',
+                                title: 'Planning des chambres',
+                                type: 'basic',
+                                icon: 'heroicons_outline:view-columns',
+                                link: '/managements/calender/rooms',
+                                data: {
+                                    permissions: [
+                                        APP_PERMISSIONS.RESERVATION_LIST,
+                                    ],
+                                },
+                            },
+                        ],
                     },
                     {
                         id: 'reservations.mainc',

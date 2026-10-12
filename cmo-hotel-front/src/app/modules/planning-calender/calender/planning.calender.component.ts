@@ -98,30 +98,11 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth'
+            right: 'resourceTimelineWeek'
         },
         buttonText: {
             today:    "Aujourd'hui",
-            day:      'Jour',
-            week:     'Semaine',
-            month:    'Mois',
-        },
-
-        // Rendu spécifique selon l'échelle choisie (jour / semaine / mois)
-        views: {
-            resourceTimelineDay: {
-                slotDuration: { hours: 1 },
-                slotLabelFormat: [{ hour: '2-digit', minute: '2-digit' }],
-                slotMinWidth: 55,
-            },
-            resourceTimelineMonth: {
-                slotDuration: { days: 1 },
-                slotMinWidth: 38,
-                slotLabelFormat: [
-                    { weekday: 'narrow' },
-                    { day: 'numeric' },
-                ],
-            },
+            week:     "Semaine",
         },
 
         // TRÈS IMPORTANT : Transformation des données en arbre (Pavillon > Type > Chambre)
@@ -236,11 +217,45 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
             this.pageSubtitle = data['subtitle'];
         }
 
+        // Échelles Jour / Semaine / Mois : uniquement sur le « Planning des
+        // chambres ». Le « Planning d'occupation » conserve son échelle
+        // d'origine (semaine).
+        const editableToolbar: Partial<CalendarOptions> = {
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth',
+            },
+            buttonText: {
+                today: "Aujourd'hui",
+                day: 'Jour',
+                week: 'Semaine',
+                month: 'Mois',
+            },
+            // Rendu spécifique selon l'échelle choisie (jour / semaine / mois)
+            views: {
+                resourceTimelineDay: {
+                    slotDuration: { hours: 1 },
+                    slotLabelFormat: [{ hour: '2-digit', minute: '2-digit' }],
+                    slotMinWidth: 55,
+                },
+                resourceTimelineMonth: {
+                    slotDuration: { days: 1 },
+                    slotMinWidth: 38,
+                    slotLabelFormat: [
+                        { weekday: 'narrow' },
+                        { day: 'numeric' },
+                    ],
+                },
+            },
+        };
+
         this.calendarOptions.update((options) => ({
             ...options,
             editable: this.isEditable,
             eventDurationEditable: this.isEditable,
             eventResourceEditable: this.isEditable,
+            ...(this.isEditable ? editableToolbar : {}),
         }));
     }
 

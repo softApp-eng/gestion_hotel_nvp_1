@@ -93,22 +93,32 @@
                         <full-calendar #fullCalendar [options]="calendarOptions()"></full-calendar>
 
                         <div class="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t pt-4">
+                            @if (isEditable) {
+                                <div class="flex items-center" matTooltip="La réservation est validée, la chambre est officiellement occupée.">
+                                    <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background: linear-gradient(135deg, #6366f1, #4338ca);"></div>
+                                    <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Confirmé</span>
+                                </div>
 
-                            <div class="flex items-center" matTooltip="La réservation est validée, la chambre est officiellement occupée.">
-                                <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background: linear-gradient(135deg, #6366f1, #4338ca);"></div>
-                                <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Confirmé</span>
-                            </div>
+                                <div class="flex items-center" matTooltip="La demande d'occupation est enregistrée mais en attente de traitement.">
+                                    <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background: linear-gradient(135deg, #94a3b8, #64748b);"></div>
+                                    <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">En attente</span>
+                                </div>
 
-                            <div class="flex items-center" matTooltip="La demande d'occupation est enregistrée mais en attente de traitement.">
-                                <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background: linear-gradient(135deg, #94a3b8, #64748b);"></div>
-                                <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">En attente</span>
-                            </div>
+                                <div class="flex items-center" matTooltip="Le séjour est terminé, la chambre a été libérée.">
+                                    <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background: linear-gradient(135deg, #34d399, #059669);"></div>
+                                    <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Terminé</span>
+                                </div>
+                            } @else {
+                                <div class="flex items-center" matTooltip="La réservation est validée, la chambre est officiellement occupée.">
+                                    <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background-color: #4f46e5;"></div>
+                                    <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Confirmé</span>
+                                </div>
 
-                            <div class="flex items-center" matTooltip="Le séjour est terminé, la chambre a été libérée.">
-                                <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background: linear-gradient(135deg, #34d399, #059669);"></div>
-                                <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Terminé</span>
-                            </div>
-
+                                <div class="flex items-center" matTooltip="La demande d'occupation est enregistrée mais en attente de traitement.">
+                                    <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background-color: #64748b;"></div>
+                                    <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">En attente</span>
+                                </div>
+                            }
                         </div>
                     </div>
 
