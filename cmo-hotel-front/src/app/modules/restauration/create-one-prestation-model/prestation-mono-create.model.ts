@@ -182,7 +182,7 @@ export class PrestationMonoCreateModel implements OnInit {
         }).format(now);
 
         const obs = payload?.observation
-            ? `<div class="sep"></div><div>Observation :</div><div class="wrap">${this.escapeHtml(payload.observation)}</div>`
+            ? `<div class="rule"></div><div class="caption">Observation</div><div class="wrap">${this.escapeHtml(payload.observation)}</div>`
             : '';
 
         const html = `<!doctype html>
@@ -193,42 +193,57 @@ export class PrestationMonoCreateModel implements OnInit {
 <style>
     @page { size: 80mm 297mm; margin: 0; }
     * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; }
-    body { width: 80mm; padding: 3mm; font-family: 'Courier New', Courier, monospace; font-size: 12px; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    html, body { margin: 0; padding: 0; background: #fff; }
+    body {
+        width: 80mm; padding: 3mm;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 13px; line-height: 1.45;
+        color: #000; background: #fff;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
     .center { text-align: center; }
-    .brand { font-size: 17px; font-weight: bold; letter-spacing: 1px; }
-    .subtitle { font-size: 11px; }
-    .sep { border-top: 1px dashed #000; margin: 5px 0; }
-    .row { display: flex; justify-content: space-between; gap: 6px; }
-    .row .label { color: #000; }
-    .row .value { text-align: right; font-weight: bold; }
-    .benef { font-size: 13px; font-weight: bold; }
-    .item { font-size: 14px; font-weight: bold; margin-bottom: 2px; }
-    .line { display: flex; justify-content: space-between; }
-    .total { font-size: 15px; font-weight: bold; }
+    .brand { font-size: 19px; font-weight: bold; letter-spacing: 1px; }
+    .subtitle { font-size: 13px; font-weight: bold; letter-spacing: 1px; }
+    /* Traits pleins : plus nets que les pointillés sur papier thermique */
+    .rule { border-top: 2px solid #000; margin: 4px 0; }
+    .caption { font-size: 12px; font-weight: bold; text-transform: uppercase; }
+    .benef { font-size: 15px; font-weight: bold; }
+    .item { font-size: 16px; font-weight: bold; margin-bottom: 2px; }
+    /* Tableau pour un alignement fiable (les flex s'impriment mal sur certains pilotes) */
+    .kv { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .kv td { padding: 1px 0; vertical-align: top; }
+    .kv td.v { text-align: right; font-weight: bold; }
+    .kv.total td { font-size: 17px; font-weight: bold; padding-top: 4px; }
     .wrap { word-break: break-word; }
-    .footer { margin-top: 8px; text-align: center; font-size: 11px; }
+    .footer { margin-top: 6px; text-align: center; font-size: 12px; font-weight: bold; }
 </style>
 </head>
 <body>
     <div class="center brand">CMO HÔTEL</div>
-    <div class="center subtitle">Ticket de prestation</div>
-    <div class="sep"></div>
-    <div class="row"><span class="label">Ticket</span><span class="value">#${this.escapeHtml(code)}</span></div>
-    <div class="row"><span class="label">Date</span><span class="value">${dateStr}</span></div>
-    <div class="row"><span class="label">Utilisateur</span><span class="value">${this.escapeHtml(user)}</span></div>
-    ${pavillon ? `<div class="row"><span class="label">Pavillon</span><span class="value">${this.escapeHtml(pavillon)}</span></div>` : ''}
-    <div class="row"><span class="label">Chambre</span><span class="value">${this.escapeHtml(roomLabel)}</span></div>
-    <div class="sep"></div>
-    <div>Bénéficiaire</div>
+    <div class="center subtitle">TICKET DE PRESTATION</div>
+    <div class="rule"></div>
+    <table class="kv">
+        <tr><td>Ticket</td><td class="v">#${this.escapeHtml(code)}</td></tr>
+        <tr><td>Date</td><td class="v">${dateStr}</td></tr>
+        <tr><td>Utilisateur</td><td class="v">${this.escapeHtml(user)}</td></tr>
+        ${pavillon ? `<tr><td>Pavillon</td><td class="v">${this.escapeHtml(pavillon)}</td></tr>` : ''}
+        <tr><td>Chambre</td><td class="v">${this.escapeHtml(roomLabel)}</td></tr>
+    </table>
+    <div class="rule"></div>
+    <div class="caption">Bénéficiaire</div>
     <div class="benef wrap">${this.escapeHtml(beneficiary)}</div>
-    <div class="sep"></div>
+    <div class="rule"></div>
+    <div class="caption">Prestation</div>
     <div class="item wrap">${this.escapeHtml(payload?.name)}</div>
-    <div class="line"><span>${typeLabel}</span><span>${qty} x ${unitPrice.toFixed(2)} DH</span></div>
-    <div class="sep"></div>
-    <div class="line total"><span>TOTAL</span><span>${total.toFixed(2)} DH</span></div>
+    <table class="kv">
+        <tr><td>${typeLabel}</td><td class="v">${qty} x ${unitPrice.toFixed(2)} DH</td></tr>
+    </table>
+    <div class="rule"></div>
+    <table class="kv total">
+        <tr><td>TOTAL</td><td class="v">${total.toFixed(2)} DH</td></tr>
+    </table>
     ${obs}
-    <div class="sep"></div>
+    <div class="rule"></div>
     <div class="footer">Merci et bonne journée</div>
 </body>
 </html>`;

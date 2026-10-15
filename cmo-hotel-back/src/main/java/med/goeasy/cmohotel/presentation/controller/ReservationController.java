@@ -67,9 +67,11 @@ public class ReservationController {
     ResponseEntity<ApiResponse> closeReservation(
             Authentication authentication,
             @Valid @NotNull(message = "code de reservation requis") @RequestParam() Long code,
-            @RequestParam() @Valid @NotNull(message = "Date checkin requise") @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm") LocalDateTime checkout
+            @RequestParam() @Valid @NotNull(message = "Date checkin requise") @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm") LocalDateTime checkout,
+            @RequestParam(required = false) String paymentMode,
+            @RequestParam(required = false, name = "priseEnChargeReference") String priseEnChargeReference
     ){
-        reservationService.closeReservation(authentication,code,checkout);
+        reservationService.closeReservation(authentication,code,checkout,paymentMode,priseEnChargeReference);
         return ResponseEntity.ok(ApiResponse.builder().message("reservation cloturée").build());
     }
 
@@ -89,6 +91,17 @@ public class ReservationController {
             @RequestParam() @Valid @NotNull(message = "Date checkin requise") @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate date
     ){
         reservationService.prolonger(authentication,code,date);
+        return ResponseEntity.ok(ApiResponse.builder().message("reservation bien modifiée").build());
+    }
+
+    @PostMapping("/time/shift")
+    ResponseEntity<ApiResponse> shiftDates(
+            Authentication authentication,
+            @Valid @NotNull(message = "code de reservation requis") @RequestParam() Long code,
+            @RequestParam() @Valid @NotNull(message = "Date d'arrivée requise") @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate start,
+            @RequestParam() @Valid @NotNull(message = "Date de départ requise") @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate end
+    ){
+        reservationService.shiftDates(authentication,code,start,end);
         return ResponseEntity.ok(ApiResponse.builder().message("reservation bien modifiée").build());
     }
 

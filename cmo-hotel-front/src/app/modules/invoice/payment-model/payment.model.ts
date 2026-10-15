@@ -60,7 +60,6 @@ export class PaymentModel implements OnInit {
         @Inject(MAT_DIALOG_DATA) public data: { invoice: any[] }
     ) {
         this.invoice = data.invoice;
-        console.log(this.invoice);
         this.paymentForm = this._fb.group({
             num: [this.invoice.num, [Validators.required]],
             paymentMode: ['', [Validators.required]],
@@ -80,11 +79,31 @@ export class PaymentModel implements OnInit {
             this.paymentModes = data?.filter(m =>
                 isPEC ? m.code === 'PRISE_EN_CHARGE' : m.code !== 'PRISE_EN_CHARGE'
             );
+
+            // Pré-sélection du mode de règlement défini lors du check-out
+            const currentMode = this.invoice.paymentMode?.code;
+            if (currentMode && this.paymentModes.some(m => m.code === currentMode)) {
+                this.paymentForm.patchValue({ paymentMode: currentMode });
+            } else if (isPEC) {
+                this.paymentForm.patchValue({ paymentMode: 'PRISE_EN_CHARGE' });
+            }
+
             if (isPEC) {
                 this.paymentForm.patchValue({
                     priseEnChargeRef: this.invoice.reservationDetails.priseEnChargeReference
                 });
             }
+        });
+
+        // La référence est obligatoire pour une prise en charge
+        this.paymentForm.get('paymentMode').valueChanges.subscribe(mode => {
+            const ref = this.paymentForm.get('priseEnChargeRef');
+            if (mode === 'PRISE_EN_CHARGE') {
+                ref.setValidators([Validators.required]);
+            } else {
+                ref.clearValidators();
+            }
+            ref.updateValueAndValidity();
         });
     }
 
@@ -93,17 +112,56 @@ export class PaymentModel implements OnInit {
 
         this.loading = true;
 
+        // Pré-ouverture d'un onglet : le contenu (le PDF) est injecté dans le
+        // callback asynchrone. Cela évite que le navigateur bloque la popup.
+        const invoiceTab = window.open('', '_blank');
+
         this._apiInvoiceService.payInvoice(this.paymentForm.value).subscribe({
             next: (res) => {
                 this._toast.success('Facture payée avec succès');
+                // Affichage automatique de la facture dans un nouvel onglet
+                this.openInvoiceInNewTab(
+                    res?.num || this.invoice?.num,
+                    invoiceTab
+                );
                 this.matDialogRef.close({ reload: true });
             },
             error: (err) => {
+                invoiceTab?.close();
                 this._toast.error(
                     err?.error?.description || 'Erreur lors du paiement'
                 );
                 this.loading = false;
             },
+        });
+    }
+
+    /**
+     * Ouvre le PDF de la facture dans un nouvel onglet (sans le télécharger).
+     *
+     * @param num numéro interne de la facture
+     * @param tab onglet pré-ouvert (null si le navigateur l'a bloqué)
+     */
+    private openInvoiceInNewTab(num: string, tab: Window | null): void {
+        if (!num) {
+            tab?.close();
+            return;
+        }
+
+        this._apiInvoiceService.generateInvoicePdf(num).subscribe({
+            next: (blob: Blob) => {
+                const blobUrl = window.URL.createObjectURL(blob);
+                if (tab) {
+                    tab.location.href = blobUrl;
+                    tab.focus();
+                } else {
+                    // Repli si l'onglet n'a pas pu être pré-ouvert
+                    window.open(blobUrl, '_blank');
+                }
+                // Nettoyage différé pour laisser le temps au nouvel onglet de charger
+                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
+            },
+            error: () => tab?.close(),
         });
     }
 }

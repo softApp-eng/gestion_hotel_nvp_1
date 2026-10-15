@@ -1,0 +1,86 @@
+t,Autorise l'accès de base à l'interface utilisateur et aux fonctionnalités de consultation publique de l'établissement.,GENERAL,d88a7140-a4f4-4da8-9478-0dc43face514,GENERAL,general:default,Accès standard au portail (Permission par défaut)
+f,Autorise la consultation de la liste complète des comptes utilisateurs du système.,READ,9316b592-567a-4fed-8df2-2f4cc17f2719,USERS,users:user:list,Consulter la liste des utilisateurs
+f,Droit de lecture seule sur les attributs sensibles et les paramètres d'un compte.,READ,78bb991f-9c7b-4fb9-8b84-33013c0e9d79,USERS,users:user:one,Lecture des données utilisateur
+f,Autorise l'ajout et l'invitation de nouveaux collaborateurs sur la plateforme.,CREATE,54a0b360-6661-46f5-a011-5e329b445a13,USERS,users:user:create,Créer de nouveaux comptes
+f,Autorise la mise à jour des données administratives des l'utilisateur,UPDATE,548b8d00-fd41-4b16-822a-d0320a420a34,USERS,users:user:update,Modifier les informations d'un compte
+f,Autorise la modification forcée du mot de passe d'un utilisateur,UPDATE,9c6a0264-aa32-4aee-b53c-489f3f052777,USERS,users:user:password:modify,Réinitialiser les accès de sécurité
+f,Autorise l'attribution et la modification des rôles et privilèges des utilisateurs.,MANAGE,a46fafd9-56c3-4e8c-93ee-cf3375be6786,USERS,users:user:assign:roles,Gérer les habilitations et les roles
+f,Autorise l'affectation et le retrait des ressources opérationnelles,MANAGE,a23ebf82-94b8-47fe-bf69-d26f2a6afebf,USERS,users:user:resources:manage,Administrer les dotations de ressources
+f,Autorise la surveillance et le filtrage des actions effectuées par les utilisateurs (Audit Trail).,MANAGE,0b6a7102-f25c-459e-b2c9-cf76bd886a44,AUDIT,audits:logs:filter,Auditer les journaux d'activité
+f,Autorise la lecture de la configuration système et des constantes opérationnelles de la plateforme.,READ,e993e7ee-fb1e-4d74-9168-8970924d5149,CONFIGURATION,configurations:config:load,Consulter les paramètres globaux du systéme
+f,Autorise le paramétrage des cycles de nettoyage automatique et l'ordonnancement des tâches de ménage.,MANAGE,ba2f4108-b2eb-4723-84af-2dad6f31608f,CONFIGURATION,configurations:room:clean:planif,Planifier la maintenance automatique
+f,Autorise la modification de l'heure limite de départ (Check-out) applicable par défaut à toutes les réservations.,MANAGE,4c257848-ca3a-496c-ad8c-d1cb0a6b24d3,CONFIGURATION,configurations:checkout:hour,Ajuster l'heure de checkout
+f,Autorise la visualisation de la liste des profils d'accès configurés dans le système.,READ,853651d5-70be-4456-bb03-483b63e4daf5,ROLES,roles:role:list,Consulter l'annuaire des rôles
+f,Autorise la lecture de la matrice complète des permissions disponibles pour l'attribution.,READ,87e1b56a-13e6-4f07-9582-b69adf041185,ROLES,roles:permission:list,Consulter le référentiel des droits
+f,Autorise la création d'un nouveau rôle utilisateur et la configuration de ses privilèges.,CREATE,0111bb24-c65b-48e2-991d-d91ef93f1f5b,ROLES,roles:role:create,Définir un nouveau profil d'accès
+f,Autorise la modification des droits d'accès et des paramètres d'un profil existant.,UPDATE,efc84026-74ae-42fc-8df5-fa31f8b83c3f,ROLES,roles:role:update,Ajuster les privilèges du rôle
+f,Autorise la consultation détaillée d'un rôle spécifique et de ses permissions associées.,READ,797302a4-bf5a-4fc3-b9c7-8b849c3fe285,ROLES,roles:role:one,Afficher la fiche de sécurité
+f,Autorise la suppression définitive d'un rôle. Action critique impactant les utilisateurs liés.,DELETE,d18a7247-c306-42d2-b61c-1cc4259b71a0,ROLES,roles:role:delete,Révoquer un profil de sécurité
+f,Autorise la création rapide d'un nouveau rôle basé sur un modèle de permissions existant.,MANAGE,c49365c7-7086-40b2-887e-12ffad4fe503,ROLES,roles:role:clone,Dupliquer une configuration de rôle
+t,Autorise l'ajout d'un nouveau client dans l'annuaire de la plateforme.,CREATE,3a44bbbc-6a1a-4e46-abf3-d09fd71d19e2,PERSON,persons:person:create,Enregistrer un nouveau profil
+t,Autorise la modification des informations personnelles et des documents d'identité associés à un profil.,UPDATE,4725498f-38a3-4237-b862-6800f9ba2430,PERSON,persons:person:update,Modifier un profil
+t,utorise l'accès à la liste globale et à la recherche multicritères des personnes enregistrées.,READ,25725fcd-766c-486a-95b1-e8513c230632,PERSON,persons:person:list,Consulter l'annuaire des profils
+t,"Autorise la lecture complète d''une fiche profil, incluant les coordonnées et l''historique de base.",READ,e1c99b18-571a-4ee7-8bb7-7e155887a2fb,PERSON,persons:person:one,Accéder au détail du profil
+t,Autorise la suppression définitive ou l'archivage d'une fiche de la base de données.,DELETE,239fff6d-bce8-423a-901f-c8109f8be657,PERSON,persons:person:delete,Révoquer un profil
+t,Autorise la création d'une nouvelle structure ou aile dans le parc immobilier de l'hôtel.,CREATE,fd06d32c-c1c3-4541-9de0-44f2da4cf037,PAVILLON,pavillons:pavillon:create,Définir un nouveau pavillon
+t,"Autorise la modification des caractéristiques techniques, du nom ou de la capacité d''un pavillon existant.",UPDATE,b6ee69fe-85d7-48aa-b31c-559af659fb37,PAVILLON,pavillons:pavillon:update,Éditer les détails du pavillon
+t,Autorise l'accès à la vue d'ensemble de tous les pavillons et de leur état opérationnel.,READ,3a9812ed-2c0a-48a8-830a-f4162499f474,PAVILLON,pavillons:pavillon:list,Consulter les pavillons
+t,Autorise la consultation détaillée d'un pavillon spécifique.,READ,5efbc9f8-fcb3-4297-9496-049b142b6097,PAVILLON,pavillons:pavillon:one,Afficher un pavillon
+t,Autorise l'ajout d'une chambre physique dans l'inventaire actif de la plateforme.,CREATE,c681dae4-1943-455c-90ce-ea62381dbbd6,ROOM,rooms:room:create,Créer une chambre
+t,Autorise la modification des attributs et des caractéristiques d'une chambre.,UPDATE,03e5e6ae-fa34-4d8e-8d4e-d41e63a2120d,ROOM,rooms:room:update,Modifier une chambre
+t,Autorise l'accès au registre complet de toutes les chambres du complexe hôtelier.,READ,6ced90f8-68fa-439c-beba-31358f892b16,ROOM,rooms:room:list,Consulter la liste des chambres
+t,Autorise la consultation restreinte des seules chambres dont l'utilisateur a la responsabilité de gestion.,READ,83ea99b6-8cc4-43f8-a7a3-3d170ac6ea16,ROOM,rooms:room:granted,Visualiser les chambres affectées
+t,,READ,b1afd018-e58b-43a7-8ff5-59164fe114a9,ROOM,rooms:room:list:reservations:details,lister les chambres avec les details de reservation
+t,Autorise l'accès complet aux détails techniques d'une chambre spécifique.,READ,4384e69a-34b3-4ab8-b2ec-82183f9d6092,ROOM,rooms:room:one,Consulter une chambre
+t,Autorise la suppression définitive d'une chambre de la base de données opérationnelle. Action irréversible.,DELETE,a0faa00f-a8e6-4042-ad76-1caabe11ec4f,ROOM,rooms:room:delete,Retirer une chambre
+t,"Autorise la création d''un nouveau type de chambre (Suite, Standard, etc.).",CREATE,831510ea-9b1a-43a1-a529-23541f3455ac,ROOM,rooms:type:create,Définir un type d'hébergement
+t,Autorise la modification des types de chambre.,UPDATE,7dc0d7f2-1338-426b-a372-dc97888d9e60,ROOM,rooms:type:update,Modifier les types d'hébergement
+t,Autorise l'accès à la liste globale des différents standings et types d'unités proposés.,READ,b9bdd7eb-3c91-44f5-903f-41e0f48d91cb,ROOM,rooms:type:list,Consulter l'inventaire des types des chambres
+t,Autorise la lecture détaillée des attributs et équipements propres à un type spécifique.,READ,dba1720b-2e1b-425d-9842-cfb2fb405af6,ROOM,rooms:type:one,Afficher les spécifications du type
+t,Autorise la suppression définitive d'un type de chambre de la plateforme.,DELETE,9e1740e9-a516-4423-9d8b-4e11c5448a63,ROOM,rooms:type:delete,Révoquer un type du catalogue
+t,Autorise la création d'une nouvelle structure de prix pour les nuitées dans le catalogue de l'établissement.,CREATE,a2c2064b-296a-4db4-ba27-7c06f0dcd188,ROOM,rooms:price:create,Définir un nouveau tarif de chambre
+t,Autorise la modification des tarifs en vigueur.,UPDATE,2927846f-611e-4de2-bba6-6758ac81f96d,ROOM,rooms:price:update,Modifier la grille tarifaire des chambres
+t,Autorise l'accès au registre complet des tarifs des chambres.,READ,1a6f919e-3cd7-4172-879d-e1ecbc5f8243,ROOM,rooms:price:list,Consulter les prix des chambres
+t,Autorise la lecture détaillée d'une règle de prix spécifique et de ses paramètres associés.,READ,3fae7fc6-b73f-46b2-b339-83a7502522a4,ROOM,rooms:price:one,Afficher le détail tarifaire d'une chambre
+t,Autorise la suppression définitive d'une option tarifaire d'une chambre,DELETE,d43eb0a6-5d09-43ad-8519-24de883cbf4c,ROOM,rooms:price:delete,Révoquer une règle de prix
+t,Autorise la création de nouveaux dossiers de réservation pour les clients.,CREATE,3a38523a-71e3-40e5-9a05-d3c444fb1526,RESERVATION,reservations:reservation:create,Enregistrer une réservation
+t,"Autorise la mise à jour des dates, du nombre de participants ou des services associés à une réservation active.",UPDATE,7944ba25-da05-4120-8c69-d300ecfb6f21,RESERVATION,reservations:reservation:update,Modifier une réservation
+t,"Autorise l''accès à la vue d''ensemble et au registre de tous les séjours (passés, présents et futurs).",READ,404e8013-355d-4150-9819-454165af2aee,RESERVATION,reservations:reservation:list,Consulter le planning des réservations
+t,"Autorise la lecture complète des informations d''une réservation spécifique, incluant les clients et les options.",READ,f550bfe2-818b-45e9-9e1f-e703e3ab5b17,RESERVATION,reservations:reservation:one,Accéder au détail d'une réservation
+t,Autorise la confirmation officielle d'une réservation en attente.,MANAGE,7d2f13ee-6f5d-4ec2-8fd7-710c11178b6b,RESERVATION,reservations:reservation:accept,Valider les réservations
+t,Autorise l'annulation d'un séjour et la remise immédiate de la chambre en inventaire disponible.,MANAGE,b2fed533-2af6-49e4-b47d-6805cfa44d40,RESERVATION,reservations:reservation:cancel,Annuler une réservation
+t,Autorise la fermeture administrative d'une réservation après règlement total et départ du client.,MANAGE,08b67653-748a-458a-975f-567050463890,RESERVATION,reservations:reservation:close,Clôturer le dossier de séjour
+t,Autorise la suppression définitive d'une réservation du registre. Action restreinte à l'audit.,DELETE,8ad299e1-a2ba-4350-bd9c-167c427e6e99,RESERVATION,reservations:reservation:delete,Supprimer un dossier de réservation
+t,Autorise l'accès au registre des séjours passés et en cours pour l'ensemble des occupants.,READ,bc7da87e-d769-4564-8361-cb54b6ac670f,RESERVATION,reservations:reservation:residents,Consulter l'historique résidents
+t,Autorise le changement de chambre d'un résident durant son séjour.,MANAGE,f3079aa0-9918-4edd-be1b-e6bd52ae4edb,RESERVATION,reservations:reservation:room:change,Gérer les transferts de chambre
+t,Autorise la modification de la date de départ et l'extension de la durée de séjour.,MANAGE,a90f1185-e936-44f6-a5eb-7212c625cb25,RESERVATION,reservations:reservation:time:extend,Prolonger le séjour
+t,Autorise le téléchargement des fiches de reservation.,MANAGE,4d9da603-99c5-43c2-adcb-015d6face656,RESERVATION,reservations:reservation:pdf,Imprimer la fiche de reservation
+t,Autorise la consultation de la main courante du séjour.,MANAGE,2a96240a-ac86-4e3b-bd08-0ad5510f147c,RESERVATION,reservations:reservation:main:courante,Consulter la main courante
+t,Autorise la création d'une fiche collaborateur pour le personnel d'entretien et de maintenance.,CREATE,948bb9e1-c3ed-4bd4-9891-889bbc7860d1,HOUSE_KEEPING,housekeepings:agent:create,Enregistrer un nouvel intervenant
+t,Autorise la mise à jour des informations des agents,UPDATE,fd225d83-dcb8-4a6e-a301-a3d591ea7c71,HOUSE_KEEPING,housekeepings:agent:update,modifier un agent
+t,Autorise l'accès à l'annuaire complet des agents de service actifs et de leurs disponibilités.,READ,7e03f28d-7546-4a72-9816-84cd52be866b,HOUSE_KEEPING,housekeepings:agent:list,Consulter l'effectif de menage
+t,Autorise la suppression ou la désactivation d'un agent de ménage.,DELETE,6af5791f-1ce4-42a0-a708-8a70ef20e437,HOUSE_KEEPING,housekeepings:agent:delete,Supprimer un agent
+t,Autorise le blocage ou la remise en service opérationnelle des chambres.,MANAGE,c33f76c0-9a6c-437d-9345-aadd411c1e74,HOUSE_KEEPING,housekeepings:room:disponibility,Gérer la disponibilité technique des chambres
+t,Autorise la mise à jour en temps réel du statut de nettoyage des chambres pour la réception.,MANAGE,6dc7a462-9232-4d7c-98a6-f5d2224cfd3a,HOUSE_KEEPING,housekeepings:room:clean:status,Actualiser l'état de propreté
+t,Autorise la recherche et l'audit de l'historique complet des interventions de nettoyage par chambre ou par agent.,READ,b2a7a800-54fc-4ae4-bd5e-4cea017db075,HOUSE_KEEPING,housekeepings:history:search,Consulter le registre d'entretien des chambres
+t,"Autorise la correction exceptionnelle d''une entrée dans l''historique de maintenance (horaires, agent assigné, observations).",UPDATE,b08b6da9-2276-4193-8d3f-13c989daa035,HOUSE_KEEPING,housekeepings:history:update,Rectifier une fiche d'intervention
+t,Autorise la suppression définitive d'enregistrements du registre de nettoyage. Action sensible soumise à l'audit.,DELETE,974d7077-071c-494f-a1db-ecfbc3674526,HOUSE_KEEPING,housekeepings:history:delete,Supprimer un journal d'entretien
+t,Autorise la lecture de la liste des régimes de restauration,READ,baa8e6b6-1dac-4b33-9cd1-7a98c808b1cf,MEAL,meals:types:list,Consulter les type de repas
+t,Autorise la création d'une nouvelle catégorie de service de restauration dans le système.,CREATE,796c0ed8-3226-4fe3-9e9d-8ca4c5bb7706,MEAL,meals:types:create,Créer un type de repas
+t,Autorise la modification du nom ou des caractéristiques d'une formule de repas existante.,UPDATE,25984db5-ba11-49e3-9278-348a07e55844,MEAL,meals:types:update,modifier un type de repas
+t,Autorise le retrait d'une formule de restauration du catalogue opérationnel de l'hôtel.,DELETE,0ba86380-097a-4d6a-a9e3-57c2ad515bb0,MEAL,meals:types:delete,Supprimer un type de repas
+t,Autorise l'accès à l'historique et aux tarifs actuels des différentes formules de restauration.,READ,2caac22d-7c8e-4088-9c86-c52408302910,MEAL,meals:price:list,Consulter la grille tarifaire des repas
+t,Autorise la création de nouveaux prix pour les repas,CREATE,5082cc9d-d95b-42e9-8b8b-84c563e29a87,MEAL,meals:price:create,Définir un nouveau tarif de restauration
+t,Autorise la révision et la modification des tarifs de restauration,UPDATE,4ec8d5ea-295e-4eb3-8e01-97667aa2654a,MEAL,meals:price:update,Actualiser les prix des repas
+t,Autorise la suppression d'une option tarifaire de la liste des services de restauration proposés.,DELETE,9182117f-7ac5-46f8-8b70-a17fea073896,MEAL,meals:price:delete,Révoquer un tarif du catalogue
+t,Autorise la définition et l'ajout de nouvelles prestations,CREATE,972a9ea6-f8d7-4851-9a18-ad01e0e373d2,PRESTATION,prestations:prestation:create,Enregistrer des préstations
+t,Autorise la modification des prestation des clients,UPDATE,18649819-2897-4853-95c5-4a291a992fb2,PRESTATION,prestations:prestation:update,Modifier une préstation
+t,Autorise la consultation de la liste des services consommés par les résidents,READ,490aaf63-f9b2-4239-983d-4786bda2598f,PRESTATION,prestations:prestation:residents:list,Suivre les consommations résidents
+t,Autorise la suppression d'une prestation,DELETE,6b5c700c-0166-4781-b163-b5a4f3123548,PRESTATION,prestations:prestation:delete,Supprimer une préstation
+t,Autorise la validation comptable des nuitées pour la facturation finale.,MANAGE,e547e561-dfb8-4f58-ae45-a5da2ce62527,INVOICE,invoices:night:validate,valider les nuitées des reservations
+t,Autorise la consultation de l'historique et de l'état des factures émises.,READ,45690556-a426-4002-9ffd-cc97a0c0d4bc,INVOICE,invoices:invoice:list,Accéder au registre des factures
+t,Autorise l'enregistrement des paiements et le passage des factures au statut <Payé>.,MANAGE,376cb860-143e-4d9f-909b-95b07bc0578d,INVOICE,invoices:invoice:pay,Encaisser les règlements
+t,Autorise le téléchargement des factures payées.,READ,001f20ea-dfa6-4e49-bc55-b69c934aa55f,INVOICE,invoices:invoice:pdf,Imprimer la facture
+t,Autorise le consultation de l'encaissement journalier.,READ,854cc1a0-bb56-4bb0-ab2d-9e1ea62faca1,INVOICE,invoices:invoice:encaissement,Candulter l'encaissement journalier
+t,Autorise le téléchargement de l'encaissement journalier.,READ,c035d965-4bcc-4f7a-a0a7-243ec46384f2,INVOICE,invoices:invoice:encaissement:pdf,Télécharger l'encaissement journalier
+t,"Autorise l''accès aux indicateurs clés de performance, aux statistiques d''occupation et aux analyses financières de l''établissement.",READ,0071ae6f-0b67-4fcd-95d5-7fe968ccfffa,STATISTICS,statistics:consulting,Piloter les tableaux de bord

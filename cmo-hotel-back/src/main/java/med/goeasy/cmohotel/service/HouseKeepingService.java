@@ -13,6 +13,7 @@ import med.goeasy.cmohotel.persistence.entity.HousekeepingHistory;
 import med.goeasy.cmohotel.persistence.entity.Permanence;
 import med.goeasy.cmohotel.persistence.entity.Room;
 import med.goeasy.cmohotel.persistence.entity.auth.AppUser;
+import med.goeasy.cmohotel.persistence.repository.AppUserResourceRepository;
 import med.goeasy.cmohotel.persistence.repository.HousekeepingAgentRepository;
 import med.goeasy.cmohotel.persistence.repository.HousekeepingHistoryRepository;
 import med.goeasy.cmohotel.persistence.repository.PermanenceRepository;
@@ -33,7 +34,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -46,6 +50,7 @@ public class HouseKeepingService {
     private final RoomService roomService;
     private final RoomRepository roomRepository;
     private final ReservationRepository reservationRepository;
+    private final AppUserResourceRepository appUserResourceRepository;
 
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
@@ -65,10 +70,34 @@ public class HouseKeepingService {
             LocalDate end,
             Integer page, Integer size) {
         boolean isRange = start != null;
+
+        // Restriction par gouvernanat : un utilisateur non administrateur ne
+        // voit que l'historique des chambres qui lui sont affectées.
+        AppUser user = (AppUser) authentication.getPrincipal();
+        List<Long> effectiveRooms = rooms;
+        if (!user.isAdmin()) {
+            Set<Long> grantedRoomIds = appUserResourceRepository.findGrantedRooms(user.getId())
+                    .stream()
+                    .map(Room::getId)
+                    .collect(Collectors.toSet());
+            if (rooms == null || rooms.isEmpty()) {
+                effectiveRooms = new ArrayList<>(grantedRoomIds);
+            } else {
+                effectiveRooms = rooms.stream()
+                        .filter(grantedRoomIds::contains)
+                        .collect(Collectors.toList());
+            }
+            // Aucune chambre affectée : aucun résultat à afficher.
+            if (effectiveRooms.isEmpty()) {
+                log.info("{} has no granted rooms, empty housekeeping history", authentication.getName());
+                return PageDto.of(List.of(), 0, 0);
+            }
+        }
+
         Page<HousekeepingHistory> hitories = housekeepingHistoryRepository.searchHistory(
                 key,
                 RoomTypes.isEmpty()? null:RoomTypes,
-                rooms.isEmpty()? null:rooms,
+                effectiveRooms.isEmpty()? null:effectiveRooms,
                 agents.isEmpty()? null:agents,
                 anomalie,
                 start != null ? start.atStartOfDay() : null,

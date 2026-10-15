@@ -427,3 +427,339 @@
         }
     }
 }
+
+/* =========================================================================
+   Reproduction du design « planning-room » (PMS Pluriel).
+   S'applique aux deux plannings (occupation & chambres).
+   Ces règles sont volontairement placées en fin de fichier afin de primer
+   sur le thème « planning-editable » (même spécificité, ordre source).
+   ========================================================================= */
+.planning-ref {
+    font-family: Roboto, 'Segoe UI', Arial, sans-serif;
+
+    .fc {
+        font-family: inherit;
+        --fc-border-color: #e3e6ef;
+        --fc-page-bg-color: transparent;
+        --fc-neutral-bg-color: #f1f6ff;
+        --fc-today-bg-color: rgba(103, 119, 239, 0.08);
+        --fc-now-indicator-color: #6777ef;
+    }
+
+    /* ---------------------------------------------------------------------
+       Barre d'outils (navigation + titre + échelles)
+       --------------------------------------------------------------------- */
+    .fc .fc-toolbar {
+        margin: 0 0 15px 0 !important;
+        gap: 10px;
+    }
+
+    .fc .fc-toolbar-title {
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0 !important;
+        color: #333 !important;
+        text-transform: capitalize;
+    }
+
+    .fc .fc-button {
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        transform: none !important;
+        font-family: inherit !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+        letter-spacing: 0 !important;
+        text-transform: none !important;
+        background-color: #f1f6ff !important;
+        border: 1px solid #c9e6ff !important;
+        color: #858585 !important;
+        text-shadow: none !important;
+        padding: 9px 18px !important;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .fc .fc-button:hover {
+        background-color: #e2eefc !important;
+        border-color: #b7dbfb !important;
+        color: #5f5f5f !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    .fc .fc-button:focus,
+    .fc .fc-button:focus-visible {
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    .fc .fc-button-primary:not(:disabled).fc-button-active,
+    .fc .fc-button-primary:not(:disabled):active {
+        background-color: #1c8aea !important;
+        border-color: #1c8aea !important;
+        color: #ffffff !important;
+    }
+
+    .fc .fc-prev-button {
+        border-top-left-radius: 10px !important;
+        border-bottom-left-radius: 10px !important;
+    }
+
+    .fc .fc-resourceTimelineDay-button {
+        border-top-left-radius: 10px !important;
+        border-bottom-left-radius: 10px !important;
+    }
+
+    .fc .fc-resourceTimelineMonth-button {
+        border-top-right-radius: 10px !important;
+        border-bottom-right-radius: 10px !important;
+    }
+
+    /* ---------------------------------------------------------------------
+       Zone des ressources (colonne de gauche)
+       --------------------------------------------------------------------- */
+    .fc .fc-datagrid-header,
+    .fc .fc-datagrid-header .fc-datagrid-cell-frame {
+        background: #f1f6ff !important;
+        border-color: #e3e6ef !important;
+    }
+
+    .fc .fc-datagrid-header .fc-datagrid-cell-main {
+        color: #333 !important;
+        font-weight: 700 !important;
+        font-size: 13px !important;
+        letter-spacing: 0 !important;
+        text-transform: none !important;
+    }
+
+    .fc .fc-datagrid-cell-cushion {
+        padding: 7px 8px !important;
+    }
+
+    .fc-resource .fc-datagrid-cell-frame {
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .fc .fc-datagrid-cell-main {
+        font-size: 15px !important;
+        font-weight: 500 !important;
+        color: #666 !important;
+        letter-spacing: 0 !important;
+        text-transform: none !important;
+    }
+
+    .fc .fc-datagrid-expander {
+        color: #98a6bd !important;
+        font-size: 9px !important;
+    }
+
+    /* Niveaux : groupe = type de chambre, ligne = chambre */
+    .fc .fc-datagrid-cell.cm-res-type .fc-datagrid-cell-main {
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        letter-spacing: 0 !important;
+        text-transform: none !important;
+        color: #333 !important;
+    }
+
+    .fc .fc-datagrid-cell.cm-res-room .fc-datagrid-cell-main {
+        font-weight: 500 !important;
+        font-size: 15px !important;
+        color: #666 !important;
+    }
+
+    .fc .fc-datagrid-cell.cm-res-type {
+        background: #f1f6ff !important;
+        border-left: 0 !important;
+    }
+
+    .fc .fc-datagrid-cell.cm-res-room {
+        border-left: 0 !important;
+    }
+
+    .fc .fc-datagrid-cell.cm-res-room:hover {
+        background: #f7faff !important;
+    }
+
+    /* Chambre bloquée / hors service : ligne signalée en rouge */
+    .fc .fc-datagrid-cell.cm-res-room.room-blocked {
+        background: #ffe0e0 !important;
+        border-left: 4px solid #ff0000 !important;
+    }
+
+    .fc .fc-datagrid-cell.cm-res-room.room-blocked .fc-datagrid-cell-main {
+        color: #d21f1f !important;
+        font-weight: 700 !important;
+    }
+
+    .fc .fc-timeline-lane.cm-lane-type {
+        background: rgba(241, 246, 255, 0.6);
+    }
+
+    .fc .fc-timeline-lane.cm-lane-room:hover {
+        background: #f7faff;
+    }
+
+    .fc .fc-resource-timeline-divider {
+        background: #e3e6ef !important;
+    }
+
+    /* ---------------------------------------------------------------------
+       En-tête des jours & colonnes
+       --------------------------------------------------------------------- */
+    .fc .fc-timeline-slot-label {
+        font-weight: 600 !important;
+        color: #666 !important;
+        text-transform: capitalize !important;
+        font-size: 12px !important;
+    }
+
+    .fc .fc-timeline-slot.fc-day-today {
+        background: rgba(103, 119, 239, 0.08) !important;
+    }
+
+    .fc .fc-timeline-slot-label.fc-day-today {
+        color: #6777ef !important;
+    }
+
+    .fc .fc-timeline-now-indicator-line {
+        border-left-width: 2px !important;
+        border-left-color: #6777ef !important;
+        box-shadow: none !important;
+    }
+
+    /* ---------------------------------------------------------------------
+       Événements (réservations) : barres plates, bordure bleue
+       --------------------------------------------------------------------- */
+    .fc .fc-timeline-event.cm-ev {
+        border-radius: 0 !important;
+        padding: 2px 6px !important;
+        margin: 0 0 1px 0 !important;
+        border: 1px solid #3788d8 !important;
+        box-shadow: none !important;
+        transform: none !important;
+        font-size: 12px !important;
+    }
+
+    .fc .fc-timeline-event.cm-ev:hover {
+        transform: none !important;
+        box-shadow: 0 2px 6px -1px rgba(15, 23, 42, 0.3) !important;
+        filter: none !important;
+    }
+
+    .fc .fc-timeline-event.cm-ev .fc-event-main {
+        color: #5a5a5a !important;
+        text-align: center !important;
+    }
+
+    .fc .fc-timeline-event.cm-ev .fc-event-title {
+        color: #5a5a5a !important;
+        font-weight: 600 !important;
+        font-size: 12px !important;
+        text-shadow: none !important;
+    }
+
+    /* Couleurs de statut (palette de la référence) */
+    .fc .fc-timeline-event.cm-ev-confirmed {
+        background: #a9a9a9 !important; /* IN-HOUSE / Occupé */
+        border-color: #8f8f8f !important;
+    }
+
+    .fc .fc-timeline-event.cm-ev-pending {
+        background: #56c9f4 !important; /* ARRIVE / Réservé */
+        border-color: #3788d8 !important;
+    }
+
+    .fc .fc-timeline-event.cm-ev-closed {
+        background: #61bd33 !important; /* Terminé / Disponible */
+        border-color: #4fa028 !important;
+    }
+
+    .fc .fc-timeline-event.cm-ev-blocked {
+        background: #ff0000 !important; /* Bloqué */
+        border-color: #cc0000 !important;
+    }
+
+    .fc .fc-timeline-event.cm-ev-blocked .fc-event-main,
+    .fc .fc-timeline-event.cm-ev-blocked .fc-event-title {
+        color: #ffffff !important;
+    }
+
+    /* Barre « BLOQUÉ » d'une chambre hors service : non déplaçable */
+    .fc .fc-timeline-event.cm-blocked {
+        cursor: not-allowed !important;
+        letter-spacing: 1px !important;
+    }
+
+    /* Poignées de redimensionnement (mode éditable) */
+    .fc .fc-timeline-event.cm-ev .fc-event-resizer {
+        opacity: 0;
+        transition: opacity 0.15s ease;
+    }
+
+    .fc .fc-timeline-event.cm-ev:hover .fc-event-resizer {
+        opacity: 1;
+    }
+
+    /* --- Barres de défilement --- */
+    .fc .fc-scroller::-webkit-scrollbar {
+        width: 9px;
+        height: 9px;
+    }
+
+    .fc .fc-scroller::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 999px;
+        border: 2px solid #ffffff;
+    }
+
+    .fc .fc-scroller::-webkit-scrollbar-track {
+        background: #f1f5f9;
+    }
+
+    /* --- Responsive --- */
+    @media (max-width: 640px) {
+        .fc-header-toolbar {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .fc .fc-button {
+            padding: 0.4em 0.6em !important;
+            font-size: 0.85rem !important;
+        }
+    }
+}
+
+/* =========================================================================
+   Légende (design « planning-room »)
+   ========================================================================= */
+.planning-ref .planning-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 20px;
+}
+
+.planning-ref .planning-legend .legend-item {
+    display: inline-flex;
+    align-items: center;
+}
+
+.planning-ref .planning-legend .legend-color {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+    box-shadow: none;
+}
+
+.planning-ref .planning-legend .legend-text {
+    margin-left: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #333;
+    letter-spacing: 0;
+}

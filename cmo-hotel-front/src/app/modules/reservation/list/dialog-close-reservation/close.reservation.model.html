@@ -42,6 +42,33 @@
                 </mat-form-field>
             </div>
 
+            <div class="mt-4">
+                <mat-form-field class="w-full" [appearance]="'outline'" [subscriptSizing]="'dynamic'">
+                    <mat-label>Mode de règlement</mat-label>
+                    <mat-select formControlName="paymentMode">
+                        <mat-option *ngFor="let p of paymentModes" [value]="p.code">
+                            {{ p.name }}
+                        </mat-option>
+                    </mat-select>
+                    <mat-icon matPrefix class="icon-size-5 mr-1"
+                              [svgIcon]="'heroicons_outline:credit-card'"></mat-icon>
+                    <mat-error *ngIf="form.get('paymentMode').hasError('required')">Mode de règlement requis</mat-error>
+                </mat-form-field>
+            </div>
+
+            <div class="mt-2" *ngIf="form.get('paymentMode').value === 'PRISE_EN_CHARGE'">
+                <mat-form-field class="w-full" [appearance]="'outline'" [subscriptSizing]="'dynamic'">
+                    <mat-label>Référence du document en charge</mat-label>
+                    <input matInput formControlName="priseEnChargeReference" placeholder="Ex: BC-2024-001">
+                    <mat-icon matSuffix class="icon-size-5"
+                              [svgIcon]="'heroicons_outline:document-text'"></mat-icon>
+                    <mat-hint>Référence obligatoire pour une prise en charge</mat-hint>
+                    <mat-error *ngIf="form.get('priseEnChargeReference').hasError('required')">
+                        La référence de prise en charge est obligatoire
+                    </mat-error>
+                </mat-form-field>
+            </div>
+
             <div class="flex items-start justify-between mx-3 mt-8">
                 <button type="button" mat-stroked-button (click)="matDialogRef.close()">
                     Annuler

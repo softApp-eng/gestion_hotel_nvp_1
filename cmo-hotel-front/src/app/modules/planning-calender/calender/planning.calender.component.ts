@@ -9,7 +9,7 @@ import { CalendarOptions } from '@fullcalendar/core';
 import interactionPlugin from '@fullcalendar/interaction';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import { ApiReservationService } from '../../reservation/api.reservation.service';
-import { forkJoin, Observable, of, Subject, takeUntil } from 'rxjs';
+import { forkJoin, Observable, of, Subject, takeUntil, concat } from 'rxjs';
 import { UtilsService } from '../../../core/service/utils.service';
 import {ApiRoomService} from "../../pavillon/api.room.service";
 import {ApiPavillonService} from "../../pavillon/api.pavillon.service";
@@ -60,15 +60,15 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
         locale: 'fr',
         handleWindowResize: true,
         windowResizeDelay: 100,
-        resourceAreaWidth: '250px', // Augmenté légèrement pour accueillir l'arborescence
-        resourceAreaHeaderContent: 'CMO Hôtel',
+        resourceAreaWidth: '200px', // Colonne des chambres (type de chambre à gauche)
+        resourceAreaHeaderContent: 'Type Chambre',
 
         // Ligne rouge verticale indiquant le jour / l'heure courante
         nowIndicator: true,
 
         // --- ÉDITION (activée uniquement sur le Planning des chambres) ---
         editable: false,
-        eventStartEditable: false, // Le déplacement horizontal (dates d'arrivée) n'est pas autorisé
+        eventStartEditable: false, // Glisser horizontal (dates du séjour) : activé en mode éditable
         eventDurationEditable: false, // Redimensionnement de la durée (bord droit) : activé en mode éditable
         eventResourceEditable: false, // Glisser-déposer entre lignes de chambres : activé en mode éditable
         eventDrop: (info: any) => this.onEventDrop(info),
@@ -82,8 +82,14 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
                 'PENDING';
             return `cm-ev cm-ev-${String(status).toLowerCase()}`;
         },
-        resourceLabelClassNames: (arg: any) =>
-            `cm-res cm-res-${arg?.resource?.extendedProps?.level || 'room'}`,
+        resourceLabelClassNames: (arg: any) => {
+            const level = arg?.resource?.extendedProps?.level || 'room';
+            const blocked =
+                arg?.resource?.extendedProps?.available === false
+                    ? ' room-blocked'
+                    : '';
+            return `cm-res cm-res-${level}${blocked}`;
+        },
         resourceLaneClassNames: (arg: any) =>
             `cm-lane cm-lane-${arg?.resource?.extendedProps?.level || 'room'}`,
 
@@ -92,17 +98,38 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
         slotLabelFormat: [
             { weekday: 'long', day: 'numeric', month: 'short' }
         ],
-        resourceOrder: 'title', // Trie automatiquement les lignes par leur titre (Nom de chambre)
+        // Rendu selon l'échelle choisie (Jour / Semaine / Mois)
+        views: {
+            resourceTimelineDay: {
+                slotDuration: { hours: 1 },
+                slotLabelFormat: [{ hour: '2-digit', minute: '2-digit' }],
+                slotMinWidth: 55,
+            },
+            resourceTimelineMonth: {
+                slotDuration: { days: 1 },
+                slotMinWidth: 38,
+                slotLabelFormat: [
+                    { weekday: 'narrow' },
+                    { day: 'numeric' },
+                ],
+            },
+        },
+        // L'ordre des lignes est défini explicitement via `extendedProps.order`
+        // (types de chambre de Chellah en premier). FullCalendar trie par défaut
+        // sur `id,title`, donc on le remplace par notre champ `order`.
+        resourceOrder: 'order,title',
         // --------------------------
 
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'resourceTimelineWeek'
+            right: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth'
         },
         buttonText: {
             today:    "Aujourd'hui",
-            week:     "Semaine",
+            day:      'Jour',
+            week:     'Semaine',
+            month:    'Mois',
         },
 
         // TRÈS IMPORTANT : Transformation des données en arbre (Pavillon > Type > Chambre)
@@ -117,6 +144,9 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
         },
 
         events: (info, successCallback, failureCallback) => {
+            // Mémorise la période affichée pour positionner les barres « BLOQUÉ »
+            this.currentViewStart = new Date(info.startStr);
+            this.currentViewEnd = new Date(info.endStr);
             this.getReservationsByRange('reservations', info.startStr, info.endStr).subscribe({
                 next: (data) => {
                     console.log('res',data);
@@ -133,6 +163,10 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
             info.el.setAttribute('title', info.event.title);
         },
         eventClick: (info: any) => {
+            // Les barres « BLOQUÉ » (chambres hors service) ne sont pas des réservations
+            if (info?.event?.extendedProps?.blocked) {
+                return;
+            }
             this.raiseReservationDetailsDialog(info.event.id);
         },
     });
@@ -152,6 +186,8 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
     @ViewChild('fullCalendar') fullCalendar: any;
 
     private periodReservations: any[] = [];
+    private currentViewStart: Date | null = null;
+    private currentViewEnd: Date | null = null;
     start;
     end;
 
@@ -186,7 +222,7 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
                 this.calendarOptions.update(options => ({
                     ...options,
                     // Ajustement des largeurs pour le mobile
-                    resourceAreaWidth: isMobile ? '120px' : '250px', // Réduit la colonne gauche sur mobile
+                    resourceAreaWidth: isMobile ? '140px' : '174px', // Colonne « Type Chambre » (comme la référence)
                     slotMinWidth: isMobile ? 80 : 120, // Force chaque jour à faire au moins 80px (active le scroll horizontal fluide)
 
                     slotLabelFormat: isMobile ? [
@@ -253,83 +289,96 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
         this.calendarOptions.update((options) => ({
             ...options,
             editable: this.isEditable,
+            eventStartEditable: this.isEditable, // Glisser horizontal : décalage des dates du séjour
             eventDurationEditable: this.isEditable,
             eventResourceEditable: this.isEditable,
             ...(this.isEditable ? editableToolbar : {}),
         }));
     }
 
+    /** Vrai si le pavillon correspond à « Chellah ». */
+    private isChellahPavillon(pavillon: any): boolean {
+        return (pavillon?.name || '').toLowerCase().includes('chellah');
+    }
+
     buildHierarchicalResources(rooms: any[]): any[] {
         const tree = [];
 
-        // 1. Regrouper par Pavillon
-        const pavillonsMap = new Map();
-
-        rooms.forEach(room => {
-            const pavillonName = room.pavillon?.name || 'Sans Pavillon';
-            const typeName = room.roomType?.type || 'Standard';
-
-            if (!pavillonsMap.has(pavillonName)) {
-                pavillonsMap.set(pavillonName, {
-                    id: `pav-${room.pavillon?.id || 'unknown'}`,
-                    title: pavillonName,
-                    extendedProps: { level: 'pavillon' },
-                    childrenMap: new Map()
-                });
+        // Regroupement par TYPE DE CHAMBRE. Les types (et chambres) du pavillon
+        // « Chellah » sont placés en premier.
+        const typesMap = new Map<
+            string,
+            {
+                id: string;
+                title: string;
+                extendedProps: any;
+                children: any[];
+                hasChellah: boolean;
             }
+        >();
 
-            const pavillonNode = pavillonsMap.get(pavillonName);
+        rooms.forEach((room) => {
+            const typeName = room.roomType?.type || 'Standard';
+            const isChellah = this.isChellahPavillon(room.pavillon);
 
-            // 2. Regrouper par Type de chambre à l'intérieur du Pavillon
-            if (!pavillonNode.childrenMap.has(typeName)) {
-                pavillonNode.childrenMap.set(typeName, {
-                    id: `type-${room.pavillon?.id}-${room.roomType?.id}`,
+            if (!typesMap.has(typeName)) {
+                typesMap.set(typeName, {
+                    id: `type-${room.roomType?.id || 'unknown'}`,
                     title: typeName,
                     extendedProps: { level: 'type' },
-                    children: []
+                    children: [],
+                    hasChellah: false,
                 });
             }
 
-            const typeNode = pavillonNode.childrenMap.get(typeName);
+            const node = typesMap.get(typeName);
+            node.hasChellah = node.hasChellah || isChellah;
 
-            // 3. Ajouter la chambre (l'élément final)
-            typeNode.children.push({
+            // Chambre (élément final de l'arborescence)
+            node.children.push({
                 id: room.id.toString(),
-                title: room.name, // Utilisé par resourceOrder: 'title' pour le tri
-                extendedProps: { level: 'room' }
+                title: room.name,
+                extendedProps: {
+                    level: 'room',
+                    available: room.available,
+                    pavillon: room.pavillon?.name,
+                    chellah: isChellah,
+                },
             });
         });
 
-        // 4. Convertir les Maps en Tableaux ordonnés
-        // Trier les Pavillons par nom
-        const sortedPavillonsNames = Array.from(pavillonsMap.keys()).sort();
+        // Tri des types : ceux de Chellah d'abord, puis ordre alphabétique
+        const sortedTypes = Array.from(typesMap.values()).sort((a, b) => {
+            if (a.hasChellah !== b.hasChellah) {
+                return a.hasChellah ? -1 : 1;
+            }
+            return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+        });
 
-        sortedPavillonsNames.forEach(pName => {
-            const pavNode = pavillonsMap.get(pName);
-            const typesList = [];
-
-            // Trier les Types de chambre par nom
-            const sortedTypesNames = Array.from(pavNode.childrenMap.keys()).sort();
-
-            sortedTypesNames.forEach(tName => {
-                const tNode = pavNode.childrenMap.get(tName);
-
-                // Trier explicitement les chambres par nom (sécurité en plus de resourceOrder)
-                tNode.children.sort((a, b) => a.title.localeCompare(b.title, undefined, {numeric: true, sensitivity: 'base'}));
-
-                typesList.push({
-                    id: tNode.id,
-                    title: tNode.title,
-                    extendedProps: tNode.extendedProps,
-                    children: tNode.children
+        sortedTypes.forEach((node, typeIndex) => {
+            // Chambres de Chellah d'abord, puis tri naturel (numérique) par nom
+            node.children.sort((a, b) => {
+                const ac = !!a.extendedProps?.chellah;
+                const bc = !!b.extendedProps?.chellah;
+                if (ac !== bc) {
+                    return ac ? -1 : 1;
+                }
+                return a.title.localeCompare(b.title, undefined, {
+                    numeric: true,
+                    sensitivity: 'base',
                 });
             });
 
+            // `order` est lu par `resourceOrder` de FullCalendar (tri explicite).
+            node.children.forEach((child, roomIndex) => {
+                child.extendedProps = { ...child.extendedProps, order: roomIndex };
+            });
+
             tree.push({
-                id: pavNode.id,
-                title: pavNode.title,
-                extendedProps: pavNode.extendedProps,
-                children: typesList
+                id: node.id,
+                title: node.title,
+                extendedProps: { ...node.extendedProps, order: typeIndex },
+                children: node.children,
             });
         });
 
@@ -406,13 +455,42 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
                         title: `${titleDisplay}`, // Plus court car le nom de la chambre est déjà sur la ligne
                         start: res.start,
                         end: res.end,
-                        backgroundColor: this.getColorByStatus(res.status.code),
-                        borderColor: 'transparent',
+                        // La couleur est pilotée par les classes CSS `cm-ev-<statut>`
+                        // (voir le thème « planning-room » dans le SCSS).
                         extendedProps: { ...res, currentRoom: room }
                     });
                 //}
             });
         });
+
+        // Chambres bloquées / hors service : barre ROUGE sur toute la période affichée
+        const blockedRooms = this.getFilteredRooms().filter(
+            (r) => r.available === false
+        );
+        if (blockedRooms.length > 0) {
+            const now = new Date();
+            const viewStart = this.currentViewStart ?? now;
+            const viewEnd = this.currentViewEnd ?? this.addDays(now, 1);
+
+            blockedRooms.forEach((room) => {
+                calendarEvents.push({
+                    id: `blocked-${room.id}`,
+                    resourceId: room.id.toString(),
+                    title: 'BLOQUÉ',
+                    start: viewStart,
+                    end: viewEnd,
+                    // Une chambre bloquée n'est ni déplaçable ni redimensionnable
+                    startEditable: false,
+                    durationEditable: false,
+                    resourceEditable: false,
+                    classNames: ['cm-blocked'],
+                    extendedProps: {
+                        blocked: true,
+                        status: { code: 'BLOCKED' },
+                    },
+                });
+            });
+        }
 
         return calendarEvents;
     }
@@ -542,54 +620,70 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Glisser-déposer d'une réservation vers une autre chambre (délogement).
+     * Glisser-déposer d'une réservation : déplacement vertical (changement de chambre)
+     * et/ou horizontal (décalage des dates du séjour).
      */
     onEventDrop(info: any): void {
         if (!this.isEditable) {
-            return;
-        }
-
-        const oldResourceId = info.oldEvent?.resourceId;
-        const newResourceId = info.event?.resourceId;
-
-        // Un déplacement horizontal (changement de dates) n'est pas autorisé ici :
-        // on annule et on oriente l'utilisateur vers le redimensionnement.
-        const timeChanged =
-            (info.oldEvent?.start?.getTime?.() ?? null) !==
-                (info.event?.start?.getTime?.() ?? null) ||
-            (info.oldEvent?.end?.getTime?.() ?? null) !==
-                (info.event?.end?.getTime?.() ?? null);
-
-        if (timeChanged) {
             info.revert();
-            this._toast.warning(
-                "Pour modifier les dates, redimensionnez le séjour depuis son bord droit."
-            );
-            return;
-        }
-
-        if (String(oldResourceId) === String(newResourceId)) {
             return;
         }
 
         const code = info.event.id;
+        const oldResourceId = info.oldEvent?.resourceId;
+        const newResourceId = info.event?.resourceId;
+
+        const oldStart = info.oldEvent?.start;
+        const newStart = info.event?.start;
+        const oldEnd = info.oldEvent?.end;
+        const newEnd = info.event?.end;
+
+        const datesChanged =
+            (oldStart?.getTime?.() ?? null) !== (newStart?.getTime?.() ?? null) ||
+            (oldEnd?.getTime?.() ?? null) !== (newEnd?.getTime?.() ?? null);
+
+        const roomChanged = String(oldResourceId) !== String(newResourceId);
+
+        if (!datesChanged && !roomChanged) {
+            info.revert();
+            return;
+        }
+
         const oldRoom = this.findRoomById(oldResourceId);
         const newRoom = this.findRoomById(newResourceId);
 
+        let summary = '';
+        if (roomChanged) {
+            summary +=
+                `<br>Chambre : <strong>${oldRoom?.name ?? oldResourceId}</strong> → ` +
+                `<strong>${newRoom?.name ?? newResourceId}</strong>`;
+        }
+        if (datesChanged) {
+            const oldRange =
+                oldStart && oldEnd
+                    ? `${this.formatPrintDay(oldStart)} → ${this.formatPrintDay(oldEnd)}`
+                    : '—';
+            const newRange =
+                newStart && newEnd
+                    ? `${this.formatPrintDay(newStart)} → ${this.formatPrintDay(newEnd)}`
+                    : '—';
+            summary += `<br>Dates : <strong>${oldRange}</strong> devient <strong>${newRange}</strong>`;
+        }
+
         const config: FuseConfirmationConfig = {
-            title: 'Déloger la réservation',
+            title: 'Déplacer la réservation',
             message:
-                `Déplacer la réservation <strong>#${code}</strong> de la chambre ` +
-                `<strong>${oldRoom?.name ?? oldResourceId}</strong> vers ` +
-                `<strong>${newRoom?.name ?? newResourceId}</strong> ?<br>` +
-                `Le tarif appliqué sera recalculé automatiquement depuis la grille tarifaire.`,
+                `Déplacer la réservation <strong>#${code}</strong> ?${summary}` +
+                (roomChanged
+                    ? `<br>Le tarif appliqué sera recalculé automatiquement depuis la grille tarifaire.`
+                    : ''),
             icon: {
                 show: true,
                 name: 'heroicons_outline:arrows-right-left',
                 color: 'primary',
             },
             actions: {
-                confirm: { show: true, label: 'Déloger', color: 'primary' },
+                confirm: { show: true, label: 'Déplacer', color: 'primary' },
                 cancel: { show: true, label: 'Annuler' },
             },
             dismissible: true,
@@ -603,64 +697,87 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
                     info.revert();
                     return;
                 }
-                this.persistRoomChange(
+                this.persistDrop(
                     code,
                     oldResourceId,
                     newResourceId,
-                    info
+                    info,
+                    datesChanged,
+                    roomChanged
                 );
             });
     }
 
     /**
-     * Enregistre le changement de chambre pour tous les occupants de la chambre d'origine.
+     * Enregistre le déplacement : changement de chambre (tous les occupants de la
+     * chambre d'origine) et/ou décalage des dates du séjour.
      */
-    private persistRoomChange(
+    private persistDrop(
         code: any,
         oldResourceId: any,
         newResourceId: any,
-        info: any
+        info: any,
+        datesChanged: boolean,
+        roomChanged: boolean
     ): void {
-        const reservation = this.findReservation(code);
-        const newRoom = this.findRoomById(newResourceId);
+        let roomCall$: Observable<any> = of(null);
 
-        if (!reservation || !newRoom) {
-            info.revert();
-            this._toast.error('Réservation ou chambre introuvable');
-            return;
+        if (roomChanged) {
+            const reservation = this.findReservation(code);
+            const newRoom = this.findRoomById(newResourceId);
+
+            if (!reservation || !newRoom) {
+                info.revert();
+                this._toast.error('Réservation ou chambre introuvable');
+                return;
+            }
+
+            const guests = (reservation.guests || []).filter(
+                (g: any) => String(g.room?.id) === String(oldResourceId)
+            );
+
+            if (guests.length === 0) {
+                info.revert();
+                this._toast.error('Aucun occupant à déloger dans cette chambre');
+                return;
+            }
+
+            roomCall$ = forkJoin(
+                guests.map((guest: any) =>
+                    this._apiReservationService.switchRoom({
+                        reservationId: String(guest.id),
+                        newRoomId: Number(newResourceId),
+                        reason: this.moveReason,
+                        appliedPrice: this.getAppliedPriceForPerson(
+                            newRoom,
+                            guest.person
+                        ),
+                    })
+                )
+            );
         }
 
-        const guests = (reservation.guests || []).filter(
-            (g: any) => String(g.room?.id) === String(oldResourceId)
-        );
+        const dateCall$: Observable<any> =
+            datesChanged && info.event?.start && info.event?.end
+                ? this._apiReservationService.shiftReservation(
+                      code,
+                      this._utilsService.convertToDate(info.event.start),
+                      this._utilsService.convertToDate(info.event.end)
+                  )
+                : of(null);
 
-        if (guests.length === 0) {
-            info.revert();
-            this._toast.error('Aucun occupant à déloger dans cette chambre');
-            return;
-        }
-
-        const calls = guests.map((guest: any) =>
-            this._apiReservationService.switchRoom({
-                reservationId: String(guest.id),
-                newRoomId: Number(newResourceId),
-                reason: this.moveReason,
-                appliedPrice: this.getAppliedPriceForPerson(
-                    newRoom,
-                    guest.person
-                ),
-            })
-        );
-
-        forkJoin(calls).subscribe({
+        // Séquentiel : on déplace d'abord la chambre, puis on décale les dates
+        // (la vérification de disponibilité côté serveur tiendra compte de la nouvelle chambre).
+        concat(roomCall$, dateCall$).subscribe({
             next: () => {
-                this._toast.success('Délogement effectué avec succès');
+                this._toast.success('Réservation déplacée avec succès');
                 this.reloadFromServer();
             },
             error: (err) => {
                 info.revert();
                 this._toast.error(
-                    err?.error?.message || 'Erreur lors du délogement'
+                    err?.error?.message ||
+                        'Erreur lors du déplacement de la réservation'
                 );
                 this.reloadFromServer();
             },
@@ -759,6 +876,9 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
                 return '#64748b';
             case 'CLOSED':
                 return '#10b981';
+            case 'BLOCKED':
+            case 'BLOQUE':
+                return '#dc2626';
             default:
                 return '#cbd5e1';
         }
@@ -766,10 +886,85 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
 
 
     /**
-     * Imprime un planning d'occupation (un tableau par pavillon).
+     * Imprime le planning d'occupation « par semaine » (grille avec une
+     * colonne par jour de la période affichée).
      * Respecte les filtres pavillon / n° de chambre actifs.
      */
     printOccupation(): void {
+        this.printOccupationByWeek();
+    }
+
+    /**
+     * Impression « par semaine » : grille chambres × jours (une colonne
+     * par jour de la période affichée dans le calendrier).
+     */
+    printOccupationByWeek(): void {
+        this.printWeeklyGrid();
+    }
+
+    /**
+     * Impression « par jour » : feuille journalière avec une colonne par
+     * chambre, groupée par pavillon puis par étage.
+     */
+    printOccupationByDay(): void {
+        this.printDailySheet();
+    }
+
+    /** Ouvre une fenêtre et lance l'impression du document HTML fourni. */
+    private openPrintWindow(html: string): void {
+        const win = window.open('', '_blank', 'width=1200,height=800');
+        if (!win) {
+            return;
+        }
+        win.document.open();
+        win.document.write(html);
+        win.document.close();
+        win.focus();
+        setTimeout(() => win.print(), 400);
+    }
+
+    /**
+     * Chambres filtrées (pavillon + n° de chambre) regroupées par PAVILLON
+     * puis par TYPE DE CHAMBRE. Structure réutilisée par les impressions
+     * semaine et jour.
+     */
+    private buildRoomGroups(): Map<
+        string,
+        {
+            name: string;
+            types: Map<string, { name: string; rooms: any[] }>;
+        }
+    > {
+        const groups = new Map<
+            string,
+            {
+                name: string;
+                types: Map<string, { name: string; rooms: any[] }>;
+            }
+        >();
+
+        this.getFilteredRooms().forEach((room) => {
+            const pavKey = room.pavillon?.id?.toString() ?? 'none';
+            const pavName = room.pavillon?.name ?? 'Sans pavillon';
+            const typeKey = room.roomType?.id?.toString() ?? 'none';
+            const typeName = room.roomType?.type ?? 'Sans type de chambre';
+
+            if (!groups.has(pavKey)) {
+                groups.set(pavKey, { name: pavName, types: new Map() });
+            }
+
+            const pav = groups.get(pavKey);
+            if (!pav.types.has(typeKey)) {
+                pav.types.set(typeKey, { name: typeName, rooms: [] });
+            }
+            pav.types.get(typeKey).rooms.push(room);
+        });
+
+        return groups;
+    }
+
+    /** Impression « par semaine » : une colonne par jour affiché. */
+    private printWeeklyGrid(): void {
         const api = this.fullCalendar?.getApi ? this.fullCalendar.getApi() : null;
         const view = api?.view;
 
@@ -786,42 +981,44 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
             return;
         }
 
-        // Chambres filtrées (pavillon + n° de chambre)
-        const filteredRooms = this.getFilteredRooms();
+        const groups = this.buildRoomGroups();
+        if (groups.size === 0) {
+            return;
+        }
 
-        // Regroupement par pavillon
-        const groups = new Map<string, { name: string; rooms: any[] }>();
-        filteredRooms.forEach((room) => {
-            const key = room.pavillon?.id?.toString() ?? 'none';
-            const name = room.pavillon?.name ?? 'Sans pavillon';
-            if (!groups.has(key)) {
-                groups.set(key, { name, rooms: [] });
-            }
-            groups.get(key).rooms.push(room);
-        });
-
-        const sortedGroups = Array.from(groups.entries()).sort((a, b) =>
-            a[1].name.localeCompare(b[1].name, undefined, { sensitivity: 'base' })
+        this.openPrintWindow(
+            this.buildOccupationPrintHtml(groups, days, start, end)
         );
+    }
 
-        if (sortedGroups.length === 0) {
+    /** Impression « par jour » : feuille journalière groupée par étage. */
+    private printDailySheet(): void {
+        const api = this.fullCalendar?.getApi ? this.fullCalendar.getApi() : null;
+        const view = api?.view;
+
+        // Jour imprimé : le jour affiché si la vue est quotidienne, sinon aujourd'hui.
+        let day: Date = new Date();
+        if (view && view.type === 'resourceTimelineDay') {
+            day = new Date(view.currentStart);
+        }
+        day.setHours(0, 0, 0, 0);
+
+        const groups = this.buildRoomGroups();
+        if (groups.size === 0) {
             return;
         }
 
-        const html = this.buildOccupationPrintHtml(sortedGroups, days, start, end);
-        const win = window.open('', '_blank', 'width=1200,height=800');
-        if (!win) {
-            return;
-        }
-        win.document.open();
-        win.document.write(html);
-        win.document.close();
-        win.focus();
-        setTimeout(() => win.print(), 400);
+        this.openPrintWindow(this.buildDailyPrintHtml(groups, day));
     }
 
     private buildOccupationPrintHtml(
-        groups: Array<[string, { name: string; rooms: any[] }]>,
+        groups: Map<
+            string,
+            {
+                name: string;
+                types: Map<string, { name: string; rooms: any[] }>;
+            }
+        >,
         days: Date[],
         start: Date,
         end: Date
@@ -832,42 +1029,386 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
             ? 'Planning des chambres'
             : "Planning d'occupation";
 
-        const sections = groups
-            .map(([, group]) => {
-                const rooms = [...group.rooms].sort((a, b) =>
+        const dayDowFormatter = new Intl.DateTimeFormat('fr-FR', { weekday: 'short' });
+        const dayShortFormatter = new Intl.DateTimeFormat('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+        });
+
+        // En-tête des jours (jour abrégé sur 2 lignes + date)
+        const head = `<tr><th class="room-col">Chambre</th>${days
+            .map((d) => {
+                const isToday = this.isSameDay(d, new Date());
+                const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+                const cls = [isToday ? 'today' : '', isWeekend ? 'weekend' : '']
+                    .filter(Boolean)
+                    .join(' ');
+                return `<th class="${cls}"><span class="dow">${dayDowFormatter.format(
+                    d
+                )}</span><span class="dnum">${dayShortFormatter.format(d)}</span></th>`;
+            })
+            .join('')}</tr>`;
+
+        // Un seul tableau : regroupé par PAVILLON, puis par TYPE DE CHAMBRE.
+        // Le pavillon « Chellah » est affiché en premier.
+        const sortedPavillons = Array.from(groups.entries()).sort((a, b) => {
+            const ac = this.isChellahPavillon({ name: a[1].name });
+            const bc = this.isChellahPavillon({ name: b[1].name });
+            if (ac !== bc) {
+                return ac ? -1 : 1;
+            }
+            return a[1].name.localeCompare(b[1].name, undefined, { sensitivity: 'base' });
+        });
+
+        let body = '';
+        sortedPavillons.forEach(([, pav]) => {
+            const pavRoomCount = Array.from(pav.types.values()).reduce(
+                (acc, t) => acc + t.rooms.length,
+                0
+            );
+
+            body += `<tr class="group-row pavillon-row"><td colspan="${
+                days.length + 1
+            }">Pavillon : ${pav.name} <span class="rooms-count">(${pavRoomCount} chambre${
+                pavRoomCount > 1 ? 's' : ''
+            })</span></td></tr>`;
+
+            const sortedTypes = Array.from(pav.types.entries()).sort((a, b) =>
+                a[1].name.localeCompare(b[1].name, undefined, { sensitivity: 'base' })
+            );
+
+            sortedTypes.forEach(([, type]) => {
+                const rooms = [...type.rooms].sort((a, b) =>
                     (a.name || '').localeCompare(b.name || '', undefined, {
                         numeric: true,
                         sensitivity: 'base',
                     })
                 );
 
-                const head = `<tr><th class="room-col">Chambre</th>${days
-                    .map((d) => {
-                        const isToday = this.isSameDay(d, new Date());
-                        return `<th class="${isToday ? 'today' : ''}">${this.formatPrintDayShort(d)}</th>`;
-                    })
-                    .join('')}</tr>`;
+                body += `<tr class="group-row type-row"><td colspan="${
+                    days.length + 1
+                }">Type de chambre : ${type.name} <span class="rooms-count">(${rooms.length} chambre${
+                    rooms.length > 1 ? 's' : ''
+                })</span></td></tr>`;
 
-                const rows = rooms
-                    .map((room) => {
-                        const cells = days
-                            .map((day) => {
-                                const occ = this.getRoomDayOccupant(room.id, day);
-                                const isToday = this.isSameDay(day, new Date());
-                                const cls = occ.text
-                                    ? `occ ${this.statusClass(occ.status)}`
-                                    : 'free';
-                                return `<td class="${cls}${isToday ? ' today' : ''}">${occ.text}</td>`;
+                rooms.forEach((room) => {
+                    // Chambre bloquée / hors service : signalée en rouge
+                    if (room.available === false) {
+                        body += `<tr><td class="room-col">${room.name}</td><td class="cell blocked" colspan="${days.length}"><span class="badge badge-blocked">B</span>BLOQUÉ — chambre hors service</td></tr>`;
+                        return;
+                    }
+
+                    const cells = days
+                        .map((day) => {
+                            const occ = this.getRoomDayOccupant(room.id, day);
+                            const isToday = this.isSameDay(day, new Date());
+                            if (!occ.text) {
+                                return `<td class="cell free${
+                                    isToday ? ' today' : ''
+                                }"></td>`;
+                            }
+                            const marker = this.statusMarker(occ.status);
+                            return `<td class="cell occ ${this.statusClass(
+                                occ.status
+                            )}${isToday ? ' today' : ''}"><span class="badge">${marker}</span><span class="guest">${occ.text}</span></td>`;
+                        })
+                        .join('');
+                    body += `<tr><td class="room-col">${room.name}</td>${cells}</tr>`;
+                });
+            });
+        });
+
+        const table = `<table><thead>${head}</thead><tbody>${body}</tbody></table>`;
+
+        return `<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>${docTitle} (par semaine) - CMO Hôtel</title>
+<style>
+    /* Design pensé pour l'impression en NOIR & BLANC : texte noir, bordures
+       noires, statuts distingués par badge + nuances de gris. Aucune info ne
+       dépend d'une couleur vive, donc lisible même sans fond imprimé. */
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        color: #000;
+        background: #fff;
+        margin: 10mm;
+        font-size: 11px;
+    }
+
+    /* ---------- En-tête ---------- */
+    .doc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 16px;
+        border-bottom: 2px solid #000;
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+    }
+    .doc-header h1 { font-size: 18px; margin: 0; letter-spacing: .2px; }
+    .doc-header .meta { text-align: right; font-size: 11px; line-height: 1.5; }
+    .doc-header .meta strong { font-weight: 700; }
+
+    /* ---------- Légende ---------- */
+    .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+        margin: 0 0 14px;
+        font-size: 11px;
+    }
+    .legend .item { display: inline-flex; align-items: center; gap: 6px; }
+    .legend .badge {
+        display: inline-block;
+        min-width: 14px;
+        padding: 0 3px;
+        border: 1px solid #000;
+        font-size: 9px;
+        font-weight: 700;
+        line-height: 13px;
+        text-align: center;
+    }
+    .legend .swatch {
+        display: inline-block;
+        width: 16px;
+        height: 12px;
+        border: 1px solid #000;
+    }
+    .legend .swatch.free { background: #fff; }
+    .legend .swatch.today { border-width: 2px; }
+    .legend .badge-blocked { color: #fff; border-color: #dc2626; background: #dc2626; }
+
+    /* ---------- Lignes de regroupement (pavillon / type de chambre) ---------- */
+    .group-row td {
+        text-align: left;
+        font-weight: 700;
+        border: 1px solid #000;
+        word-break: normal;
+    }
+    .pavillon-row td {
+        font-size: 13px;
+        padding: 5px 8px;
+        background: #d9d9d9;
+        border-left: 5px solid #000;
+    }
+    .type-row td {
+        font-size: 11px;
+        padding: 4px 8px 4px 22px;
+        background: #efefef;
+        font-style: italic;
+    }
+    .group-row .rooms-count { font-size: 10.5px; font-weight: 400; font-style: normal; }
+    tbody td.room-col { padding-left: 18px; }
+
+    /* ---------- Tableau ---------- */
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td {
+        border: 1px solid #000;
+        padding: 3px 4px;
+        text-align: center;
+        vertical-align: middle;
+        color: #000;
+        word-break: break-word;
+    }
+    thead th { background: #d9d9d9; font-size: 10px; line-height: 1.25; }
+    thead th .dow { display: block; text-transform: capitalize; font-weight: 700; }
+    thead th .dnum { display: block; font-weight: 600; }
+    th.room-col, td.room-col {
+        width: 88px;
+        text-align: left;
+        font-weight: 700;
+        white-space: nowrap;
+        background: #f2f2f2;
+    }
+    thead th.weekend { background: #cfcfcf; }
+    thead th.today { background: #bdbdbd; }
+    th.today, td.today { border-left: 2px solid #000; border-right: 2px solid #000; }
+
+    td.cell { font-size: 9.5px; line-height: 1.2; }
+    td.free { background: #fff; }
+
+    /* Chambre bloquée / hors service : signalée en rouge */
+    td.cell.blocked {
+        background: #fee2e2;
+        color: #dc2626;
+        font-weight: 700;
+        text-align: left;
+        letter-spacing: .3px;
+    }
+    td.cell.blocked .badge-blocked { color: #fff; border-color: #dc2626; background: #dc2626; }
+
+    /* Statuts : lisibles en noir & blanc (badge + teinte de gris) */
+    td.occ { font-weight: 600; }
+    td.occ.confirmed { background: #d0d0d0; }
+    td.occ.pending { background: #ededed; }
+    td.occ.closed { background: #f7f7f7; }
+    td.occ .badge {
+        display: inline-block;
+        min-width: 12px;
+        margin-right: 3px;
+        padding: 0 2px;
+        border: 1px solid #000;
+        font-size: 8px;
+        font-weight: 700;
+        line-height: 11px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .footer { margin-top: 10px; font-size: 10px; color: #000; text-align: right; }
+
+    /* ---------- Mise en page impression ---------- */
+    @page { size: A4 landscape; margin: 8mm; }
+    @media print {
+        body { margin: 0; }
+        thead { display: table-header-group; }
+        tbody tr.pavillon-row { page-break-inside: avoid; }
+        tbody tr.pavillon-row:not(:first-child) { page-break-before: always; }
+    }
+</style>
+</head>
+<body>
+    <header class="doc-header">
+        <h1>${docTitle} (par semaine) — CMO Hôtel</h1>
+        <div class="meta">
+            <div><strong>Période :</strong> ${rangeLabel}</div>
+            <div><strong>Généré le</strong> ${this.formatPrintDay(generated)} à ${generated.toLocaleTimeString('fr-FR')}</div>
+        </div>
+    </header>
+
+    <div class="legend">
+        <span class="item"><span class="badge">C</span> IN-HOUSE</span>
+        <span class="item"><span class="badge">A</span> ARRIVE</span>
+        <span class="item"><span class="badge">T</span> Terminé</span>
+        <span class="item"><span class="badge badge-blocked">B</span> BLOQUÉ</span>
+        <span class="item"><span class="swatch free"></span> Chambre libre</span>
+        <span class="item"><span class="swatch today"></span> Colonne du jour</span>
+    </div>
+
+    ${table}
+    <div class="footer">CMO Hôtel — ${docTitle} (par semaine) par pavillon et par type de chambre</div>
+</body>
+</html>`;
+    }
+
+    /**
+     * Feuille journalière « par jour » : pour un jour donné, une colonne par
+     * chambre. Les chambres sont regroupées par pavillon (section) puis par
+     * ÉTAGE (colonne de gauche). Sous l'en-tête « Type de chambre », chaque
+     * colonne affiche le type, le numéro de chambre, puis l'occupant du jour.
+     */
+    private buildDailyPrintHtml(
+        groups: Map<
+            string,
+            {
+                name: string;
+                types: Map<string, { name: string; rooms: any[] }>;
+            }
+        >,
+        day: Date
+    ): string {
+        const docTitle = this.isEditable
+            ? 'Planning des chambres'
+            : "Planning d'occupation";
+        const generated = new Date();
+        const dateLabel = this.formatPrintDay(day);
+
+        const sortedPavillons = Array.from(groups.entries()).sort((a, b) => {
+            const ac = this.isChellahPavillon({ name: a[1].name });
+            const bc = this.isChellahPavillon({ name: b[1].name });
+            if (ac !== bc) {
+                return ac ? -1 : 1;
+            }
+            return a[1].name.localeCompare(b[1].name, undefined, { sensitivity: 'base' });
+        });
+
+        const sections = sortedPavillons
+            .map(([, pav]) => {
+                // Toutes les chambres du pavillon, regroupées par ÉTAGE
+                const allRooms: any[] = [];
+                pav.types.forEach((t) => allRooms.push(...t.rooms));
+
+                const floors = new Map<string, any[]>();
+                allRooms.forEach((room) => {
+                    const floorKey = this.roomFloorLabel(room);
+                    if (!floors.has(floorKey)) {
+                        floors.set(floorKey, []);
+                    }
+                    floors.get(floorKey)!.push(room);
+                });
+
+                const sortedFloors = Array.from(floors.entries()).sort((a, b) =>
+                    this.compareFloorKeys(a[0], b[0])
+                );
+
+                const maxRooms = sortedFloors.reduce(
+                    (max, [, rooms]) => Math.max(max, rooms.length),
+                    0
+                );
+
+                const body = sortedFloors
+                    .map(([floorKey, rooms]) => {
+                        const sortedRooms = [...rooms].sort((a, b) =>
+                            this.compareRoomNames(a, b)
+                        );
+
+                        const typeCells = sortedRooms
+                            .map(
+                                (r) =>
+                                    `<td class="rtype">${this.escapeHtml(
+                                        r.roomType?.type ?? ''
+                                    )}</td>`
+                            )
+                            .join('');
+
+                        const numCells = sortedRooms
+                            .map(
+                                (r) =>
+                                    `<td class="rnum">${this.escapeHtml(r.name ?? '')}</td>`
+                            )
+                            .join('');
+
+                        const occCells = sortedRooms
+                            .map((r) => {
+                                if (r.available === false) {
+                                    return `<td class="occ blocked"><span class="badge badge-blocked">B</span>BLOQUÉ</td>`;
+                                }
+                                const occ = this.getRoomDayOccupant(r.id, day);
+                                if (!occ.text) {
+                                    return `<td class="occ free"></td>`;
+                                }
+                                const marker = this.statusMarker(occ.status);
+                                return `<td class="occ ${this.statusClass(
+                                    occ.status
+                                )}"><span class="badge">${marker}</span><span class="guest">${this.escapeHtml(
+                                    occ.text
+                                )}</span></td>`;
                             })
                             .join('');
-                        return `<tr><td class="room-col">${room.name}</td>${cells}</tr>`;
+
+                        return `<tr class="rtype-row"><td class="etage" rowspan="3">Étage ${this.escapeHtml(
+                            floorKey
+                        )}</td>${typeCells}</tr>
+                    <tr class="rnum-row">${numCells}</tr>
+                    <tr class="occ-row">${occCells}</tr>`;
                     })
                     .join('');
 
                 return `<section class="pavillon">
-                <h2>${group.name}</h2>
-                <table><thead>${head}</thead><tbody>${rows}</tbody></table>
-            </section>`;
+                    <h2>Pavillon : ${this.escapeHtml(pav.name)}</h2>
+                    <table>
+                        <thead>
+                            <tr><th class="etage-col">Etage</th><th class="type-col" colspan="${maxRooms}">Type de chambre</th></tr>
+                        </thead>
+                        <tbody>${body}</tbody>
+                    </table>
+                </section>`;
             })
             .join('');
 
@@ -875,42 +1416,169 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<title>${docTitle} - CMO Hôtel</title>
+<title>${docTitle} (par jour) - CMO Hôtel</title>
 <style>
     * { box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 16px; color: #0f172a; }
-    .doc-header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid #4f46e5; padding-bottom:8px; margin-bottom:16px; }
-    .doc-header h1 { font-size: 20px; margin: 0; }
-    .doc-header .meta { text-align:right; font-size:12px; color:#475569; }
-    .pavillon { margin-bottom: 24px; page-break-after: always; }
-    .pavillon:last-child { page-break-after: auto; }
-    .pavillon h2 { font-size: 16px; margin: 0 0 8px; background:#eef2ff; color:#3730a3; padding:6px 10px; border-radius:6px; }
-    table { width:100%; border-collapse: collapse; font-size: 10px; }
-    th, td { border:1px solid #cbd5e1; padding:3px 4px; text-align:center; vertical-align:middle; }
-    th.room-col, td.room-col { text-align:left; font-weight:700; width:90px; background:#f8fafc; white-space:nowrap; }
-    thead th { background:#f1f5f9; }
-    th.today, td.today { background:#fef2f2; }
-    td.occ { color:#fff; font-weight:600; }
-    td.occ.confirmed { background:#4f46e5; }
-    td.occ.pending { background:#64748b; }
-    td.occ.closed { background:#10b981; }
-    td.free { background:#ffffff; }
-    .footer { margin-top:12px; font-size:11px; color:#64748b; text-align:right; }
-    @media print { body { margin: 8mm; } }
+    html, body { margin: 0; padding: 0; }
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        color: #000;
+        background: #fff;
+        margin: 10mm;
+        font-size: 11px;
+    }
+
+    /* ---------- En-tête ---------- */
+    .doc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 16px;
+        border-bottom: 2px solid #000;
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+    }
+    .doc-header h1 { font-size: 18px; margin: 0; letter-spacing: .2px; }
+    .doc-header .meta { text-align: right; font-size: 11px; line-height: 1.5; }
+    .doc-header .meta strong { font-weight: 700; }
+
+    /* ---------- Légende ---------- */
+    .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+        margin: 0 0 14px;
+        font-size: 11px;
+    }
+    .legend .item { display: inline-flex; align-items: center; gap: 6px; }
+    .legend .badge {
+        display: inline-block;
+        min-width: 14px;
+        padding: 0 3px;
+        border: 1px solid #000;
+        font-size: 9px;
+        font-weight: 700;
+        line-height: 13px;
+        text-align: center;
+    }
+    .legend .badge-blocked { color: #fff; border-color: #dc2626; background: #dc2626; }
+
+    /* ---------- Section pavillon ---------- */
+    .pavillon { margin-bottom: 16px; }
+    .pavillon h2 {
+        font-size: 13px;
+        margin: 0 0 6px;
+        padding: 5px 8px;
+        background: #d9d9d9;
+        border: 1px solid #000;
+        border-left: 5px solid #000;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+    }
+
+    /* ---------- Tableau ---------- */
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td {
+        border: 1px solid #000;
+        padding: 3px 4px;
+        text-align: center;
+        vertical-align: middle;
+        color: #000;
+        word-break: break-word;
+    }
+    thead th { background: #d9d9d9; font-size: 10px; font-weight: 700; }
+    th.etage-col, td.etage {
+        width: 54px;
+        background: #f2f2f2;
+        font-weight: 700;
+    }
+    tr.rtype-row td.rtype {
+        background: #eef2ff;
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    tr.rnum-row td.rnum { font-weight: 800; font-size: 11px; }
+    tr.occ-row td.occ {
+        height: 30px;
+        font-size: 9.5px;
+        line-height: 1.2;
+        font-weight: 600;
+        text-align: left;
+    }
+    tr.occ-row td.occ.free { background: #fff; }
+    tr.occ-row td.occ.confirmed { background: #d0d0d0; }
+    tr.occ-row td.occ.pending { background: #ededed; }
+    tr.occ-row td.occ.closed { background: #f7f7f7; }
+    tr.occ-row td.occ.blocked {
+        background: #fee2e2;
+        color: #dc2626;
+        font-weight: 700;
+    }
+    td.occ .badge {
+        display: inline-block;
+        min-width: 12px;
+        margin-right: 3px;
+        padding: 0 2px;
+        border: 1px solid #000;
+        font-size: 8px;
+        font-weight: 700;
+        line-height: 11px;
+        text-align: center;
+        vertical-align: middle;
+    }
+    td.occ.blocked .badge-blocked { color: #fff; border-color: #dc2626; background: #dc2626; }
+
+    .footer { margin-top: 10px; font-size: 10px; color: #000; text-align: right; }
+
+    /* ---------- Mise en page impression ---------- */
+    @page { size: A4 landscape; margin: 8mm; }
+    @media print {
+        body { margin: 0; }
+        thead { display: table-header-group; }
+        tr { page-break-inside: avoid; }
+    }
 </style>
 </head>
 <body>
     <header class="doc-header">
-        <h1>${docTitle} — CMO Hôtel</h1>
+        <h1>${docTitle} — Planning du jour</h1>
         <div class="meta">
-            <div><strong>Période :</strong> ${rangeLabel}</div>
-            <div>Généré le ${this.formatPrintDay(generated)} à ${generated.toLocaleTimeString('fr-FR')}</div>
+            <div><strong>DATE :</strong> ${dateLabel}</div>
+            <div><strong>Généré le</strong> ${this.formatPrintDay(generated)} à ${generated.toLocaleTimeString('fr-FR')}</div>
         </div>
     </header>
+
+    <div class="legend">
+        <span class="item"><span class="badge">C</span> IN-HOUSE</span>
+        <span class="item"><span class="badge">A</span> ARRIVE</span>
+        <span class="item"><span class="badge">T</span> Terminé</span>
+        <span class="item"><span class="badge badge-blocked">B</span> BLOQUÉ</span>
+    </div>
+
     ${sections}
-    <div class="footer">CMO Hôtel — ${docTitle} par pavillon</div>
+    <div class="footer">CMO Hôtel — ${docTitle} (par jour) par pavillon et par étage</div>
 </body>
 </html>`;
+    }
+
+    /** Lettre affichée dans la case selon le statut de la réservation. */
+    private statusMarker(status: string): string {
+        switch (status) {
+            case 'CONFIRMED':
+                return 'C';
+            case 'PENDING':
+                return 'A';
+            case 'CLOSED':
+                return 'T';
+            case 'BLOCKED':
+            case 'BLOQUE':
+                return 'B';
+            default:
+                return 'A';
+        }
     }
 
     /**
@@ -965,6 +1633,9 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
                 return 'pending';
             case 'CLOSED':
                 return 'closed';
+            case 'BLOCKED':
+            case 'BLOQUE':
+                return 'blocked';
             default:
                 return 'pending';
         }
@@ -1007,6 +1678,57 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
             day: '2-digit',
             month: 'short',
         }).format(date);
+    }
+
+    /** Échappe les caractères sensibles avant injection dans le HTML imprimé. */
+    private escapeHtml(value: any): string {
+        const str = value === null || value === undefined ? '' : String(value);
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    /**
+     * Libellé d'étage d'une chambre. Utilise le champ `floor` s'il est renseigné,
+     * sinon le déduit du numéro de chambre (ex. « 601 » → étage 6, « 101 » → 1).
+     */
+    private roomFloorLabel(room: any): string {
+        const floor = room?.floor;
+        if (floor !== null && floor !== undefined && String(floor).trim() !== '') {
+            return String(floor).trim();
+        }
+        const name = String(room?.name ?? '').trim();
+        if (/^\d{3,}$/.test(name)) {
+            return String(Math.floor(Number(name) / 100));
+        }
+        return '—';
+    }
+
+    /** Compare deux libellés d'étage (numérique si possible, sinon alphabétique). */
+    private compareFloorKeys(a: string, b: string): number {
+        if (a === '—') {
+            return 1;
+        }
+        if (b === '—') {
+            return -1;
+        }
+        const na = Number(a);
+        const nb = Number(b);
+        if (!isNaN(na) && !isNaN(nb) && na !== nb) {
+            return na - nb;
+        }
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+    }
+
+    /** Compare deux chambres par leur nom (tri naturel : 601 < 602 < 610). */
+    private compareRoomNames(a: any, b: any): number {
+        return String(a?.name ?? '').localeCompare(String(b?.name ?? ''), undefined, {
+            numeric: true,
+            sensitivity: 'base',
+        });
     }
 
     raiseReservationDetailsDialog(code) {

@@ -269,6 +269,87 @@ public class ReservationService {
         );
     }
 
+    /**
+     * Décale les dates d'un séjour (glisser-déposer horizontal sur le planning des chambres).
+     * L'arrivée et le départ sont déplacés ; lorsque le séjour a déjà été enregistré
+     * (check-in / check-out renseignés), ces dates sont décalées du même écart afin que
+     * le séjour conserve sa durée et reste visible au bon endroit sur le planning.
+     */
+    @Transactional
+    public void shiftDates(Authentication authentication, Long code, LocalDate start, LocalDate end) {
+        ReservationDetails details = getReservationDetailsByCode(code);
+
+        if (details.getStatus() != EReservationStatus.PENDING && details.getStatus() != EReservationStatus.CONFIRMED) {
+            throw new OperationNotPermittedException("Impossible de déplacer une réservation déjà traitée.");
+        }
+
+        if (start == null || end == null || !end.isAfter(start)) {
+            throw new BadRequestException("La date de départ doit être postérieure à la date d'arrivée.");
+        }
+
+        LocalDateTime newStart = start.atTime(12, 0, 0);
+        LocalDateTime newEnd = end.atTime(12, 0, 0);
+
+        // Vérification de la disponibilité des chambres sur la nouvelle période
+        Map<Long, Long> requestedCapacityPerRoom = details.getReservations().stream()
+                .filter(r -> r.getRoom() != null)
+                .collect(Collectors.groupingBy(r -> r.getRoom().getId(), Collectors.counting()));
+
+        requestedCapacityPerRoom.forEach((roomId, countRequested) -> {
+            Room room = roomService.getRoomById(roomId);
+
+            if (!room.isAvailable()) {
+                throw new BadRequestException("Chambre " + room.getCode() + " hors service.");
+            }
+
+            if (!room.isShared()) {
+                boolean occupied = reservationRepository.isRoomOccupied(roomId, newStart, newEnd, code);
+                if (occupied) {
+                    throw new BadRequestException(
+                            "La chambre " + room.getName() + " est individuelle et déjà occupée sur cette période.");
+                }
+            } else {
+                long currentOccupants = reservationRepository.countCurrentOccupants(roomId, newStart, newEnd, code);
+                if (currentOccupants + countRequested > room.getCapacity()) {
+                    throw new BadRequestException(String.format(
+                            "Capacité dépassée pour la chambre partagée %s (%d/%d occupés).",
+                            room.getName(), currentOccupants + countRequested, room.getCapacity()
+                    ));
+                }
+            }
+        });
+
+        LocalDateTime oldPlannedStart = details.getPlannedStart();
+        LocalDateTime oldPlannedEnd = details.getPlannedEnd();
+
+        details.setPlannedStart(newStart);
+        details.setPlannedEnd(newEnd);
+
+        // Décaler également les dates réelles si le séjour a déjà été enregistré (check-in)
+        if (details.getCheckin() != null && oldPlannedStart != null) {
+            long deltaDays = ChronoUnit.DAYS.between(oldPlannedStart.toLocalDate(), start);
+            details.setCheckin(details.getCheckin().plusDays(deltaDays));
+            if (details.getCheckout() != null) {
+                details.setCheckout(details.getCheckout().plusDays(deltaDays));
+            }
+        }
+
+        reservationDetailsRepository.save(details);
+
+        activityLogService.logActivity(
+                EAuditActionTarget.RESERVATION,
+                EAuditActionOperation.UPDATE,
+                String.format("Déplacement des dates de la réservation (#%d) du %s au %s vers le %s au %s.",
+                        code,
+                        oldPlannedStart != null ? oldPlannedStart.toLocalDate() : "-",
+                        oldPlannedEnd != null ? oldPlannedEnd.toLocalDate() : "-",
+                        start,
+                        end),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+    }
+
     @Transactional
     public void switchRoom(Authentication authentication, SwitchRoomDto dto) {
         Reservation reservation = getReservationById(dto.reservationId());
@@ -404,7 +485,8 @@ public class ReservationService {
     }
 
     @Transactional
-    public void closeReservation(Authentication authentication, Long code,LocalDateTime date) {
+    public void closeReservation(Authentication authentication, Long code,LocalDateTime date,
+                                 String paymentMode, String priseEnChargeReference) {
         ReservationDetails reservationDetails = getReservationDetailsByCode(code);
         if (reservationDetails.getStatus().equals(EReservationStatus.CLOSED))
             throw new BadRequestException("reservation déja clôturée");
@@ -433,8 +515,27 @@ public class ReservationService {
                 }
             });
         }
+
+        // Mise à jour du mode de paiement / prise en charge si fourni
+        EPaymentMode mode = null;
+        if (paymentMode != null && !paymentMode.isBlank()) {
+            if (!EnumUtils.isValidEnum(EPaymentMode.class, paymentMode))
+                throw new BadRequestException("mode de paiement invalide : " + paymentMode);
+            mode = EPaymentMode.valueOf(paymentMode);
+            boolean priseEnCharge = mode == EPaymentMode.PRISE_EN_CHARGE;
+            if (priseEnCharge && (priseEnChargeReference == null || priseEnChargeReference.isBlank()))
+                throw new BadRequestException("La référence de prise en charge est obligatoire.");
+            reservationDetails.setPriseEnCharge(priseEnCharge);
+            reservationDetails.setPriseEnChargeReference(priseEnCharge ? priseEnChargeReference : null);
+        }
+
         reservationDetails = reservationDetailsRepository.save(reservationDetails);
         invoiceService.activateInvoice(reservationDetails);
+
+        if (mode != null) {
+            invoiceService.updatePaymentInfo(reservationDetails, mode, priseEnChargeReference);
+        }
+
         activityLogService.logActivity(
                 EAuditActionTarget.RESERVATION,
                 EAuditActionOperation.UPDATE,

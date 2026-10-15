@@ -280,6 +280,23 @@ public class InvoiceService {
     }
 
     /**
+     * Met à jour le mode de paiement (et la référence de prise en charge) de la
+     * facture d'une réservation, sans pour autant marquer la facture comme payée.
+     * Utilisé lors du check-out pour permettre de modifier le mode de règlement.
+     */
+    @Transactional
+    public void updatePaymentInfo(ReservationDetails reservationDetails, EPaymentMode paymentMode, String priseEnChargeReference) {
+        Invoice invoice = invoiceRepository.findByReservationDetails(reservationDetails)
+                .orElseThrow(() -> new BadRequestException("Facture non trouvée pour cette réservation."));
+
+        boolean priseEnCharge = paymentMode == EPaymentMode.PRISE_EN_CHARGE;
+        invoice.setPaymentMode(paymentMode);
+        invoice.setPriseEnCharge(priseEnCharge);
+        invoice.setPriseEnChargeReference(priseEnCharge ? priseEnChargeReference : null);
+        invoiceRepository.save(invoice);
+    }
+
+    /**
      * Construit, pour chaque personne (réservation), le parcours de chambre
      * (chambre initiale puis chambres successives après délogement(s)).
      * Clé = personId, Valeur = "CH-101 > CH-102".

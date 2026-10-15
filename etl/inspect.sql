@@ -1,0 +1,26 @@
+-- Inspection des lignes completes des fichiers pour finaliser les mappings
+SELECT 'app_role' AS f, c01,c02,c03,c04,c05,c06,c07,c08,c09 FROM imp.app_role LIMIT 3;
+SELECT 'pem' AS f, c01,c02,c03,c04,c05,c06,c07 FROM imp.pem LIMIT 3;
+SELECT 'app_user' AS f, c01,c02,c03,c04,c05,c06,c07,c08,c09,c10 FROM imp.app_user LIMIT 3;
+SELECT 'app_invoice' AS f, c01,c02,c03,c04,c05,c06,c07,c08,c09,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20 FROM imp.app_invoice LIMIT 3;
+SELECT 'app_validated_room' AS f, c01,c02,c03,c04,c05,c06,c07,c08,c09,c10,c11 FROM imp.app_validated_room LIMIT 3;
+SELECT 'app_reservation_det' AS f, c01,c02,c03,c04,c05,c06,c07,c08,c09,c10,c11,c12,c13,c14 FROM imp.app_reservation_det LIMIT 3;
+SELECT 'app_house_history' AS f, c01,c02,c03,c04,c05,c06,c07,c08,c09,c10,c11 FROM imp.app_house_history LIMIT 3;
+SELECT 'app_room' AS f, c01,c02,c03,c04,c05,c06,c07,c08,c09,c10,c11,c12,c13,c14,c15,c16 FROM imp.app_room LIMIT 2;
+SELECT 'app_room_price' AS f, c01,c02,c03,c04,c05,c06,c07,c08 FROM imp.app_room_price LIMIT 3;
+SELECT 'app_meal_price' AS f, c01,c02,c03,c04 FROM imp.app_meal_price;
+SELECT 'app_grade' AS f, c01,c02,c03,c04,c05 FROM imp.app_grade;
+SELECT 'app_pavillon' AS f, c01,c02,c03,c04,c05,c06 FROM imp.app_pavillon;
+SELECT 'app_room_type' AS f, c01,c02,c03,c04,c05,c06,c07 FROM imp.app_room_type;
+SELECT 'app_meal_type' AS f, c01,c02,c03,c04,c05,c06,c07 FROM imp.app_meal_type;
+SELECT 'app_guest' AS f, c01,c02,c03,c04,c05,c06,c07,c08,c09,c10,c11 FROM imp.app_guest LIMIT 3;
+SELECT 'app_person' AS f, c01,c02,c03,c04,c05,c06,c07,c08,c09,c10,c11,c12,c13,c14,c15,c16,c17 FROM imp.app_person LIMIT 3;
+SELECT 'app_prestation' AS f, c01,c02,c03,c04,c05,c06,c07,c08,c09,c10,c11,c12,c13 FROM imp.app_prestation LIMIT 3;
+SELECT 'app_reservation' AS f, c01,c02,c03,c04,c05,c06,c07,c08,c09,c10,c11,c12,c13 FROM imp.app_reservation LIMIT 3;
+SELECT 'app_user_resource' AS f, c01,c02 FROM imp.app_user_resource;
+SELECT 'app_premi' AS f, c01,c02 FROM imp.app_premi LIMIT 3;
+SELECT 'app_user_roles' AS f, c01,c02 FROM imp.app_user_roles LIMIT 3;
+SELECT 'app_user_rooms' AS f, c01,c02 FROM imp.app_user_rooms LIMIT 5;
+SELECT 'app_details' AS f, c01 FROM imp.app_details LIMIT 5;
+SELECT 'app_house_agent' AS f, c01,c02,c03,c04,c05 FROM imp.app_house_agent;
+SELECT 'vonfi' AS f, c01,c02,c03 FROM imp.vonfi;

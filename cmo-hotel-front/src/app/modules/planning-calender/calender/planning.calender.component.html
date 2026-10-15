@@ -1,4 +1,4 @@
-<div class="flex min-w-0 flex-auto flex-col" [class.planning-editable]="isEditable">
+<div class="planning-ref flex min-w-0 flex-auto flex-col" [class.planning-editable]="isEditable">
     <!-- Header -->
     <div class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between px-6 py-6 md:px-10 border-b bg-card dark:bg-transparent transition-all duration-200">
         <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary-500/20 via-transparent to-transparent"></div>
@@ -69,15 +69,25 @@
                                 </mat-select>
                             </mat-form-field>
 
-                            <button
-                                mat-flat-button
-                                color="primary"
-                                class="h-12 rounded-xl font-semibold shadow-sm sm:ml-auto"
-                                matTooltip="Imprimer le planning d'occupation (par pavillon)"
-                                (click)="printOccupation()">
-                                <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_outline:printer'"></mat-icon>
-                                Imprimer
-                            </button>
+                            <div class="flex flex-wrap gap-2 sm:ml-auto">
+                                <button
+                                    mat-stroked-button
+                                    class="h-12 rounded-xl font-semibold shadow-sm"
+                                    matTooltip="Imprimer le planning d'occupation par semaine (par pavillon et par type de chambre)"
+                                    (click)="printOccupation()">
+                                    <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                                    Par semaine
+                                </button>
+                                <button
+                                    mat-flat-button
+                                    color="primary"
+                                    class="h-12 rounded-xl font-semibold shadow-sm"
+                                    matTooltip="Imprimer la feuille journalière (par pavillon et par étage)"
+                                    (click)="printOccupationByDay()">
+                                    <mat-icon class="icon-size-5 mr-2" [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                                    Par jour
+                                </button>
+                            </div>
                         </div>
 
                         @if (isEditable) {
@@ -92,33 +102,29 @@
 
                         <full-calendar #fullCalendar [options]="calendarOptions()"></full-calendar>
 
-                        <div class="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t pt-4">
+                        <!-- Légende (design « planning-room ») -->
+                        <div class="planning-legend mt-6 border-t pt-4">
+                            <div class="legend-item" matTooltip="Réservation en cours : le client est présent (In-house).">
+                                <span class="legend-color" style="background-color: #a9a9a9;"></span>
+                                <span class="legend-text">IN-HOUSE</span>
+                            </div>
+
+                            <div class="legend-item" matTooltip="Arrivée prévue : réservation enregistrée, en attente d'arrivée.">
+                                <span class="legend-color" style="background-color: #56C9F4;"></span>
+                                <span class="legend-text">ARRIVE</span>
+                            </div>
+
                             @if (isEditable) {
-                                <div class="flex items-center" matTooltip="La réservation est validée, la chambre est officiellement occupée.">
-                                    <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background: linear-gradient(135deg, #6366f1, #4338ca);"></div>
-                                    <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Confirmé</span>
-                                </div>
-
-                                <div class="flex items-center" matTooltip="La demande d'occupation est enregistrée mais en attente de traitement.">
-                                    <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background: linear-gradient(135deg, #94a3b8, #64748b);"></div>
-                                    <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">En attente</span>
-                                </div>
-
-                                <div class="flex items-center" matTooltip="Le séjour est terminé, la chambre a été libérée.">
-                                    <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background: linear-gradient(135deg, #34d399, #059669);"></div>
-                                    <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Terminé</span>
-                                </div>
-                            } @else {
-                                <div class="flex items-center" matTooltip="La réservation est validée, la chambre est officiellement occupée.">
-                                    <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background-color: #4f46e5;"></div>
-                                    <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Confirmé</span>
-                                </div>
-
-                                <div class="flex items-center" matTooltip="La demande d'occupation est enregistrée mais en attente de traitement.">
-                                    <div class="w-3.5 h-3.5 rounded-full mr-2 shadow-sm" style="background-color: #64748b;"></div>
-                                    <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">En attente</span>
+                                <div class="legend-item" matTooltip="Le séjour est terminé, la chambre a été libérée.">
+                                    <span class="legend-color" style="background-color: #61bd33;"></span>
+                                    <span class="legend-text">Terminé</span>
                                 </div>
                             }
+
+                            <div class="legend-item" matTooltip="Chambre bloquée / hors service : indisponible à la vente.">
+                                <span class="legend-color" style="background-color: #ff0000;"></span>
+                                <span class="legend-text">Bloqué</span>
+                            </div>
                         </div>
                     </div>
 

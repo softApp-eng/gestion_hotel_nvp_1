@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import { HttpClient, HttpParams } from '@angular/common/http';
-import {environment} from "../../../environments/environment.development";
+import {environment} from "../../../environments/environment";
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -96,8 +96,17 @@ export class ApiReservationService {
         return this._httpClient.delete(`${this.API_URL}/switch-room?reservationId=${reservationId}&switchedRoomId=${switchedRoomId}`, {});
     }
 
-    closeReservation(code,checkout): Observable<any>{
-        return this._httpClient.put(`${this.API_URL}/close?code=${code}&checkout=${checkout}`, {});
+    closeReservation(code,checkout,paymentMode?,priseEnChargeReference?): Observable<any>{
+        let params = new HttpParams()
+            .set('code', code)
+            .set('checkout', checkout);
+        if (paymentMode) {
+            params = params.set('paymentMode', paymentMode);
+        }
+        if (priseEnChargeReference) {
+            params = params.set('priseEnChargeReference', priseEnChargeReference);
+        }
+        return this._httpClient.put(`${this.API_URL}/close`, {}, { params });
     }
 
     cancelReservation(code): Observable<any>{
@@ -106,6 +115,10 @@ export class ApiReservationService {
 
     extendReservation(code, date): Observable<any>{
         return this._httpClient.post(`${this.API_URL}/time/extend?code=${code}&date=${date}`,{});
+    }
+
+    shiftReservation(code, start, end): Observable<any>{
+        return this._httpClient.post(`${this.API_URL}/time/shift?code=${code}&start=${start}&end=${end}`,{});
     }
 
     deleteReservation(code): Observable<any>{

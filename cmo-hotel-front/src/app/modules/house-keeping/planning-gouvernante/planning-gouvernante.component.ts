@@ -11,7 +11,6 @@ import { CommonModule, NgClass } from '@angular/common';
 import { mergeFloors, sortFloors } from '../pavillon-floors';
 import { ApiReservationService } from '../../reservation/api.reservation.service';
 import { ApiRoomService } from '../../pavillon/api.room.service';
-import { ApiPavillonService } from '../../pavillon/api.pavillon.service';
 import { User } from '../../../core/user/user.types';
 import { UserService } from '../../../core/user/user.service';
 import { Subject, takeUntil } from 'rxjs';
@@ -86,8 +85,7 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
     searchKey = '';
     filterStatus: '' | DayStatus = '';
 
-    // Pavillons et chambres
-    pavillons: any[] = [];
+    // Chambres affectées à l'utilisateur (gouvernanat)
     rooms: any[] = [];
 
     isLoading = false;
@@ -95,7 +93,6 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
     constructor(
         private _apiReservationService: ApiReservationService,
         private _apiRoomService: ApiRoomService,
-        private _apiPavillonService: ApiPavillonService,
         private _userService: UserService
     ) {
         this._userService.user$
@@ -107,7 +104,6 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.loadPavillons();
         this.loadRooms();
         this.loadPlanning();
     }
@@ -210,12 +206,24 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
     //  Chargement
     // ------------------------------------------------------------------
 
-    loadPavillons(): void {
-        this._apiPavillonService.all().subscribe({
-            next: (data) => {
-                this.pavillons = data || [];
-            },
+    /**
+     * Pavillons correspondant aux chambres affectées à l'utilisateur
+     * (gouvernanat). Un administrateur voit tous les pavillons.
+     */
+    get visiblePavillons(): Array<{ id: string; name: string }> {
+        const map = new Map<string, string>();
+        (this.rooms || []).forEach((r) => {
+            const id = r?.pavillon?.id?.toString();
+            if (!id) {
+                return;
+            }
+            if (!map.has(id)) {
+                map.set(id, r?.pavillon?.name ?? 'Sans pavillon');
+            }
         });
+        return Array.from(map, ([id, name]) => ({ id, name })).sort((a, b) =>
+            a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+        );
     }
 
     loadRooms(): void {
@@ -241,6 +249,52 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
     }
 
     /**
+     * Statut (ARRIVÉE / DÉPART / RECOUCHE) d'un invité pour un jour donné,
+     * ou null si l'invité n'est pas concerné ce jour-là.
+     */
+    private dayItemFor(sejour: any, guest: any, day: Date): WeekItem | null {
+        const person = guest?.person;
+        const checkin = guest?.checkin ? new Date(guest.checkin) : null;
+        const checkout = guest?.checkout ? new Date(guest.checkout) : null;
+        const plannedStart = sejour?.plannedStart
+            ? this.startOfDay(new Date(sejour.plannedStart))
+            : null;
+        const plannedEnd = sejour?.plannedEnd
+            ? this.startOfDay(new Date(sejour.plannedEnd))
+            : null;
+
+        const isCheckin = checkin ? this.isSameDay(checkin, day) : false;
+        const isCheckout = checkout ? this.isSameDay(checkout, day) : false;
+
+        let type: DayStatus | null = null;
+        if (isCheckin) {
+            type = 'ARRIVÉE';
+        } else if (isCheckout) {
+            type = 'DÉPART';
+        } else if (plannedStart && plannedEnd && day >= plannedStart && day < plannedEnd) {
+            type = 'RECOUCHE';
+        }
+
+        if (!type) {
+            return null;
+        }
+
+        return {
+            type,
+            guest: `${person?.firstName || ''} ${person?.lastName || ''}`.trim(),
+            grade: person?.grade?.code || '',
+            time:
+                type === 'ARRIVÉE'
+                    ? this.timeStr(checkin)
+                    : type === 'DÉPART'
+                    ? this.timeStr(checkout)
+                    : '',
+            category: sejour?.category || '',
+            code: sejour?.code || '',
+        };
+    }
+
+    /**
      * Construit l'index roomId -> jour -> items (ARRIVÉE / DÉPART / RECOUCHE)
      * pour la semaine courante, à partir des séjours.
      */
@@ -249,38 +303,15 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
         const days = this.weekDays.map((d) => this.startOfDay(d));
 
         (this.sejours || []).forEach((sejour) => {
-            const guests = sejour?.guests || [];
-            const code = sejour?.code;
-            const plannedStartRaw = sejour?.plannedStart ? new Date(sejour.plannedStart) : null;
-            const plannedEndRaw = sejour?.plannedEnd ? new Date(sejour.plannedEnd) : null;
-            const plannedStart = plannedStartRaw ? this.startOfDay(plannedStartRaw) : null;
-            const plannedEnd = plannedEndRaw ? this.startOfDay(plannedEndRaw) : null;
-
-            guests.forEach((guest: any) => {
+            (sejour?.guests || []).forEach((guest: any) => {
                 const roomId = guest?.room?.id;
                 if (roomId == null) {
                     return;
                 }
-                const person = guest?.person;
-                const checkin = guest?.checkin ? new Date(guest.checkin) : null;
-                const checkout = guest?.checkout ? new Date(guest.checkout) : null;
-                const guestName = `${person?.firstName || ''} ${person?.lastName || ''}`.trim();
-                const grade = person?.grade?.code || '';
 
                 days.forEach((day) => {
-                    const isCheckin = checkin ? this.isSameDay(checkin, day) : false;
-                    const isCheckout = checkout ? this.isSameDay(checkout, day) : false;
-
-                    let type: DayStatus | null = null;
-                    if (isCheckin) {
-                        type = 'ARRIVÉE';
-                    } else if (isCheckout) {
-                        type = 'DÉPART';
-                    } else if (plannedStart && plannedEnd && day >= plannedStart && day < plannedEnd) {
-                        type = 'RECOUCHE';
-                    }
-
-                    if (!type) {
+                    const item = this.dayItemFor(sejour, guest, day);
+                    if (!item) {
                         return;
                     }
 
@@ -292,14 +323,7 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
                     if (!byDay.has(key)) {
                         byDay.set(key, []);
                     }
-                    byDay.get(key)!.push({
-                        type,
-                        guest: guestName,
-                        grade,
-                        time: type === 'ARRIVÉE' ? this.timeStr(checkin) : type === 'DÉPART' ? this.timeStr(checkout) : '',
-                        category: sejour?.category || '',
-                        code: code || '',
-                    });
+                    byDay.get(key)!.push(item);
                 });
             });
         });
@@ -426,7 +450,14 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
         let arrivals = 0;
         let departures = 0;
         let recouches = 0;
-        this.weekIndex.forEach((byDay) =>
+        // On ne compte que les chambres affectées à l'utilisateur (gouvernanat).
+        const allowedRoomIds = new Set(
+            (this.rooms || []).map((r) => r?.id?.toString())
+        );
+        this.weekIndex.forEach((byDay, roomId) => {
+            if (!allowedRoomIds.has(roomId?.toString())) {
+                return;
+            }
             byDay.forEach((items) =>
                 items.forEach((it) => {
                     if (this.filterStatus && it.type !== this.filterStatus) {
@@ -440,8 +471,8 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
                         recouches++;
                     }
                 })
-            )
-        );
+            );
+        });
         return { arrivals, departures, recouches };
     }
 
@@ -592,5 +623,399 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
         win.document.close();
         win.focus();
         setTimeout(() => win.print(), 400);
+    }
+
+    // ------------------------------------------------------------------
+    //  Impression « planning du jour » (par pavillon et par étage)
+    // ------------------------------------------------------------------
+
+    /** Libellé d'étage d'une chambre (champ `floor`, sinon déduit du n°). */
+    private roomFloorLabel(room: any): string {
+        const floor = room?.floor;
+        if (floor !== null && floor !== undefined && String(floor).trim() !== '') {
+            return String(floor).trim();
+        }
+        const name = String(room?.name ?? '').trim();
+        if (/^\d{3,}$/.test(name)) {
+            return String(Math.floor(Number(name) / 100));
+        }
+        return '—';
+    }
+
+    /** Compare deux libellés d'étage (numérique si possible, sinon alphabétique). */
+    private compareFloorKeys(a: string, b: string): number {
+        if (a === '—') {
+            return 1;
+        }
+        if (b === '—') {
+            return -1;
+        }
+        const na = Number(a);
+        const nb = Number(b);
+        if (!isNaN(na) && !isNaN(nb) && na !== nb) {
+            return na - nb;
+        }
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+    }
+
+    /** Items du jour (ARRIVÉE / RECOUCHE / DÉPART) pour une chambre. */
+    private roomDayItems(roomId: any, day: Date): WeekItem[] {
+        const out: WeekItem[] = [];
+        (this.sejours || []).forEach((sejour) => {
+            (sejour?.guests || []).forEach((guest: any) => {
+                if (guest?.room?.id?.toString() !== roomId?.toString()) {
+                    return;
+                }
+                const item = this.dayItemFor(sejour, guest, day);
+                if (item) {
+                    out.push(item);
+                }
+            });
+        });
+        const order: Record<string, number> = { 'RECOUCHE': 0, 'DÉPART': 1, 'ARRIVÉE': 2 };
+        out.sort((a, b) => (order[a.type] ?? 9) - (order[b.type] ?? 9));
+        return out;
+    }
+
+    /** Chambres filtrées groupées par pavillon puis par étage, pour un jour. */
+    private buildDayGroups(
+        day: Date,
+        pavillonId?: string
+    ): Array<{ id: string; name: string; sortedFloors: Array<[string, any[]]> }> {
+        const search = (this.searchKey || '').toLowerCase().trim();
+
+        let rooms = [...(this.rooms || [])];
+        if (pavillonId) {
+            rooms = rooms.filter((r) => r?.pavillon?.id?.toString() === pavillonId);
+        }
+        if (this.selectedPavillon) {
+            rooms = rooms.filter((r) => r?.pavillon?.id?.toString() === this.selectedPavillon);
+        }
+        if (this.selectedFloor) {
+            rooms = rooms.filter((r) => this.roomFloorLabel(r) === this.selectedFloor);
+        }
+        if (search) {
+            rooms = rooms.filter((r) => {
+                const items = this.roomDayItems(r.id, day);
+                return (
+                    String(r.name || '').toLowerCase().includes(search) ||
+                    String(r.code || '').toLowerCase().includes(search) ||
+                    String(r.roomType?.type || '').toLowerCase().includes(search) ||
+                    items.some((it) => String(it.guest || '').toLowerCase().includes(search))
+                );
+            });
+        }
+
+        const map = new Map<
+            string,
+            { id: string; name: string; floors: Map<string, any[]> }
+        >();
+        rooms.forEach((room) => {
+            const pk = room?.pavillon?.id?.toString() ?? 'none';
+            const pn = room?.pavillon?.name ?? 'Sans pavillon';
+            if (!map.has(pk)) {
+                map.set(pk, { id: pk, name: pn, floors: new Map() });
+            }
+            const floorKey = this.roomFloorLabel(room);
+            const pav = map.get(pk)!;
+            if (!pav.floors.has(floorKey)) {
+                pav.floors.set(floorKey, []);
+            }
+            pav.floors.get(floorKey)!.push(room);
+        });
+
+        return Array.from(map.values())
+            .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+            .map((pav) => ({
+                id: pav.id,
+                name: pav.name,
+                sortedFloors: Array.from(pav.floors.entries()).sort((a, b) =>
+                    this.compareFloorKeys(a[0], b[0])
+                ) as Array<[string, any[]]>,
+            }));
+    }
+
+    /**
+     * Impression « planning du jour » : feuille journalière avec une colonne
+     * par chambre, groupée par pavillon puis par étage (même design que le
+     * planning d'occupation « par jour »).
+     */
+    printDayPlanning(pavillonId?: string): void {
+        const day = this.startOfDay(new Date());
+        const groups = this.buildDayGroups(day, pavillonId);
+        if (groups.length === 0) {
+            return;
+        }
+        this.openPrintWindow(this.buildDayPrintHtml(groups, day));
+    }
+
+    private buildDayPrintHtml(
+        groups: Array<{ id: string; name: string; sortedFloors: Array<[string, any[]]> }>,
+        day: Date
+    ): string {
+        const generated = new Date();
+        const userName = this.user?.username || 'Système';
+        const dateLabel = day.toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+        });
+
+        const sections = groups
+            .map((pav) => {
+                const maxRooms = pav.sortedFloors.reduce(
+                    (max, [, rooms]) => Math.max(max, rooms.length),
+                    0
+                );
+
+                const body = pav.sortedFloors
+                    .map(([floorKey, rooms]) => {
+                        const sorted = [...rooms].sort((a, b) =>
+                            String(a?.name ?? '').localeCompare(String(b?.name ?? ''), undefined, {
+                                numeric: true,
+                                sensitivity: 'base',
+                            })
+                        );
+
+                        const typeCells = sorted
+                            .map(
+                                (r) =>
+                                    `<td class="rtype">${this.escapeHtml(
+                                        r?.roomType?.type || r?.type || ''
+                                    )}</td>`
+                            )
+                            .join('');
+
+                        const numCells = sorted
+                            .map(
+                                (r) =>
+                                    `<td class="rnum">${this.escapeHtml(
+                                        r?.name || r?.code || ''
+                                    )}</td>`
+                            )
+                            .join('');
+
+                        const occCells = sorted
+                            .map((r) => {
+                                const items = this.roomDayItems(r.id, day);
+                                if (items.length === 0) {
+                                    return `<td class="occ free"></td>`;
+                                }
+                                const inner = items
+                                    .map((it) => {
+                                        const cls =
+                                            it.type === 'ARRIVÉE'
+                                                ? 'arr'
+                                                : it.type === 'DÉPART'
+                                                ? 'dep'
+                                                : 'rec';
+                                        return `<div class="day-item"><span class="badge ${cls}">${this.escapeHtml(
+                                            it.type
+                                        )}</span></div>`;
+                                    })
+                                    .join('');
+                                return `<td class="occ has">${inner}</td>`;
+                            })
+                            .join('');
+
+                        return `<tr class="rtype-row"><td class="etage" rowspan="3">Étage ${this.escapeHtml(
+                            floorKey
+                        )}</td>${typeCells}</tr>
+                    <tr class="rnum-row">${numCells}</tr>
+                    <tr class="occ-row">${occCells}</tr>`;
+                    })
+                    .join('');
+
+                return `<section class="pavillon">
+                    <h2>Pavillon : ${this.escapeHtml(pav.name)}</h2>
+                    <table>
+                        <thead>
+                            <tr><th class="etage-col">Etage</th><th class="type-col" colspan="${maxRooms}">Type de chambre</th></tr>
+                        </thead>
+                        <tbody>${body}</tbody>
+                    </table>
+                </section>`;
+            })
+            .join('');
+
+        return `<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Planning du jour — ${this.fmtDate(day)}</title>
+<style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        color: #000;
+        background: #fff;
+        margin: 10mm;
+        font-size: 11px;
+    }
+
+    /* ---------- En-tête ---------- */
+    .doc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 16px;
+        border-bottom: 2px solid #000;
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+    }
+    .doc-header h1 { font-size: 18px; margin: 0; letter-spacing: .2px; }
+    .doc-header .meta { text-align: right; font-size: 11px; line-height: 1.5; }
+    .doc-header .meta strong { font-weight: 700; }
+
+    /* ---------- Légende ---------- */
+    .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+        margin: 0 0 14px;
+        font-size: 11px;
+    }
+    .legend .item { display: inline-flex; align-items: center; gap: 6px; }
+    .legend .badge {
+        display: inline-block;
+        min-width: 14px;
+        padding: 0 3px;
+        border: 1px solid #000;
+        font-size: 9px;
+        font-weight: 700;
+        line-height: 13px;
+        text-align: center;
+    }
+    .badge.arr { color: #fff; border-color: #16a34a; background: #16a34a; }
+    .badge.dep { color: #fff; border-color: #dc2626; background: #dc2626; }
+    .badge.rec { color: #fff; border-color: #4f46e5; background: #4f46e5; }
+
+    /* ---------- Section pavillon ---------- */
+    .pavillon { margin-bottom: 16px; page-break-after: always; }
+    .pavillon:last-child { page-break-after: auto; }
+    .pavillon h2 {
+        font-size: 13px;
+        margin: 0 0 6px;
+        padding: 5px 8px;
+        background: #d9d9d9;
+        border: 1px solid #000;
+        border-left: 5px solid #000;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+    }
+
+    /* ---------- Tableau ---------- */
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td {
+        border: 1px solid #000;
+        padding: 3px 4px;
+        text-align: center;
+        vertical-align: middle;
+        color: #000;
+        word-break: break-word;
+    }
+    thead th { background: #d9d9d9; font-size: 10px; font-weight: 700; }
+    th.etage-col, td.etage {
+        width: 54px;
+        background: #f2f2f2;
+        font-weight: 700;
+    }
+    tr.rtype-row td.rtype {
+        background: #eef2ff;
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    tr.rnum-row td.rnum { font-weight: 800; font-size: 11px; }
+    tr.occ-row td.occ {
+        height: 34px;
+        font-size: 9px;
+        line-height: 1.2;
+        text-align: left;
+    }
+    tr.occ-row td.occ.free { background: #fff; }
+    td.occ .day-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        margin-bottom: 2px;
+    }
+    td.occ .day-item:last-child { margin-bottom: 0; }
+    td.occ .badge {
+        display: inline-block;
+        min-width: 12px;
+        padding: 0 2px;
+        border: 1px solid #000;
+        font-size: 8px;
+        font-weight: 700;
+        line-height: 11px;
+        text-align: center;
+    }
+    td.occ .guest {
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .footer { margin-top: 10px; font-size: 10px; color: #000; text-align: right; }
+
+    /* ---------- Mise en page impression ---------- */
+    @page { size: A4 landscape; margin: 8mm; }
+    @media print {
+        body { margin: 0; }
+        thead { display: table-header-group; }
+        tr { page-break-inside: avoid; }
+    }
+</style>
+</head>
+<body>
+    <header class="doc-header">
+        <h1>Planning d'occupation — Planning du jour</h1>
+        <div class="meta">
+            <div><strong>DATE :</strong> ${dateLabel}</div>
+            <div><strong>Généré par</strong> ${this.escapeHtml(userName)} le ${this.fmtDate(generated)} à ${this.timeStr(generated)}</div>
+        </div>
+    </header>
+
+    <div class="legend">
+        <span class="item"><span class="badge rec">RECOUCHE</span></span>
+        <span class="item"><span class="badge dep">DÉPART</span></span>
+        <span class="item"><span class="badge arr">ARRIVÉE</span></span>
+    </div>
+
+    ${sections}
+    <div class="footer">CMO Hôtel — Service d'étage : planning du jour par pavillon et par étage</div>
+</body>
+</html>`;
+    }
+
+    /** Ouvre une fenêtre et lance l'impression du document HTML fourni. */
+    private openPrintWindow(html: string): void {
+        const win = window.open('', '_blank', 'width=1200,height=800');
+        if (!win) {
+            return;
+        }
+        win.document.open();
+        win.document.write(html);
+        win.document.close();
+        win.focus();
+        setTimeout(() => win.print(), 400);
+    }
+
+    /** Échappe les caractères sensibles avant injection dans le HTML imprimé. */
+    private escapeHtml(value: any): string {
+        const str = value === null || value === undefined ? '' : String(value);
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 }

@@ -24,6 +24,14 @@
         </div>
         <div class="flex items-center mt-6 sm:mt-0 sm:ml-4 space-x-2">
             <button
+                mat-stroked-button
+                (click)="printDayPlanning()"
+                class="rounded-lg px-4 h-11"
+                matTooltip="Feuille du jour : une colonne par chambre, par pavillon et par étage">
+                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:calendar-days'"></mat-icon>
+                <span class="ml-2 font-semibold">Planning du jour</span>
+            </button>
+            <button
                 mat-flat-button
                 color="primary"
                 (click)="printPlanning()"
@@ -36,10 +44,16 @@
             </button>
             <mat-menu #printMenu="matMenu" class="rounded-xl">
                 <button mat-menu-item (click)="printPlanning()">
-                    <mat-icon [svgIcon]="'heroicons_outline:document-text'"></mat-icon> Tout (par pavillon)
+                    <mat-icon [svgIcon]="'heroicons_outline:document-text'"></mat-icon> Semaine — tout (par pavillon)
                 </button>
-                <button mat-menu-item *ngFor="let p of pavillons" (click)="printPavillon(p.id.toString())">
-                    <mat-icon [svgIcon]="'heroicons_outline:building-office'"></mat-icon> {{ p.name }}
+                <button mat-menu-item *ngFor="let p of visiblePavillons" (click)="printPavillon(p.id.toString())">
+                    <mat-icon [svgIcon]="'heroicons_outline:building-office'"></mat-icon> Semaine — {{ p.name }}
+                </button>
+                <button mat-menu-item (click)="printDayPlanning()">
+                    <mat-icon [svgIcon]="'heroicons_outline:calendar-days'"></mat-icon> Jour — tout (par pavillon)
+                </button>
+                <button mat-menu-item *ngFor="let p of visiblePavillons" (click)="printDayPlanning(p.id.toString())">
+                    <mat-icon [svgIcon]="'heroicons_outline:building-office'"></mat-icon> Jour — {{ p.name }}
                 </button>
             </mat-menu>
         </div>
@@ -58,7 +72,7 @@
                     <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:building-office'"></mat-icon>
                     <mat-select [(ngModel)]="selectedPavillon" (selectionChange)="onPavillonChange()" placeholder="Pavillon" panelClass="rounded-xl">
                         <mat-option value="">Tous les pavillons</mat-option>
-                        @for (p of pavillons; track p.id) {
+                        @for (p of visiblePavillons; track p.id) {
                             <mat-option [value]="p.id.toString()">{{ p.name }}</mat-option>
                         }
                     </mat-select>

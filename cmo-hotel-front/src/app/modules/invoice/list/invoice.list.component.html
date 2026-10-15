@@ -372,9 +372,9 @@
                                                 <span>Télécharger (PDF)</span>
                                             </button>
 
-                                            <button mat-menu-item (click)="processEtatExplicatif(row, 'print')" [disableIfNoPermission]="[APP_PERMISSIONS.INVOICE_INVOICE_PDF]">
-                                                <mat-icon class="text-slate-500 icon-size-5" [svgIcon]="'heroicons_outline:printer'"></mat-icon>
-                                                <span>Imprimer directement</span>
+                                            <button mat-menu-item (click)="processEtatExplicatif(row, 'view')" [disableIfNoPermission]="[APP_PERMISSIONS.INVOICE_INVOICE_PDF]">
+                                                <mat-icon class="text-slate-500 icon-size-5" [svgIcon]="'heroicons_outline:eye'"></mat-icon>
+                                                <span>Voir l'état explicatif</span>
                                             </button>
                                         </mat-menu>
                                     }
@@ -390,9 +390,9 @@
                                                 <span>Télécharger (PDF)</span>
                                             </button>
 
-                                            <button mat-menu-item (click)="processInvoice(row, 'print')" [disableIfNoPermission]="[APP_PERMISSIONS.INVOICE_INVOICE_PDF]">
-                                                <mat-icon class="text-slate-500 icon-size-5" [svgIcon]="'heroicons_outline:printer'"></mat-icon>
-                                                <span>Imprimer directement</span>
+                                            <button mat-menu-item (click)="processInvoice(row, 'view')" [disableIfNoPermission]="[APP_PERMISSIONS.INVOICE_INVOICE_PDF]">
+                                                <mat-icon class="text-slate-500 icon-size-5" [svgIcon]="'heroicons_outline:eye'"></mat-icon>
+                                                <span>Voir la facture</span>
                                             </button>
                                         </mat-menu>
                                     }

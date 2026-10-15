@@ -397,10 +397,13 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
         return false;
     }
 
-    processInvoice(row: any, action: 'download' | 'print'): void {
+    processInvoice(row: any, action: 'download' | 'view'): void {
         if (!row?.num) return;
 
         this.loadingFicheId = row.num;
+
+        // Pré-ouverture synchrone de l'onglet pour éviter le blocage des popups
+        const viewTab = action === 'view' ? window.open('', '_blank') : null;
 
         this._apiInvoiceService
             .generateInvoicePdf(row.num)
@@ -414,20 +417,24 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
                         link.href = blobUrl;
                         link.download = `Facture_${row.invoiceNumber}.pdf`;
                         link.click();
+                        // Nettoyage de la mémoire
+                        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
                     } else {
-                        // CAS 2 : IMPRESSION (Ouverture dans un nouvel onglet)
-                        const printWindow = window.open(blobUrl, '_blank');
-                        // Note: Certains navigateurs bloquent les popups, s'assurer qu'ils sont autorisés
-                        if (printWindow) {
-                            printWindow.focus();
+                        // CAS 2 : AFFICHAGE dans le nouvel onglet pré-ouvert
+                        if (viewTab) {
+                            viewTab.location.href = blobUrl;
+                            viewTab.focus();
+                        } else {
+                            window.open(blobUrl, '_blank');
                         }
+                        // Nettoyage différé pour laisser le temps à l'onglet de charger
+                        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
                     }
 
-                    // Nettoyage de la mémoire
-                    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
                     this.loadingFicheId = null;
                 },
                 error: (err) => {
+                    viewTab?.close();
                     console.error('Erreur PDF:', err);
                     this.loadingFicheId = null;
                     this._toast.error("erreur de generation de la fiche de réservation")
@@ -436,10 +443,13 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
             });
     }
 
-    processEtatExplicatif(row: any, action: 'download' | 'print') {
+    processEtatExplicatif(row: any, action: 'download' | 'view') {
         if (!row?.num) return;
 
         this.loadingFicheId = row.num;
+
+        // Pré-ouverture synchrone de l'onglet pour éviter le blocage des popups
+        const viewTab = action === 'view' ? window.open('', '_blank') : null;
 
         this._apiInvoiceService
             .generateEtatExplicatifPdf(row.num)
@@ -453,20 +463,24 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
                         link.href = blobUrl;
                         link.download = `Etat_explicatif_${row.invoiceNumber}.pdf`;
                         link.click();
+                        // Nettoyage de la mémoire
+                        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
                     } else {
-                        // CAS 2 : IMPRESSION (Ouverture dans un nouvel onglet)
-                        const printWindow = window.open(blobUrl, '_blank');
-                        // Note: Certains navigateurs bloquent les popups, s'assurer qu'ils sont autorisés
-                        if (printWindow) {
-                            printWindow.focus();
+                        // CAS 2 : AFFICHAGE dans le nouvel onglet pré-ouvert
+                        if (viewTab) {
+                            viewTab.location.href = blobUrl;
+                            viewTab.focus();
+                        } else {
+                            window.open(blobUrl, '_blank');
                         }
+                        // Nettoyage différé pour laisser le temps à l'onglet de charger
+                        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
                     }
 
-                    // Nettoyage de la mémoire
-                    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
                     this.loadingFicheId = null;
                 },
                 error: (err) => {
+                    viewTab?.close();
                     console.error('Erreur PDF:', err);
                     this.loadingFicheId = null;
                     this._toast.error("erreur de generation de la fiche de réservation")

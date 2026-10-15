@@ -452,10 +452,13 @@ export class SejourListComponent implements OnInit {
         return Object.values(groups);
     }
 
-    processInvoice(row: any, action: 'download' | 'print'): void {
+    processInvoice(row: any, action: 'download' | 'view'): void {
         if (!row?.code) return;
 
         this.loadingFicheId = row.code;
+
+        // Pré-ouverture synchrone de l'onglet pour éviter le blocage des popups
+        const viewTab = action === 'view' ? window.open('', '_blank') : null;
 
         this._apiReservationService
             .generateInvoiceProFormatPdf(row.code)
@@ -469,20 +472,24 @@ export class SejourListComponent implements OnInit {
                         link.href = blobUrl;
                         link.download = `Facture_proforma_${row.code}.pdf`;
                         link.click();
+                        // Nettoyage de la mémoire
+                        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
                     } else {
-                        // CAS 2 : IMPRESSION (Ouverture dans un nouvel onglet)
-                        const printWindow = window.open(blobUrl, '_blank');
-                        // Note: Certains navigateurs bloquent les popups, s'assurer qu'ils sont autorisés
-                        if (printWindow) {
-                            printWindow.focus();
+                        // CAS 2 : AFFICHAGE dans le nouvel onglet pré-ouvert
+                        if (viewTab) {
+                            viewTab.location.href = blobUrl;
+                            viewTab.focus();
+                        } else {
+                            window.open(blobUrl, '_blank');
                         }
+                        // Nettoyage différé pour laisser le temps à l'onglet de charger
+                        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000);
                     }
 
-                    // Nettoyage de la mémoire
-                    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
                     this.loadingFicheId = null;
                 },
                 error: (err) => {
+                    viewTab?.close();
                     console.error('Erreur PDF:', err);
                     this.loadingFicheId = null;
                     this._toastr.error(
