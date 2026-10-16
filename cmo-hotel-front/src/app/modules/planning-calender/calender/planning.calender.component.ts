@@ -11,6 +11,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import { ApiReservationService } from '../../reservation/api.reservation.service';
 import { forkJoin, Observable, of, Subject, takeUntil, concat } from 'rxjs';
 import { UtilsService } from '../../../core/service/utils.service';
+import { compareFloorKeys, roomFloorLabel } from '../../../core/data/room-floor';
 import {ApiRoomService} from "../../pavillon/api.room.service";
 import {ApiPavillonService} from "../../pavillon/api.pavillon.service";
 import {MatRippleModule} from "@angular/material/core";
@@ -1336,7 +1337,7 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
 
                 const floors = new Map<string, any[]>();
                 allRooms.forEach((room) => {
-                    const floorKey = this.roomFloorLabel(room);
+                    const floorKey = roomFloorLabel(room);
                     if (!floors.has(floorKey)) {
                         floors.set(floorKey, []);
                     }
@@ -1344,7 +1345,7 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
                 });
 
                 const sortedFloors = Array.from(floors.entries()).sort((a, b) =>
-                    this.compareFloorKeys(a[0], b[0])
+                    compareFloorKeys(a[0], b[0])
                 );
 
                 const maxRooms = sortedFloors.reduce(
@@ -1695,42 +1696,6 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
-    }
-
-    /**
-     * Libellé d'étage d'une chambre.
-     * Le NUMÉRO de chambre est la source la plus fiable (ex. « 601 » → étage 6,
-     * « 101 » → 1) : le champ `floor` peut être mal renseigné (cas OUDAYA où
-     * presque toutes les chambres sont saisies en étage 1).
-     * On retombe sur `floor` si le nom n'est pas numériquement interprétable,
-     * puis sur « — ».
-     */
-    private roomFloorLabel(room: any): string {
-        const name = String(room?.name ?? '').trim();
-        if (/^\d{3,}$/.test(name)) {
-            return String(Math.floor(Number(name) / 100));
-        }
-        const floor = room?.floor;
-        if (floor !== null && floor !== undefined && String(floor).trim() !== '') {
-            return String(floor).trim();
-        }
-        return '—';
-    }
-
-    /** Compare deux libellés d'étage (numérique si possible, sinon alphabétique). */
-    private compareFloorKeys(a: string, b: string): number {
-        if (a === '—') {
-            return 1;
-        }
-        if (b === '—') {
-            return -1;
-        }
-        const na = Number(a);
-        const nb = Number(b);
-        if (!isNaN(na) && !isNaN(nb) && na !== nb) {
-            return na - nb;
-        }
-        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
     }
 
     /** Compare deux chambres par leur nom (tri naturel : 601 < 602 < 610). */

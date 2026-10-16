@@ -22,6 +22,7 @@ import { MatTableModule } from '@angular/material/table';
 import { AssignRoomsModel } from '../../room-assign/assign-rooms.model';
 import { MatTooltip } from '@angular/material/tooltip';
 import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../../@fuse/services/confirmation';
+import { roomFloorLabel } from '../../../../core/data/room-floor';
 
 @Component({
     selector: 'switch-room',
@@ -45,6 +46,11 @@ import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../../
     ],
 })
 export class SwitchRoomModel implements OnInit {
+
+    /** Étage d'une chambre (déduit du n° de chambre, cf. room-floor.ts). */
+    floorLabel(room: any): string {
+        return roomFloorLabel(room);
+    }
 
     isReload:boolean = false;
     step = 0; // 0: Sélection occupant, 1: Vue Historique, 2: Formulaire de transfert

@@ -118,7 +118,7 @@
                                       [innerHTML]="row?.room?.name | highlight:key"></span>
                             </div>
                             <span class="text-[11px] text-secondary">
-                                Pavillon {{ row?.room?.pavillon?.name }} · Étage {{ row?.room?.floor }}
+                                Pavillon {{ row?.room?.pavillon?.name }} · Étage {{ floorLabel(row?.room) }}
                             </span>
                         </td>
                     </ng-container>

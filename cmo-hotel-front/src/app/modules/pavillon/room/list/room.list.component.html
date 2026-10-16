@@ -91,7 +91,7 @@
                         <ng-container matColumnDef="floor">
                             <th mat-header-cell mat-sort-header *matHeaderCellDef class="bg-gray-50 dark:bg-transparent" style="width: 20%"> ETAGE </th>
                             <td mat-cell *matCellDef="let row">
-                                <p [innerHTML]="row?.floor | highlight:key"></p>
+                                <p [innerHTML]="row?.floorLabel | highlight:key"></p>
                             </td>
                         </ng-container>
 

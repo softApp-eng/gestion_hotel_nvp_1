@@ -19,6 +19,7 @@ import { finalize } from 'rxjs';
 import { HighlightPipe } from '../../../../@fuse/pipes/HighlightPipe';
 import { DisableIfNoPermissionDirective } from '../../../core/auth/DisableIfNoPermissionDirective';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
+import { roomFloorLabel } from '../../../core/data/room-floor';
 import { ApiReservationService } from '../../reservation/api.reservation.service';
 import { SwitchRoomModel } from '../../reservation/list/dialog-switch-room/switch.room.model';
 
@@ -46,6 +47,11 @@ import { SwitchRoomModel } from '../../reservation/list/dialog-switch-room/switc
 })
 export class DelogementListComponent implements OnInit {
     protected readonly APP_PERMISSIONS = APP_PERMISSIONS;
+
+    /** Étage d'une chambre (déduit du n° de chambre, cf. room-floor.ts). */
+    floorLabel(room: any): string {
+        return roomFloorLabel(room);
+    }
 
     isLoading = false;
     key = '';

@@ -9,6 +9,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { FormsModule } from '@angular/forms';
 import { CommonModule, NgClass } from '@angular/common';
 import { mergeFloors, sortFloors } from '../pavillon-floors';
+import { compareFloorKeys, roomFloorLabel } from '../../../core/data/room-floor';
 import { ApiReservationService } from '../../reservation/api.reservation.service';
 import { ApiRoomService } from '../../pavillon/api.room.service';
 import { User } from '../../../core/user/user.types';
@@ -349,7 +350,7 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
             if (!byPav.has(key)) {
                 byPav.set(key, { name, floors: [] });
             }
-            const floorLabel = this.roomFloorLabel(r);
+            const floorLabel = roomFloorLabel(r);
             if (floorLabel !== '—') {
                 byPav.get(key)!.floors.push(floorLabel);
             }
@@ -383,7 +384,7 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
             rooms = rooms.filter((r) => r?.pavillon?.id?.toString() === this.selectedPavillon);
         }
         if (this.selectedFloor) {
-            rooms = rooms.filter((r) => this.roomFloorLabel(r) === this.selectedFloor);
+            rooms = rooms.filter((r) => roomFloorLabel(r) === this.selectedFloor);
         }
         if (this.filterStatus) {
             rooms = rooms.filter((r) => this.roomWeekItems(r.id).some((it) => it.type === this.filterStatus));
@@ -414,7 +415,7 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
             .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
             .map((pav) => {
                 const sorted = [...pav.rooms].sort((a, b) => {
-                    const cmpFloor = this.compareFloorKeys(this.roomFloorLabel(a), this.roomFloorLabel(b));
+                    const cmpFloor = compareFloorKeys(roomFloorLabel(a), roomFloorLabel(b));
                     if (cmpFloor !== 0) {
                         return cmpFloor;
                     }
@@ -428,7 +429,7 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
                     const byDay = this.weekIndex.get(room.id);
                     return {
                         room,
-                        floor: this.roomFloorLabel(room),
+                        floor: roomFloorLabel(room),
                         cells: this.dayKeys.map((k) => ({
                             key: k,
                             items: (byDay?.get(k) || []).filter(
@@ -629,42 +630,6 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
     //  Impression « planning du jour » (par pavillon et par étage)
     // ------------------------------------------------------------------
 
-    /**
-     * Libellé d'étage d'une chambre.
-     * Le NUMÉRO de chambre est la source la plus fiable (ex. « 601 » → étage 6,
-     * « 101 » → 1) : le champ `floor` peut être mal renseigné (cas OUDAYA où
-     * presque toutes les chambres sont saisies en étage 1).
-     * On retombe sur `floor` si le nom n'est pas numériquement interprétable,
-     * puis sur « — ».
-     */
-    private roomFloorLabel(room: any): string {
-        const name = String(room?.name ?? '').trim();
-        if (/^\d{3,}$/.test(name)) {
-            return String(Math.floor(Number(name) / 100));
-        }
-        const floor = room?.floor;
-        if (floor !== null && floor !== undefined && String(floor).trim() !== '') {
-            return String(floor).trim();
-        }
-        return '—';
-    }
-
-    /** Compare deux libellés d'étage (numérique si possible, sinon alphabétique). */
-    private compareFloorKeys(a: string, b: string): number {
-        if (a === '—') {
-            return 1;
-        }
-        if (b === '—') {
-            return -1;
-        }
-        const na = Number(a);
-        const nb = Number(b);
-        if (!isNaN(na) && !isNaN(nb) && na !== nb) {
-            return na - nb;
-        }
-        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
-    }
-
     /** Items du jour (ARRIVÉE / RECOUCHE / DÉPART) pour une chambre. */
     private roomDayItems(roomId: any, day: Date): WeekItem[] {
         const out: WeekItem[] = [];
@@ -699,7 +664,7 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
             rooms = rooms.filter((r) => r?.pavillon?.id?.toString() === this.selectedPavillon);
         }
         if (this.selectedFloor) {
-            rooms = rooms.filter((r) => this.roomFloorLabel(r) === this.selectedFloor);
+            rooms = rooms.filter((r) => roomFloorLabel(r) === this.selectedFloor);
         }
         if (search) {
             rooms = rooms.filter((r) => {
@@ -723,7 +688,7 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
             if (!map.has(pk)) {
                 map.set(pk, { id: pk, name: pn, floors: new Map() });
             }
-            const floorKey = this.roomFloorLabel(room);
+            const floorKey = roomFloorLabel(room);
             const pav = map.get(pk)!;
             if (!pav.floors.has(floorKey)) {
                 pav.floors.set(floorKey, []);
@@ -737,7 +702,7 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
                 id: pav.id,
                 name: pav.name,
                 sortedFloors: Array.from(pav.floors.entries()).sort((a, b) =>
-                    this.compareFloorKeys(a[0], b[0])
+                    compareFloorKeys(a[0], b[0])
                 ) as Array<[string, any[]]>,
             }));
     }

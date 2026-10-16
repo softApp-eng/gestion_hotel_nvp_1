@@ -13,6 +13,7 @@ import { HighlightPipe } from '../../../../../@fuse/pipes/HighlightPipe';
 import { ApiRoomService } from '../../api.room.service';
 import { ApiPavillonService } from '../../api.pavillon.service';
 import { APP_PERMISSIONS } from '../../../../core/data/app-permissions';
+import { roomFloorLabel } from '../../../../core/data/room-floor';
 import { DisableIfNoPermissionDirective } from '../../../../core/auth/DisableIfNoPermissionDirective';
 import { FuseConfirmationService } from '../../../../../@fuse/services/confirmation';
 import { Toastr } from '../../../../core/service/toastr.service';
@@ -100,8 +101,10 @@ export class RoomListComponent implements OnInit, AfterViewInit {
             )
             .subscribe({
                 next: (value: any) => {
-                    console.log(value);
-                    this.dataSource.data = this.rooms = value;
+                    this.dataSource.data = this.rooms = (value || []).map((r: any) => ({
+                        ...r,
+                        floorLabel: roomFloorLabel(r),
+                    }));
                     this.dataSource.sort = this.sort;
                     this.dataSource.paginator = this._paginator;
                 },

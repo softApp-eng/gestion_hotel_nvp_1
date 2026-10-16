@@ -11,6 +11,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { HighlightPipe } from '../../../../../@fuse/pipes/HighlightPipe';
 import { APP_PERMISSIONS } from '../../../../core/data/app-permissions';
+import { roomFloorLabel } from '../../../../core/data/room-floor';
 import { DisableIfNoPermissionDirective } from '../../../../core/auth/DisableIfNoPermissionDirective';
 import { DatePipe, NgClass, NgIf } from '@angular/common';
 import { ApiRoomService } from '../../../pavillon/api.room.service';
@@ -137,7 +138,10 @@ export class HousekeepingListComponent
             )
             .subscribe({
                 next: (value: any) => {
-                    this.dataSource.data = this.rooms = value;
+                    this.dataSource.data = this.rooms = (value || []).map((r: any) => ({
+                        ...r,
+                        floorLabel: roomFloorLabel(r),
+                    }));
                     this.dataSource.paginator = this._paginator;
                     this.counts = this.rooms.reduce(
                         (acc, room) => {
@@ -350,7 +354,7 @@ export class HousekeepingListComponent
             };
             tableData = this.dataSource.data.map((r) => ({
                 name: r.name,
-                floor: r.floor,
+                floor: r.floorLabel ?? roomFloorLabel(r),
                 status: r.reserved ? 'OCCUPÉE' : 'LIBRE',
                 agent: '',
                 time: '',
@@ -376,7 +380,7 @@ export class HousekeepingListComponent
             tableData = this.dataSource.data.map((r) => ({
                 name: r.name,
                 type: r.roomType?.type || 'Standard',
-                floor: r.floor,
+                floor: r.floorLabel ?? roomFloorLabel(r),
                 status: r.reserved ? 'OCCUPÉE' : 'LIBRE',
                 clean: r.clean ? 'PROPRE' : 'SALE',
                 dispo: r.available ? 'OPÉRATIONNELLE' : 'HORS SERVICE',

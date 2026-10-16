@@ -17,6 +17,7 @@ import { UtilsService } from '../../../core/service/utils.service';
 import { ApiHousekeepingService } from '../api.housekeeping.service';
 import { ApiRoomService } from '../../pavillon/api.room.service';
 import { APP_PERMISSIONS } from '../../../core/data/app-permissions';
+import { roomFloorLabel } from '../../../core/data/room-floor';
 import { DisableIfNoPermissionDirective } from '../../../core/auth/DisableIfNoPermissionDirective';
 import { FuseConfirmationConfig, FuseConfirmationService } from '../../../../@fuse/services/confirmation';
 import { Toastr } from '../../../core/service/toastr.service';
@@ -374,7 +375,10 @@ export class HousekeepingHistoryComponent implements OnInit, OnDestroy {
                 roomName: item.room?.name || '-',
                 pavillon: item.room?.pavillon?.name || '-',
                 roomType: item.room?.roomType?.type || '-',
-                floor: item.room?.floor !== undefined ? `Étage ${item.room.floor}` : '-',
+                floor: (() => {
+                    const label = item.room ? roomFloorLabel(item.room) : '—';
+                    return label !== '—' ? `Étage ${label}` : '-';
+                })(),
                 agent: agentName,
                 startAt: item.startAt ? item.startAt : '-',
                 endAt: item.endAt ? item.endAt : '-',
