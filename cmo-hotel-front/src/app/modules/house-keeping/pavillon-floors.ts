@@ -3,25 +3,20 @@
  *
  * Liste fixe utilisée pour l'affichage et les impressions :
  *   - CHELLAH : étages 1 à 5
- *   - OUDAYA / OUDAYAS : étages 1 à 4
+ *   - OUDAYA / OUDAYAS : étages 6 à 9 (chambres 601..907)
  *
  * Les étages supplémentaires réellement présents dans les données sont
  * également conservés (union).
  */
-const PAVILLON_MAX_FLOORS: { match: RegExp; max: number }[] = [
-    { match: /chellah/i, max: 5 },
-    { match: /oudaya/i, max: 4 },
+const PAVILLON_FLOORS: { match: RegExp; floors: string[] }[] = [
+    { match: /chellah/i, floors: ['1', '2', '3', '4', '5'] },
+    { match: /oudaya/i, floors: ['6', '7', '8', '9'] },
 ];
 
-/** Liste des étages attendus (1..N) pour un pavillon donné. */
+/** Liste des étages attendus pour un pavillon donné. */
 export function pavillonFloors(pavillonName: string): string[] {
-    const found = PAVILLON_MAX_FLOORS.find((p) => p.match.test(pavillonName || ''));
-    const max = found ? found.max : 0;
-    const list: string[] = [];
-    for (let i = 1; i <= max; i++) {
-        list.push(String(i));
-    }
-    return list;
+    const found = PAVILLON_FLOORS.find((p) => p.match.test(pavillonName || ''));
+    return found ? [...found.floors] : [];
 }
 
 export function sortFloors(a: string, b: string): number {

@@ -349,8 +349,9 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
             if (!byPav.has(key)) {
                 byPav.set(key, { name, floors: [] });
             }
-            if (r?.floor != null && r.floor !== '') {
-                byPav.get(key)!.floors.push(String(r.floor));
+            const floorLabel = this.roomFloorLabel(r);
+            if (floorLabel !== '—') {
+                byPav.get(key)!.floors.push(floorLabel);
             }
         });
         const set = new Set<string>();
@@ -382,7 +383,7 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
             rooms = rooms.filter((r) => r?.pavillon?.id?.toString() === this.selectedPavillon);
         }
         if (this.selectedFloor) {
-            rooms = rooms.filter((r) => String(r?.floor ?? '') === this.selectedFloor);
+            rooms = rooms.filter((r) => this.roomFloorLabel(r) === this.selectedFloor);
         }
         if (this.filterStatus) {
             rooms = rooms.filter((r) => this.roomWeekItems(r.id).some((it) => it.type === this.filterStatus));
@@ -413,10 +414,9 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
             .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
             .map((pav) => {
                 const sorted = [...pav.rooms].sort((a, b) => {
-                    const fa = Number(a?.floor ?? 0);
-                    const fb = Number(b?.floor ?? 0);
-                    if (!isNaN(fa) && !isNaN(fb) && fa !== fb) {
-                        return fa - fb;
+                    const cmpFloor = this.compareFloorKeys(this.roomFloorLabel(a), this.roomFloorLabel(b));
+                    if (cmpFloor !== 0) {
+                        return cmpFloor;
                     }
                     return String(a.name || '').localeCompare(String(b.name || ''), undefined, {
                         numeric: true,
@@ -428,7 +428,7 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
                     const byDay = this.weekIndex.get(room.id);
                     return {
                         room,
-                        floor: room?.floor != null && room?.floor !== '' ? String(room.floor) : '—',
+                        floor: this.roomFloorLabel(room),
                         cells: this.dayKeys.map((k) => ({
                             key: k,
                             items: (byDay?.get(k) || []).filter(
@@ -568,7 +568,7 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
     .doc-header h1 { font-size: 18px; margin: 0; }
     .doc-header .meta { text-align:right; font-size:12px; color:#475569; }
     .pavillon { margin-bottom: 20px; page-break-after: always; }
-    .pavillon:last-child { page-break-after: auto; }
+    .pavillon:last-of-type { page-break-after: auto; }
     .pavillon h2 { font-size: 15px; margin: 0 0 8px; background:#eef2ff; color:#3730a3; padding:6px 10px; border-radius:6px; text-transform:uppercase; }
     table { width:100%; border-collapse: collapse; font-size: 10px; table-layout: fixed; }
     th, td { border:1px solid #cbd5e1; padding:4px; text-align:center; vertical-align:middle; }
@@ -593,7 +593,7 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
     .legend span { display:inline-flex; align-items:center; gap:5px; }
     .legend i { width:12px; height:12px; border-radius:3px; display:inline-block; }
     .footer { margin-top:10px; font-size:10px; color:#94a3b8; text-align:right; }
-    @media print { body { margin: 8mm; } .pavillon { page-break-inside: avoid; } }
+    @media print { body { margin: 8mm; } tr { page-break-inside: avoid; } }
 </style>
 </head>
 <body>
@@ -629,15 +629,22 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
     //  Impression « planning du jour » (par pavillon et par étage)
     // ------------------------------------------------------------------
 
-    /** Libellé d'étage d'une chambre (champ `floor`, sinon déduit du n°). */
+    /**
+     * Libellé d'étage d'une chambre.
+     * Le NUMÉRO de chambre est la source la plus fiable (ex. « 601 » → étage 6,
+     * « 101 » → 1) : le champ `floor` peut être mal renseigné (cas OUDAYA où
+     * presque toutes les chambres sont saisies en étage 1).
+     * On retombe sur `floor` si le nom n'est pas numériquement interprétable,
+     * puis sur « — ».
+     */
     private roomFloorLabel(room: any): string {
-        const floor = room?.floor;
-        if (floor !== null && floor !== undefined && String(floor).trim() !== '') {
-            return String(floor).trim();
-        }
         const name = String(room?.name ?? '').trim();
         if (/^\d{3,}$/.test(name)) {
             return String(Math.floor(Number(name) / 100));
+        }
+        const floor = room?.floor;
+        if (floor !== null && floor !== undefined && String(floor).trim() !== '') {
+            return String(floor).trim();
         }
         return '—';
     }
@@ -896,7 +903,7 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
 
     /* ---------- Section pavillon ---------- */
     .pavillon { margin-bottom: 16px; page-break-after: always; }
-    .pavillon:last-child { page-break-after: auto; }
+    .pavillon:last-of-type { page-break-after: auto; }
     .pavillon h2 {
         font-size: 13px;
         margin: 0 0 6px;

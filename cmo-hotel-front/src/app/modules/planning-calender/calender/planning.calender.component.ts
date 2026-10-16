@@ -1539,6 +1539,12 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
         body { margin: 0; }
         thead { display: table-header-group; }
         tr { page-break-inside: avoid; }
+        /* Chaque pavillon (planning) démarre sur une nouvelle page */
+        section.pavillon { page-break-inside: avoid; break-inside: avoid; }
+        section.pavillon:not(:first-of-type) {
+            page-break-before: always;
+            break-before: page;
+        }
     }
 </style>
 </head>
@@ -1692,17 +1698,21 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Libellé d'étage d'une chambre. Utilise le champ `floor` s'il est renseigné,
-     * sinon le déduit du numéro de chambre (ex. « 601 » → étage 6, « 101 » → 1).
+     * Libellé d'étage d'une chambre.
+     * Le NUMÉRO de chambre est la source la plus fiable (ex. « 601 » → étage 6,
+     * « 101 » → 1) : le champ `floor` peut être mal renseigné (cas OUDAYA où
+     * presque toutes les chambres sont saisies en étage 1).
+     * On retombe sur `floor` si le nom n'est pas numériquement interprétable,
+     * puis sur « — ».
      */
     private roomFloorLabel(room: any): string {
-        const floor = room?.floor;
-        if (floor !== null && floor !== undefined && String(floor).trim() !== '') {
-            return String(floor).trim();
-        }
         const name = String(room?.name ?? '').trim();
         if (/^\d{3,}$/.test(name)) {
             return String(Math.floor(Number(name) / 100));
+        }
+        const floor = room?.floor;
+        if (floor !== null && floor !== undefined && String(floor).trim() !== '') {
+            return String(floor).trim();
         }
         return '—';
     }
