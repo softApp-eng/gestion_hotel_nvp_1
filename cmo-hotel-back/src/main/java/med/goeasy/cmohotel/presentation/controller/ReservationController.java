@@ -208,8 +208,10 @@ public class ReservationController {
 
 
     @GetMapping("/sejours")
-    ResponseEntity<List<ReservationDetailsResponseDto>> getSejours(Authentication authentication){
-        return ResponseEntity.ok(reservationService.getSejours());
+    ResponseEntity<List<ReservationDetailsResponseDto>> getSejours(
+            @RequestParam(name = "day", required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate day
+    ){
+        return ResponseEntity.ok(reservationService.getSejours(day));
     }
 
     @GetMapping("/depart-prevu")
@@ -238,8 +240,10 @@ public class ReservationController {
     }
 
     @GetMapping("/main-courante-occupation")
-    ResponseEntity<List<OccupationStatsDto>> calculateOccupationStatistics(){
-        return ResponseEntity.ok(reservationService.calculateOccupationStatistics());
+    ResponseEntity<List<OccupationStatsDto>> calculateOccupationStatistics(
+            @RequestParam(name = "day", required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate day
+    ){
+        return ResponseEntity.ok(reservationService.calculateOccupationStatistics(day));
     }
 
     @GetMapping("/planning/{type}")
@@ -272,8 +276,11 @@ public class ReservationController {
     }
 
     @GetMapping("/download/main-courante")
-    public ResponseEntity<byte[]> generateMainCourantePdf( Authentication authentication) throws Exception {
-        byte[] pdf = reservationService.generateMainCourantePdf(authentication);
+    public ResponseEntity<byte[]> generateMainCourantePdf(
+            Authentication authentication,
+            @RequestParam(name = "day", required = false)
+            @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate day) throws Exception {
+        byte[] pdf = reservationService.generateMainCourantePdf(authentication, day);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);

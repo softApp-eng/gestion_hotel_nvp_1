@@ -52,6 +52,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, String> {
                AND (:category IS NULL OR i.category IN :category)
                AND (:status IS NULL OR i.status IN :status)
                AND ( :range IS FALSE OR (i.createdAt <= :end AND i.createdAt >= :start))
+               AND (:useCheckin IS FALSE OR (rd.checkin >= :checkinFrom AND rd.checkin <= :checkinTo))
+               AND (:useCheckout IS FALSE OR (rd.checkout >= :checkoutFrom AND rd.checkout <= :checkoutTo))
         ORDER BY i.createdAt DESC
         """)
     /*
@@ -94,6 +96,12 @@ public interface InvoiceRepository extends JpaRepository<Invoice, String> {
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end,
             @Param("range") boolean isRange,
+            @Param("useCheckin") boolean useCheckin,
+            @Param("checkinFrom") LocalDateTime checkinFrom,
+            @Param("checkinTo") LocalDateTime checkinTo,
+            @Param("useCheckout") boolean useCheckout,
+            @Param("checkoutFrom") LocalDateTime checkoutFrom,
+            @Param("checkoutTo") LocalDateTime checkoutTo,
             Pageable pageable
     );
 

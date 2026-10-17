@@ -26,6 +26,10 @@ export class ApiInvoiceService {
         return this._httpClient.post(`${this.API_URL}/pay`, payload);
     }
 
+    changePaymentMode(payload): Observable<any> {
+        return this._httpClient.put(`${this.API_URL}/payment-mode`, payload);
+    }
+
     search(
         key = '',
         room = '',
@@ -35,6 +39,10 @@ export class ApiInvoiceService {
         status = [],
         start = '',
         end = '',
+        checkinFrom = '',
+        checkinTo = '',
+        checkoutFrom = '',
+        checkoutTo = '',
         page = 0,
         size = 20
     ): Observable<any> {
@@ -44,6 +52,10 @@ export class ApiInvoiceService {
             .set('priseEnCharge', priseEnCharge)
             .set('start', start)
             .set('end', end)
+            .set('checkinFrom', checkinFrom)
+            .set('checkinTo', checkinTo)
+            .set('checkoutFrom', checkoutFrom)
+            .set('checkoutTo', checkoutTo)
             .set('page', page)
             .set('size', size);
         if (paymentModes && paymentModes.length > 0) {
@@ -100,6 +112,44 @@ export class ApiInvoiceService {
             {
                 responseType: 'blob',
             }
+        );
+    }
+
+    /**
+     * Correction d'une nuitée d'hébergement facturée (prix et/ou observation).
+     */
+    updateValidatedNight(id: string, payload): Observable<any> {
+        return this._httpClient.put(
+            `${this.API_URL}/night/update?id=${encodeURIComponent(id)}`,
+            payload
+        );
+    }
+
+    /**
+     * Suppression d'une nuitée d'hébergement facturée.
+     */
+    deleteValidatedNight(id: string): Observable<any> {
+        return this._httpClient.delete(
+            `${this.API_URL}/night/delete?id=${encodeURIComponent(id)}`
+        );
+    }
+
+    /**
+     * Correction d'une prestation facturée (libellé, quantité et/ou prix unitaire).
+     */
+    updateInvoicePrestation(id: number | string, payload): Observable<any> {
+        return this._httpClient.put(
+            `${this.API_URL}/prestation/update?id=${encodeURIComponent(String(id))}`,
+            payload
+        );
+    }
+
+    /**
+     * Suppression d'une prestation facturée.
+     */
+    deleteInvoicePrestation(id: number | string): Observable<any> {
+        return this._httpClient.delete(
+            `${this.API_URL}/prestation/delete?id=${encodeURIComponent(String(id))}`
         );
     }
 }

@@ -69,7 +69,6 @@ export class MainCouranteListComponent implements OnInit {
     currentPage = 0;
     pageSizeOptions: number[] = [20, 50, 70, 100];
     today = new Date();
-    occupations: any;
 
     /**
      * Constructor
@@ -84,7 +83,6 @@ export class MainCouranteListComponent implements OnInit {
     ngOnInit(): void {
         this.dataSource.paginator = this._paginator;
         this.getSejour();
-        this.getMainCouranteOccupation();
     }
 
     getSejour() {
@@ -100,25 +98,10 @@ export class MainCouranteListComponent implements OnInit {
             .subscribe({
                 next: (value: any) => {
                     this.dataSource.data = value || [];
-                    console.log(value);
                 },
-            });
-    }
-
-    getMainCouranteOccupation() {
-        this.isLoading = true;
-        this.dataSource.data = [];
-        this._apiReservationService
-            .getMainCouranteOccupation()
-            .pipe(
-                finalize(() => {
-                    this.isLoadingStatistics = false;
-                })
-            )
-            .subscribe({
-                next: (value: any) => {
-                    console.log('stats', value);
-                    this.occupations = value || [];
+                error: () => {
+                    this.isLoading = false;
+                    this._toast.error('Erreur lors du chargement de la main courante');
                 },
             });
     }
@@ -134,11 +117,12 @@ export class MainCouranteListComponent implements OnInit {
     }
 
     getNightsTooltip(row: any): string {
-        if (!row.validatedNights || row.validatedNights.length === 0) {
+        const missing = row.missingNights || [];
+        if ((!row.validatedNights || row.validatedNights.length === 0) && missing.length === 0) {
             return "Aucune nuitée n'a encore été validée.";
         }
 
-        const details = row.validatedNights
+        const details = (row.validatedNights || [])
             .map((n) => {
                 const date = new Date(n.nightDate).toLocaleDateString('fr-FR', {
                     day: '2-digit',
@@ -148,17 +132,30 @@ export class MainCouranteListComponent implements OnInit {
             })
             .join('\n'); // Le \n sera maintenant interprété grâce au CSS global
 
-        const totalAmount = row.validatedNights.reduce(
+        const totalAmount = (row.validatedNights || []).reduce(
             (sum, n) => sum + (n.roomPriceApplied || 0),
             0
         );
+
+        const missingDetails = missing
+            .map((m) => {
+                const date = new Date(m).toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                });
+                return `• Le ${date} (non validée)`;
+            })
+            .join('\n');
 
         return (
             `DÉTAIL DES NUITS :\n` +
             `--------------------------\n` +
             `${details}\n` +
             `--------------------------\n` +
-            `TOTAL : ${totalAmount} Dhs`
+            `TOTAL : ${totalAmount} Dhs` +
+            (missing.length > 0
+                ? `\n--------------------------\nNUITS NON VALIDÉES (${missing.length}) :\n${missingDetails}`
+                : '')
         );
     }
 
@@ -207,7 +204,9 @@ export class MainCouranteListComponent implements OnInit {
                 if (action === 'download') {
                     const link = document.createElement('a');
                     link.href = blobUrl;
-                    link.download = `Main-courante_${this._utils.convertToDate(this.today).replace('/', '-')}.pdf`;
+                    link.download = `Main-courante_${this._utils
+                        .convertToDate(this.today)
+                        .replace(/\//g, '-')}.pdf`;
                     link.click();
                 } else {
                     const printWindow = window.open(blobUrl, '_blank');
@@ -229,31 +228,4 @@ export class MainCouranteListComponent implements OnInit {
     }
 
 
-    // Calculer le total Espèces (Direct Pay) pour un pavillon
-    getTotalDirect(pavillon: any): number {
-        return pavillon.roomTypeStats.reduce((acc, curr) => acc + curr.occupantsDirectPay, 0);
-    }
-
-// Calculer le total Prise en Charge pour un pavillon
-    getTotalPEC(pavillon: any): number {
-        return pavillon.roomTypeStats.reduce((acc, curr) => acc + curr.occupantsPriseEnCharge, 0);
-    }
-
-// Pourcentage par type de chambre
-    getPercent(val: number, type: any): string {
-        const total = type.occupantsDirectPay + type.occupantsPriseEnCharge;
-        return total > 0 ? ((val / total) * 100).toFixed(1) : '0';
-    }
-
-// Pourcentage global par pavillon
-    getGlobalPercent(pavillon: any, mode: 'ESP' | 'PEC'): string {
-        const totalDirect = this.getTotalDirect(pavillon);
-        const totalPEC = this.getTotalPEC(pavillon);
-        const total = totalDirect + totalPEC;
-
-        if (total === 0) return '0';
-        return mode === 'ESP'
-            ? ((totalDirect / total) * 100).toFixed(1)
-            : ((totalPEC / total) * 100).toFixed(1);
-    }
 }

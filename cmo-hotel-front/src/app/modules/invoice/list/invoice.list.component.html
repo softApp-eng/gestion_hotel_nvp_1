@@ -106,6 +106,24 @@
                                     </button>
                                 </div>
                             }
+
+                            @if (filters.checkinFrom != null || filters.checkinTo != null) {
+                                <div class="flex items-center bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 px-3 py-1 rounded-full text-xs font-medium h-8">
+                                    <span>Arrivée : {{ (filters.checkinFrom | date:'dd/MM/yyyy':'':'en-US' ) + '-' + (filters.checkinTo | date:'dd/MM/yyyy':'':'en-US' ) }}</span>
+                                    <button class="ml-1.5 flex items-center" (click)="removeSpecificFilter('checkinRange')">
+                                        <mat-icon class="icon-size-3.5" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                                    </button>
+                                </div>
+                            }
+
+                            @if (filters.checkoutFrom != null || filters.checkoutTo != null) {
+                                <div class="flex items-center bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 px-3 py-1 rounded-full text-xs font-medium h-8">
+                                    <span>Départ : {{ (filters.checkoutFrom | date:'dd/MM/yyyy':'':'en-US' ) + '-' + (filters.checkoutTo | date:'dd/MM/yyyy':'':'en-US' ) }}</span>
+                                    <button class="ml-1.5 flex items-center" (click)="removeSpecificFilter('checkoutRange')">
+                                        <mat-icon class="icon-size-3.5" [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
+                                    </button>
+                                </div>
+                            }
                         </div>
                     </div>
 
@@ -162,6 +180,26 @@
                                     </mat-date-range-input>
                                     <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
                                     <mat-date-range-picker #picker></mat-date-range-picker>
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                                    <mat-label>Date d'arrivée</mat-label>
+                                    <mat-date-range-input [rangePicker]="pickerCheckin">
+                                        <input matStartDate [(ngModel)]="filters.checkinFrom" placeholder="Du">
+                                        <input matEndDate [(ngModel)]="filters.checkinTo" placeholder="Au">
+                                    </mat-date-range-input>
+                                    <mat-datepicker-toggle matIconSuffix [for]="pickerCheckin"></mat-datepicker-toggle>
+                                    <mat-date-range-picker #pickerCheckin></mat-date-range-picker>
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                                    <mat-label>Date de départ</mat-label>
+                                    <mat-date-range-input [rangePicker]="pickerCheckout">
+                                        <input matStartDate [(ngModel)]="filters.checkoutFrom" placeholder="Du">
+                                        <input matEndDate [(ngModel)]="filters.checkoutTo" placeholder="Au">
+                                    </mat-date-range-input>
+                                    <mat-datepicker-toggle matIconSuffix [for]="pickerCheckout"></mat-datepicker-toggle>
+                                    <mat-date-range-picker #pickerCheckout></mat-date-range-picker>
                                 </mat-form-field>
 
                                 <div class="flex items-center justify-between px-3 py-3 border rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50/50 dark:bg-transparent">
@@ -404,6 +442,16 @@
                                                 class="hover:bg-green-50 dark:hover:bg-green-500/10 transition-colors">
                                             <mat-icon class="icon-size-5 text-green-600" [svgIcon]="'heroicons_outline:credit-card'"></mat-icon>
                                             <span class="font-semibold text-green-700 dark:text-green-400">Procéder au paiement</span>
+                                        </button>
+                                    }
+
+                                    @if (row?.status === 'UNPAID' || row?.status === 'PAID') {
+                                        <button mat-menu-item
+                                                [disableIfNoPermission]="[APP_PERMISSIONS.INVOICE_PAY]"
+                                                (click)="openChangePaymentModeModal(row)"
+                                                class="hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors">
+                                            <mat-icon class="icon-size-5 text-amber-600" [svgIcon]="'heroicons_outline:banknotes'"></mat-icon>
+                                            <span class="font-semibold text-amber-700 dark:text-amber-400">Modifier le mode de paiement</span>
                                         </button>
                                     }
                                 </mat-menu>

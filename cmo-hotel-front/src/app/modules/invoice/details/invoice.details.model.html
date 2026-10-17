@@ -5,7 +5,7 @@
                 <mat-icon class="icon-size-5 mr-3 text-white" [svgIcon]="'heroicons_outline:information-circle'"></mat-icon>
                 <span class="text-xl font-semibold">Facture #{{invoice?.invoiceNumber}}</span>
             </div>
-            <button mat-icon-button (click)="matDialogRef.close()" aria-label="fermer" class="text-white">
+            <button mat-icon-button (click)="close()" aria-label="fermer" class="text-white">
                 <mat-icon svgIcon="mat_solid:close" class="icon-size-6"></mat-icon>
             </button>
         </div>
@@ -128,6 +128,36 @@
                     </tbody>
                 </table>
             </div>
+            @if (invoice?.missingNights?.length > 0) {
+                <div class="mt-4 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/10">
+                    <mat-icon class="icon-size-5 shrink-0 text-red-600" [svgIcon]="'heroicons_outline:exclamation-triangle'"></mat-icon>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-sm font-bold text-red-700 dark:text-red-300 uppercase tracking-wide">
+                            {{ invoice.missingNights.length }} nuitée(s) non validée(s) — non facturées
+                        </div>
+                        <div class="mt-2 flex flex-wrap gap-2">
+                            @for (d of invoice.missingNights; track d) {
+                                <div class="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-0.5 border border-red-200 dark:bg-transparent">
+                                    <span class="text-sm font-semibold text-red-700 dark:text-red-300">
+                                        {{ d | date:'dd/MM/yyyy' }}
+                                    </span>
+                                    <button mat-icon-button
+                                            class="!h-7 !w-7 !p-0 text-green-600 hover:!bg-green-50 dark:hover:!bg-green-900/20"
+                                            matTooltip="Valider cette nuitée (la facturer)"
+                                            [disabled]="validatingNight !== null"
+                                            (click)="validateMissingNight(d)">
+                                        @if (validatingNight === d) {
+                                            <mat-spinner diameter="16"></mat-spinner>
+                                        } @else {
+                                            <mat-icon class="icon-size-4" [svgIcon]="'heroicons_outline:check-circle'"></mat-icon>
+                                        }
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -170,7 +200,7 @@
     </div>
 
     <div class="p-4 bg-gray-50 border-t flex justify-end gap-3 flex-none">
-        <button mat-stroked-button (click)="matDialogRef.close()">
+        <button mat-stroked-button (click)="close()">
             Fermer
         </button>
             @if (invoice?.status === 'PAID') {

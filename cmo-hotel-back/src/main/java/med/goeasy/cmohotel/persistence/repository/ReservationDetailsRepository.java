@@ -103,6 +103,20 @@ public interface ReservationDetailsRepository extends JpaRepository<ReservationD
     """)
     List<ReservationDetails> getSejoursWithDepth();
 
+    /**
+     * Séjours occupés à une date donnée (pour le taux d'occupation daté).
+     */
+    @Query(value = """
+    SELECT DISTINCT rd FROM ReservationDetails rd
+    LEFT JOIN FETCH rd.reservations r
+    LEFT JOIN FETCH r.room
+    WHERE rd.status IN ('CONFIRMED', 'CLOSED')
+      AND rd.checkin <= :end
+      AND COALESCE(rd.checkout, rd.plannedEnd) >= :start
+    ORDER BY rd.code DESC
+    """)
+    List<ReservationDetails> getSejoursWithDepthByDay(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
     @Query("""
     SELECT MONTH(rd.checkin) as month, count (rd.code) as total
     FROM ReservationDetails rd

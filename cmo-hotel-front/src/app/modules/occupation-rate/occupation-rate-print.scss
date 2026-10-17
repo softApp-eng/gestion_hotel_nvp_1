@@ -1,0 +1,115 @@
+/* Styles spécifiques à l'impression du taux d'occupation */
+@media print {
+    @page {
+        size: A4 landscape;
+        margin: 10mm;
+    }
+
+    html,
+    body {
+        background: #ffffff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .print-header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-bottom: 16px !important;
+        padding-bottom: 8px !important;
+        border-bottom: 2px solid #2563eb !important;
+        page-break-after: avoid;
+    }
+
+    .print-header .title {
+        font-size: 18px !important;
+        font-weight: bold !important;
+        color: #1e3a8a !important;
+    }
+
+    .print-header .date-info {
+        font-size: 11px !important;
+        color: #374151 !important;
+        text-align: right;
+    }
+
+    #occupation-print-area {
+        padding: 0 8px !important;
+    }
+
+    #occupation-print-area .mb-10 {
+        page-break-inside: avoid;
+        margin-bottom: 16px !important;
+    }
+
+    table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+        font-size: 10px !important;
+    }
+
+    th,
+    td {
+        border: 1px solid #d1d5db !important;
+        padding: 3px 4px !important;
+    }
+
+    thead th {
+        background-color: #f3f4f6 !important;
+        font-weight: bold !important;
+    }
+
+    .bg-blue-50 {
+        background-color: #eff6ff !important;
+    }
+
+    .bg-green-50 {
+        background-color: #ecfdf5 !important;
+    }
+
+    .bg-orange-50 {
+        background-color: #fff7ed !important;
+    }
+
+    .bg-gray-50 {
+        background-color: #f9fafb !important;
+    }
+
+    .text-blue-700 {
+        color: #1d4ed8 !important;
+    }
+
+    .text-blue-800 {
+        color: #1e40af !important;
+    }
+
+    .text-blue-900 {
+        color: #1e3a8a !important;
+    }
+
+    .text-green-700 {
+        color: #047857 !important;
+    }
+
+    .text-orange-700 {
+        color: #c2410c !important;
+    }
+
+    .text-red-600 {
+        color: #dc2626 !important;
+    }
+
+    .border-blue-100 {
+        border-color: #dbeafe !important;
+    }
+
+    .pavillon-title {
+        font-size: 14px !important;
+        font-weight: bold !important;
+        color: #1e3a8a !important;
+        margin-bottom: 8px !important;
+        padding-bottom: 4px !important;
+        border-bottom: 2px solid #dbeafe !important;
+    }
+}

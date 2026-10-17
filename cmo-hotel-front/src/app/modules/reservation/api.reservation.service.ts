@@ -45,8 +45,9 @@ export class ApiReservationService {
         return this._httpClient.get(`${this.API_URL}/planning/${type}`, { params });
     }
 
-    getSejours(): Observable<any>{
-        return this._httpClient.get(`${this.API_URL}/sejours`);
+    getSejours(day?: string): Observable<any>{
+        const params = day ? new HttpParams().set('day', day) : undefined;
+        return this._httpClient.get(`${this.API_URL}/sejours`, { params });
     }
 
     getDepartPrevu(day): Observable<any>{
@@ -60,8 +61,9 @@ export class ApiReservationService {
         );
     }
 
-    getMainCouranteOccupation(): Observable<any>{
-        return this._httpClient.get(`${this.API_URL}/main-courante-occupation`);
+    getMainCouranteOccupation(day?: string): Observable<any>{
+        const params = day ? new HttpParams().set('day', day) : undefined;
+        return this._httpClient.get(`${this.API_URL}/main-courante-occupation`, { params });
     }
 
     getResidentReservations(): Observable<any>{
@@ -139,8 +141,10 @@ export class ApiReservationService {
         });
     }
 
-    generateMainCourantePdf(): Observable<any>{
+    generateMainCourantePdf(day?: string): Observable<any>{
+        const params = day ? new HttpParams().set('day', day) : undefined;
         return this._httpClient.get(`${this.API_URL}/download/main-courante`, {
+            params,
             responseType: 'blob'
         });
     }

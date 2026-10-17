@@ -58,6 +58,8 @@ public enum ERoleSystem {
                     EPermissions.INVOICE_LIST,
                     EPermissions.INVOICE_ENCAISSEMENT,
                     EPermissions.INVOICE_ENCAISSEMENT_PDF,
+                    EPermissions.INVOICE_NIGHT_MANAGE,
+                    EPermissions.INVOICE_PRESTATION_MANAGE,
 
                     // statistics & dashboards
                     EPermissions.STATISTICS_DASHBOARDS

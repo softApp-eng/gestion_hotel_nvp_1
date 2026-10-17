@@ -47,6 +47,7 @@ export class PaymentModel implements OnInit {
     loading = false;
     invoice;
     paymentModes = [];
+    changeModeOnly = false;
 
     /**
      * Constructor
@@ -57,9 +58,13 @@ export class PaymentModel implements OnInit {
         private _apiInvoiceService: ApiInvoiceService,
         private _apiCommonService: ApiCommonService,
         private _toast: ToastrService,
-        @Inject(MAT_DIALOG_DATA) public data: { invoice: any[] }
+        @Inject(MAT_DIALOG_DATA) public data: { invoice: any; changeModeOnly?: boolean }
     ) {
         this.invoice = data.invoice;
+        this.changeModeOnly = !!data?.changeModeOnly;
+        if (this.changeModeOnly) {
+            this.title = 'Modifier le mode de paiement';
+        }
         this.paymentForm = this._fb.group({
             num: [this.invoice.num, [Validators.required]],
             paymentMode: ['', [Validators.required]],
@@ -75,10 +80,15 @@ export class PaymentModel implements OnInit {
     loadPaymentMode() {
         this._apiCommonService.getEnumsData('payment-mode').subscribe(data => {
             const isPEC = this.invoice.reservationDetails.priseEnCharge;
-            // Filtrage des modes de paiement
-            this.paymentModes = data?.filter(m =>
-                isPEC ? m.code === 'PRISE_EN_CHARGE' : m.code !== 'PRISE_EN_CHARGE'
-            );
+            if (this.changeModeOnly) {
+                // Changement libre après check-out : tous les modes sont proposés
+                this.paymentModes = data || [];
+            } else {
+                // Filtrage des modes de paiement
+                this.paymentModes = data?.filter(m =>
+                    isPEC ? m.code === 'PRISE_EN_CHARGE' : m.code !== 'PRISE_EN_CHARGE'
+                );
+            }
 
             // Pré-sélection du mode de règlement défini lors du check-out
             const currentMode = this.invoice.paymentMode?.code;
@@ -111,6 +121,22 @@ export class PaymentModel implements OnInit {
         if (this.paymentForm.invalid) return;
 
         this.loading = true;
+
+        if (this.changeModeOnly) {
+            this._apiInvoiceService.changePaymentMode(this.paymentForm.value).subscribe({
+                next: () => {
+                    this._toast.success('Mode de paiement modifié avec succès');
+                    this.matDialogRef.close({ reload: true });
+                },
+                error: (err) => {
+                    this._toast.error(
+                        err?.error?.description || 'Erreur lors de la modification'
+                    );
+                    this.loading = false;
+                },
+            });
+            return;
+        }
 
         // Pré-ouverture d'un onglet : le contenu (le PDF) est injecté dans le
         // callback asynchrone. Cela évite que le navigateur bloque la popup.

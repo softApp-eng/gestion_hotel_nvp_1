@@ -734,10 +734,31 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
             year: 'numeric',
         });
 
+        /** Nombre de PAX (occupants) d'une chambre pour le jour imprimé. */
+        const roomPax = (roomId: any): number => this.roomDayItems(roomId, day).length;
+
+        /** PAX de tous les pavillons imprimés. */
+        const totalPax = groups.reduce(
+            (total, pav) =>
+                total +
+                pav.sortedFloors.reduce(
+                    (floorTotal, [, rooms]) =>
+                        floorTotal + rooms.reduce((sum, r) => sum + roomPax(r.id), 0),
+                    0
+                ),
+            0
+        );
+
         const sections = groups
             .map((pav) => {
                 const maxRooms = pav.sortedFloors.reduce(
                     (max, [, rooms]) => Math.max(max, rooms.length),
+                    0
+                );
+
+                /** PAX du pavillon. */
+                const pavillonPax = pav.sortedFloors.reduce(
+                    (total, [, rooms]) => total + rooms.reduce((sum, r) => sum + roomPax(r.id), 0),
                     0
                 );
 
@@ -760,12 +781,16 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
                             .join('');
 
                         const numCells = sorted
-                            .map(
-                                (r) =>
-                                    `<td class="rnum">${this.escapeHtml(
-                                        r?.name || r?.code || ''
-                                    )}</td>`
-                            )
+                            .map((r) => {
+                                const pax = roomPax(r.id);
+                                const paxHtml =
+                                    pax > 0
+                                        ? `<span class="pax-room">${pax} pax</span>`
+                                        : '';
+                                return `<td class="rnum">${this.escapeHtml(
+                                    r?.name || r?.code || ''
+                                )}${paxHtml}</td>`;
+                            })
                             .join('');
 
                         const occCells = sorted
@@ -800,7 +825,7 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
                     .join('');
 
                 return `<section class="pavillon">
-                    <h2>Pavillon : ${this.escapeHtml(pav.name)}</h2>
+                    <h2>Pavillon : ${this.escapeHtml(pav.name)}<span class="pax">PAX : ${pavillonPax}</span></h2>
                     <table>
                         <thead>
                             <tr><th class="etage-col">Etage</th><th class="type-col" colspan="${maxRooms}">Type de chambre</th></tr>
@@ -879,6 +904,11 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
         text-transform: uppercase;
         letter-spacing: .3px;
     }
+    .pavillon h2 .pax {
+        float: right;
+        font-weight: 800;
+        letter-spacing: .3px;
+    }
 
     /* ---------- Tableau ---------- */
     table { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -903,6 +933,14 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
         text-transform: uppercase;
     }
     tr.rnum-row td.rnum { font-weight: 800; font-size: 11px; }
+    tr.rnum-row td.rnum .pax-room {
+        display: block;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: .3px;
+        text-transform: uppercase;
+        color: #1d4ed8;
+    }
     tr.occ-row td.occ {
         height: 34px;
         font-size: 9px;
@@ -951,6 +989,7 @@ export class PlanningGouvernanteComponent implements OnInit, OnDestroy {
         <h1>Planning d'occupation — Planning du jour</h1>
         <div class="meta">
             <div><strong>DATE :</strong> ${dateLabel}</div>
+            <div><strong>PAX :</strong> ${totalPax}</div>
             <div><strong>Généré par</strong> ${this.escapeHtml(userName)} le ${this.fmtDate(generated)} à ${this.timeStr(generated)}</div>
         </div>
     </header>

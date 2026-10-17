@@ -81,7 +81,7 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
                 arg?.event?.extendedProps?.status?.code ??
                 arg?.event?.extendedProps?.status ??
                 'PENDING';
-            return `cm-ev cm-ev-${String(status).toLowerCase()}`;
+            return ['cm-ev', `cm-ev-${String(status).toLowerCase()}`];
         },
         resourceLabelClassNames: (arg: any) => {
             const level = arg?.resource?.extendedProps?.level || 'room';
@@ -150,7 +150,6 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
             this.currentViewEnd = new Date(info.endStr);
             this.getReservationsByRange('reservations', info.startStr, info.endStr).subscribe({
                 next: (data) => {
-                    console.log('res',data);
                     this.periodReservations = data;
                     const events = this.filterReservationsLocally();
                     successCallback(events);
@@ -161,7 +160,15 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
         eventDidMount: (info) => {
             // info.event.title contient déjà la liste des clients ("CNE EL ALAMI • LT BENNANI")
             // On l'affecte à l'attribut 'title' de l'élément HTML pour activer le tooltip natif
-            info.el.setAttribute('title', info.event.title);
+            let tooltip = info.event.title;
+
+            // Consignes & besoins particuliers de la réservation (champ « observation »)
+            const observation = info?.event?.extendedProps?.observation;
+            if (observation && String(observation).trim().length > 0) {
+                tooltip += `\n\nConsignes & Besoins Particuliers : ${String(observation).trim()}`;
+            }
+
+            info.el.setAttribute('title', tooltip);
         },
         eventClick: (info: any) => {
             // Les barres « BLOQUÉ » (chambres hors service) ne sont pas des réservations
@@ -189,6 +196,7 @@ export class PlanningCalenderComponent implements OnInit, OnDestroy {
     private periodReservations: any[] = [];
     private currentViewStart: Date | null = null;
     private currentViewEnd: Date | null = null;
+
     start;
     end;
 

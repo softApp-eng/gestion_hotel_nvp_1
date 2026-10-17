@@ -1,0 +1,268 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between px-6 py-6 md:px-10 border-b bg-card dark:bg-transparent transition-all duration-200">
+        <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary-500/20 via-transparent to-transparent"></div>
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center space-x-2 text-secondary font-medium text-sm mb-2">
+                <a class="hover:text-primary transition-colors cursor-pointer">Administration</a>
+                <mat-icon class="icon-size-4" [svgIcon]="'heroicons_mini:chevron-right'"></mat-icon>
+                <span class="text-primary-600 dark:text-primary-400">Corrections facturation</span>
+            </div>
+            <div class="flex items-center">
+                <div class="flex items-center justify-center p-3 mr-4 rounded-xl bg-primary-50 dark:bg-primary-500/10 text-primary shadow-sm">
+                    <mat-icon class="icon-size-10" [svgIcon]="'heroicons_outline:pencil-square'"></mat-icon>
+                </div>
+                <div class="flex flex-col">
+                    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-none text-slate-900 dark:text-white">
+                        Corrections facturation
+                    </h2>
+                    <p class="text-secondary font-medium mt-1 text-md hidden sm:block">
+                        Modifier ou supprimer les nuitées d'hébergement et les prestations facturées.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-8 p-6 md:p-8">
+        <!-- Recherche de facture -->
+        <div class="bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+            <form class="flex flex-col sm:flex-row sm:items-end gap-4" (ngSubmit)="search()">
+                <mat-form-field class="flex-1">
+                    <mat-label>Rechercher une facture</mat-label>
+                    <input matInput
+                           [(ngModel)]="key"
+                           name="key"
+                           (keyup.enter)="search()"
+                           placeholder="Nom du client, n° de séjour, n° de facture, clé…">
+                    <mat-icon matPrefix class="icon-size-5 text-secondary" [svgIcon]="'heroicons_outline:magnifying-glass'"></mat-icon>
+                </mat-form-field>
+
+                <div class="flex items-center gap-2">
+                    <button mat-flat-button color="primary" type="submit" [disabled]="isSearching">
+                        @if (isSearching) {
+                            <mat-spinner class="inline-block !w-4 !h-4 mr-2" [diameter]="16"></mat-spinner>
+                        }
+                        Rechercher
+                    </button>
+                    <button mat-stroked-button type="button" (click)="clear()">
+                        <mat-icon class="icon-size-5 mr-1" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+                        Réinitialiser
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Résultats -->
+        @if (invoices.length > 0) {
+            <div class="bg-card border flex flex-col overflow-hidden rounded-2xl shadow">
+                <div class="px-8 py-5 border-b">
+                    <h3 class="text-lg font-semibold tracking-tight text-slate-800 dark:text-white">
+                        Factures trouvées
+                        <span class="text-secondary font-normal text-sm ml-2">({{ invoices.length }})</span>
+                    </h3>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="bg-gray-50 dark:bg-slate-800/50 text-left text-xs uppercase tracking-wider text-secondary">
+                                <th class="px-6 py-3 font-semibold">N° Facture</th>
+                                <th class="px-6 py-3 font-semibold">Séjour</th>
+                                <th class="px-6 py-3 font-semibold">Chambre</th>
+                                <th class="px-6 py-3 font-semibold text-center">Statut</th>
+                                <th class="px-6 py-3 font-semibold text-right">Hébergement</th>
+                                <th class="px-6 py-3 font-semibold text-right">Prestations</th>
+                                <th class="px-6 py-3 font-semibold text-right">Total</th>
+                                <th class="px-6 py-3"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            @for (row of invoices; track row.num) {
+                                <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/40 transition-colors"
+                                    [ngClass]="{'bg-primary-50 dark:bg-primary-500/10': selectedInvoice?.num === row.num}">
+                                    <td class="px-6 py-4 font-semibold text-slate-800 dark:text-white">
+                                        {{ row.invoiceNumber || row.num }}
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        {{ row.reservationDetails?.person?.fullName || '—' }}
+                                        <div class="text-xs text-secondary">Séjour n° {{ row.reservationDetails?.code }}</div>
+                                    </td>
+                                    <td class="px-6 py-4">{{ row.reservationDetails?.room?.name || '—' }}</td>
+                                    <td class="px-6 py-4 text-center">
+                                        @if (getStatusStyle(row.status); as config) {
+                                            <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium" [ngClass]="config.class">
+                                                <mat-icon class="icon-size-3.5" [svgIcon]="config.icon"></mat-icon>
+                                                {{ config.label }}
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="px-6 py-4 text-right">{{ row.totalRoomPrice | number: '1.2-2' }} MAD</td>
+                                    <td class="px-6 py-4 text-right">{{ row.totalPrestationPrice | number: '1.2-2' }} MAD</td>
+                                    <td class="px-6 py-4 text-right font-semibold text-slate-800 dark:text-white">
+                                        {{ total(row) | number: '1.2-2' }} MAD
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <button mat-stroked-button color="primary" (click)="openInvoice(row)">
+                                            <mat-icon class="icon-size-5 mr-1" [svgIcon]="'heroicons_outline:pencil-square'"></mat-icon>
+                                            Corriger
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <!-- Détail de la facture ouverte -->
+        @if (selectedInvoice) {
+            <div class="bg-card border flex flex-col overflow-hidden rounded-2xl shadow">
+                <div class="px-8 py-5 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                        <h3 class="text-lg font-semibold tracking-tight text-slate-800 dark:text-white">
+                            Facture {{ selectedInvoice.invoiceNumber || selectedInvoice.num }}
+                        </h3>
+                        <p class="text-secondary text-sm mt-0.5">
+                            {{ selectedInvoice.reservationDetails?.person?.fullName || 'Client inconnu' }}
+                            — séjour n° {{ selectedInvoice.reservationDetails?.code }}
+                            @if (selectedInvoice.reservationDetails?.room?.name) {
+                                — chambre {{ selectedInvoice.reservationDetails?.room?.name }}
+                            }
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        @if (getStatusStyle(selectedInvoice.status); as config) {
+                            <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium" [ngClass]="config.class">
+                                <mat-icon class="icon-size-3.5" [svgIcon]="config.icon"></mat-icon>
+                                {{ config.label }}
+                            </span>
+                        }
+                        <span class="rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-800 dark:text-primary-300 px-3 py-1 text-sm font-semibold">
+                            {{ total(selectedInvoice) | number: '1.2-2' }} MAD
+                        </span>
+                    </div>
+                </div>
+
+                @if (isLoadingInvoice) {
+                    <div class="p-10 flex items-center justify-center">
+                        <mat-spinner [diameter]="32"></mat-spinner>
+                    </div>
+                } @else {
+                    <!-- Nuitées d'hébergement -->
+                    <div class="px-8 py-6 border-b">
+                        <div class="flex items-center gap-2 mb-4">
+                            <mat-icon class="icon-size-5 text-primary" [svgIcon]="'heroicons_outline:moon'"></mat-icon>
+                            <h4 class="text-base font-semibold text-slate-800 dark:text-white">Nuitées d'hébergement</h4>
+                            <span class="text-secondary text-sm">({{ nights.length }})</span>
+                        </div>
+
+                        @if (nights.length === 0) {
+                            <p class="text-secondary text-sm py-4">Aucune nuitée facturée pour cette réservation.</p>
+                        } @else {
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="bg-gray-50 dark:bg-slate-800/50 text-left text-xs uppercase tracking-wider text-secondary">
+                                            <th class="px-4 py-3 font-semibold">Date</th>
+                                            <th class="px-4 py-3 font-semibold">Chambre</th>
+                                            <th class="px-4 py-3 font-semibold">Observation</th>
+                                            <th class="px-4 py-3 font-semibold text-right">Prix</th>
+                                            <th class="px-4 py-3 font-semibold text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                        @for (night of nights; track night.id) {
+                                            <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/40 transition-colors">
+                                                <td class="px-4 py-3 font-medium text-slate-800 dark:text-white">{{ night.nightDate }}</td>
+                                                <td class="px-4 py-3">{{ night.roomName || night.roomApplied?.name || '—' }}</td>
+                                                <td class="px-4 py-3 text-secondary">{{ night.observation || '—' }}</td>
+                                                <td class="px-4 py-3 text-right font-semibold">{{ night.roomPriceApplied | number: '1.2-2' }} MAD</td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <div class="inline-flex items-center gap-1">
+                                                        <button mat-icon-button color="primary" (click)="editNight(night)" [disabled]="isProcessing(night.id)" matTooltip="Corriger la nuitée">
+                                                            <mat-icon class="icon-size-5" [svgIcon]="isProcessing(night.id) ? 'heroicons_outline:arrow-path' : 'heroicons_outline:pencil-square'"></mat-icon>
+                                                        </button>
+                                                        <button mat-icon-button color="warn" (click)="deleteNight(night)" [disabled]="isProcessing(night.id)" matTooltip="Supprimer la nuitée">
+                                                            <mat-icon class="icon-size-5" [svgIcon]="isProcessing(night.id) ? 'heroicons_outline:arrow-path' : 'heroicons_outline:trash'"></mat-icon>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+
+                        @if (missingNights.length > 0) {
+                            <div class="mt-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
+                                <strong>{{ missingNights.length }} nuitée(s) non validée(s)</strong> :
+                                {{ missingNights.join(', ') }}
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Prestations -->
+                    <div class="px-8 py-6">
+                        <div class="flex items-center gap-2 mb-4">
+                            <mat-icon class="icon-size-5 text-primary" [svgIcon]="'heroicons_outline:receipt-percent'"></mat-icon>
+                            <h4 class="text-base font-semibold text-slate-800 dark:text-white">Prestations facturées</h4>
+                            <span class="text-secondary text-sm">({{ prestations.length }})</span>
+                        </div>
+
+                        @if (prestations.length === 0) {
+                            <p class="text-secondary text-sm py-4">Aucune prestation facturée pour cette réservation.</p>
+                        } @else {
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="bg-gray-50 dark:bg-slate-800/50 text-left text-xs uppercase tracking-wider text-secondary">
+                                            <th class="px-4 py-3 font-semibold">Libellé</th>
+                                            <th class="px-4 py-3 font-semibold">Bénéficiaire</th>
+                                            <th class="px-4 py-3 font-semibold text-center">Quantité</th>
+                                            <th class="px-4 py-3 font-semibold text-right">Prix unitaire</th>
+                                            <th class="px-4 py-3 font-semibold text-right">Total</th>
+                                            <th class="px-4 py-3 font-semibold text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                        @for (p of prestations; track p.id) {
+                                            <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/40 transition-colors">
+                                                <td class="px-4 py-3 font-medium text-slate-800 dark:text-white">{{ p.name }}</td>
+                                                <td class="px-4 py-3 text-secondary">{{ p.guestName || '—' }}</td>
+                                                <td class="px-4 py-3 text-center">{{ p.quantity ?? 1 }}</td>
+                                                <td class="px-4 py-3 text-right">{{ p.price | number: '1.2-2' }} MAD</td>
+                                                <td class="px-4 py-3 text-right font-semibold">
+                                                    {{ ((p.quantity ?? 1) * (p.price ?? 0)) | number: '1.2-2' }} MAD
+                                                </td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <div class="inline-flex items-center gap-1">
+                                                        <button mat-icon-button color="primary" (click)="editPrestation(p)" [disabled]="isProcessing(p.id)" matTooltip="Corriger la prestation">
+                                                            <mat-icon class="icon-size-5" [svgIcon]="isProcessing(p.id) ? 'heroicons_outline:arrow-path' : 'heroicons_outline:pencil-square'"></mat-icon>
+                                                        </button>
+                                                        <button mat-icon-button color="warn" (click)="deletePrestation(p)" [disabled]="isProcessing(p.id)" matTooltip="Supprimer la prestation">
+                                                            <mat-icon class="icon-size-5" [svgIcon]="isProcessing(p.id) ? 'heroicons_outline:arrow-path' : 'heroicons_outline:trash'"></mat-icon>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+
+                        <div class="mt-4 flex justify-end gap-6 text-sm">
+                            <span class="text-secondary">Hébergement : <strong class="text-slate-800 dark:text-white">{{ selectedInvoice.totalRoomPrice | number: '1.2-2' }} MAD</strong></span>
+                            <span class="text-secondary">Prestations : <strong class="text-slate-800 dark:text-white">{{ selectedInvoice.totalPrestationPrice | number: '1.2-2' }} MAD</strong></span>
+                            <span class="text-secondary">Total : <strong class="text-primary">{{ total(selectedInvoice) | number: '1.2-2' }} MAD</strong></span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

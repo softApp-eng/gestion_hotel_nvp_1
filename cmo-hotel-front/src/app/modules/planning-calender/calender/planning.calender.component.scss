@@ -442,8 +442,8 @@
         --fc-border-color: #e3e6ef;
         --fc-page-bg-color: transparent;
         --fc-neutral-bg-color: #f1f6ff;
-        --fc-today-bg-color: rgba(103, 119, 239, 0.08);
-        --fc-now-indicator-color: #6777ef;
+        --fc-today-bg-color: rgba(239, 68, 68, 0.08);
+        --fc-now-indicator-color: #ef4444;
     }
 
     /* ---------------------------------------------------------------------
@@ -616,17 +616,17 @@
     }
 
     .fc .fc-timeline-slot.fc-day-today {
-        background: rgba(103, 119, 239, 0.08) !important;
+        background: rgba(239, 68, 68, 0.08) !important;
     }
 
     .fc .fc-timeline-slot-label.fc-day-today {
-        color: #6777ef !important;
+        color: #dc2626 !important;
     }
 
     .fc .fc-timeline-now-indicator-line {
         border-left-width: 2px !important;
-        border-left-color: #6777ef !important;
-        box-shadow: none !important;
+        border-left-color: #ef4444 !important;
+        box-shadow: 0 0 8px rgba(239, 68, 68, 0.45) !important;
     }
 
     /* ---------------------------------------------------------------------

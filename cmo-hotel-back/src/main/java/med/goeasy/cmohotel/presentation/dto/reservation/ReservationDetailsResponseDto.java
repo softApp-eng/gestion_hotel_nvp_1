@@ -11,6 +11,7 @@ import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 import med.goeasy.cmohotel.presentation.dto.invoice.response.ValidatedNightResponseDto;
 import med.goeasy.cmohotel.presentation.dto.person.GradeDto;
 import med.goeasy.cmohotel.presentation.dto.person.PersonResponseDto;
+import med.goeasy.cmohotel.utils.MissingNights;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,7 +41,9 @@ public record ReservationDetailsResponseDto(
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
         String observation,
-        List<ValidatedNightResponseDto> validatedNights
+        List<ValidatedNightResponseDto> validatedNights,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+        List<LocalDate> missingNights
 ) {
     public static ReservationDetailsResponseDto mapToDto(ReservationDetails entity){
         if (entity == null)
@@ -87,6 +90,11 @@ public record ReservationDetailsResponseDto(
                 .validatedNights(
                         nights.stream().map(ValidatedNightResponseDto::mapToDto).toList()
                 )
+                .missingNights(MissingNights.of(
+                        entity.getCheckin(),
+                        entity.getCheckout(),
+                        nights.stream().map(ValidatedNight::getNightDate).toList()
+                ))
                 .build();
     }
 

@@ -65,10 +65,10 @@ export const appRoutes: Route[] = [
                 },
             },
             {
-                path: 'audit',
-                loadChildren: () => import('app/modules/audit/audit.routes'),
+                path: 'billing',
+                loadChildren: () => import('app/modules/billing-corrections/billing-corrections.routes'),
                 data: {
-                    module: [APP_MODULES.AUDIT],
+                    module: [APP_MODULES.INVOICE],
                 },
             },
             {
@@ -205,6 +205,17 @@ export const appRoutes: Route[] = [
                 loadChildren: () =>
                     import(
                         'app/modules/planning-calender/planning-calender.routes'
+                    ),
+                data: {
+                    module: [APP_MODULES.RESERVATION],
+                },
+            },
+            {
+                // Taux d'occupation : page dédiée, extraite de la Main courante.
+                path: 'occupation-rate',
+                loadChildren: () =>
+                    import(
+                        'app/modules/occupation-rate/occupation-rate.routes'
                     ),
                 data: {
                     module: [APP_MODULES.RESERVATION],

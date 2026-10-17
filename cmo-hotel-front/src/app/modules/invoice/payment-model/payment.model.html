@@ -81,7 +81,7 @@
                 [disabled]="paymentForm.invalid || loading"
                 (click)="validate()">
             <mat-progress-spinner *ngIf="loading" class="mr-2" [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
-            Confirmer l'encaissement
+            {{ changeModeOnly ? 'Enregistrer' : "Confirmer l'encaissement" }}
         </button>
     </div>
 </div>

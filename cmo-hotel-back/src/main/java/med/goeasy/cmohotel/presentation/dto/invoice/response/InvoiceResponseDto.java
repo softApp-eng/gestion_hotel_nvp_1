@@ -4,13 +4,17 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import med.goeasy.cmohotel.persistence.entity.Invoice;
+import med.goeasy.cmohotel.persistence.entity.ValidatedNight;
 import med.goeasy.cmohotel.persistence.entity.enums.EInvoiceStatus;
 import med.goeasy.cmohotel.persistence.entity.enums.EPaymentMode;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
 import med.goeasy.cmohotel.presentation.dto.reservation.ReservationDetailsResponseDto;
+import med.goeasy.cmohotel.utils.MissingNights;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -40,11 +44,18 @@ public record InvoiceResponseDto(
         String description,
         InvoiceDetailsResponseDto details,
         List<ValidatedNightResponseDto> validatedNights,
-        List<InvoicePrestationResponseDto> invoicePrestations
+        List<InvoicePrestationResponseDto> invoicePrestations,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+        List<LocalDate> missingNights
         ) {
     public static InvoiceResponseDto mapToDto(Invoice entity) {
         if (entity == null)
             return null;
+        List<LocalDate> validatedDates = entity.getValidatedNights() == null ? List.of()
+                : entity.getValidatedNights().stream()
+                        .map(ValidatedNight::getNightDate)
+                        .filter(Objects::nonNull)
+                        .toList();
         return InvoiceResponseDto.builder()
                 .num(entity.getNum())
                 .reservationDetails(ReservationDetailsResponseDto.mapToDto(entity.getReservationDetails()))
@@ -71,6 +82,12 @@ public record InvoiceResponseDto(
 
                 )
                 .details(InvoiceDetailsResponseDto.mapToDto(entity.getDetails()))
+                .missingNights(entity.getReservationDetails() != null
+                        ? MissingNights.of(
+                                entity.getReservationDetails().getCheckin(),
+                                entity.getReservationDetails().getCheckout(),
+                                validatedDates)
+                        : List.of())
                 .build();
     }
 }

@@ -150,7 +150,11 @@ export class EncaissementComponent implements OnInit {
                 disableClose: true,
             })
             .afterClosed()
-            .subscribe();
+            .subscribe((result) => {
+                if (result?.reload) {
+                    this.fetchData(this.dateControl.value);
+                }
+            });
     }
     getNightsTooltip(row: any): string {
         if (!row.validatedNights || row.validatedNights.length === 0) {

@@ -119,6 +119,8 @@ public enum EPermissions {
 
     // INVOICE,
     INVOICE_NIGHT_VALIDATE(INVOICE, "night:validate", "valider les nuitées des reservations", MANAGE,true,"Autorise la validation comptable des nuitées pour la facturation finale."),
+    INVOICE_NIGHT_MANAGE(INVOICE, "night:manage", "Corriger les nuitées facturées", MANAGE,true,"Autorise la modification (prix, observation) et la suppression d'une nuitée d'hébergement facturée sur une facture."),
+    INVOICE_PRESTATION_MANAGE(INVOICE, "prestation:manage", "Corriger les prestations facturées", MANAGE,true,"Autorise la modification (libellé, quantité, prix unitaire) et la suppression d'une prestation facturée sur une facture."),
     INVOICE_LIST(INVOICE, "invoice:list", "Accéder au registre des factures", READ,true,"Autorise la consultation de l'historique et de l'état des factures émises."),
     INVOICE_PAY(INVOICE, "invoice:pay", "Encaisser les règlements", MANAGE,true,"Autorise l'enregistrement des paiements et le passage des factures au statut <Payé>."),
     INVOICE_INVOICE_PDF(INVOICE, "invoice:pdf", "Imprimer la facture", READ,true,"Autorise le téléchargement des factures payées."),

@@ -7,6 +7,7 @@ import med.goeasy.cmohotel.persistence.entity.ReservationDetails;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationCategory;
 import med.goeasy.cmohotel.persistence.entity.enums.EReservationStatus;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,9 +21,16 @@ public record ReservationCalenderResponseDto(
         LocalDateTime start,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         LocalDateTime end,
-        List<ReservationResponseDto> guests
+        List<ReservationResponseDto> guests,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+        List<LocalDate> missingNights,
+        String observation
 ) {
     public static ReservationCalenderResponseDto mapToDto(ReservationDetails entity){
+        return mapWithMissingNights(entity, null);
+    }
+
+    public static ReservationCalenderResponseDto mapWithMissingNights(ReservationDetails entity, List<LocalDate> missingNights){
         if (entity == null)
             return null;
         return ReservationCalenderResponseDto.builder()
@@ -32,6 +40,8 @@ public record ReservationCalenderResponseDto(
                 .status(entity.getStatus())
                 .start(entity.getCheckin() != null ? entity.getCheckin():entity.getPlannedStart())
                 .end(entity.getCheckout() != null ? entity.getCheckout():entity.getPlannedEnd())
+                .missingNights(missingNights)
+                .observation(entity.getObservation())
                 .build();
     }
 }

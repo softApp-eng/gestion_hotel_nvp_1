@@ -165,7 +165,12 @@ public class WebSecurityConfig {
 
 						// Invoices
 						.requestMatchers(POST,"/v1/invoices/night/validate").hasAuthority(EPermissions.INVOICE_NIGHT_VALIDATE.getAuthority())
+						.requestMatchers(PUT,"/v1/invoices/night/update").hasAuthority(EPermissions.INVOICE_NIGHT_MANAGE.getAuthority())
+						.requestMatchers(DELETE,"/v1/invoices/night/delete").hasAuthority(EPermissions.INVOICE_NIGHT_MANAGE.getAuthority())
+						.requestMatchers(PUT,"/v1/invoices/prestation/update").hasAuthority(EPermissions.INVOICE_PRESTATION_MANAGE.getAuthority())
+						.requestMatchers(DELETE,"/v1/invoices/prestation/delete").hasAuthority(EPermissions.INVOICE_PRESTATION_MANAGE.getAuthority())
 						.requestMatchers(POST,"/v1/invoices/pay").hasAuthority(EPermissions.INVOICE_PAY.getAuthority())
+						.requestMatchers(PUT,"/v1/invoices/payment-mode").hasAuthority(EPermissions.INVOICE_PAY.getAuthority())
 						.requestMatchers(GET,"/v1/invoices/search").hasAuthority(EPermissions.INVOICE_LIST.getAuthority())
 						.requestMatchers(GET,"/v1/invoices/download/invoice").hasAuthority(EPermissions.INVOICE_INVOICE_PDF.getAuthority())
 						.requestMatchers(GET,"/v1/invoices/encaissement").hasAuthority(EPermissions.INVOICE_ENCAISSEMENT.getAuthority())

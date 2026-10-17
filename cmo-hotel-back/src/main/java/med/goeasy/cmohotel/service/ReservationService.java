@@ -24,6 +24,7 @@ import med.goeasy.cmohotel.presentation.dto.room.SwitchedRoomDto;
 import med.goeasy.cmohotel.presentation.dto.statistic.OccupationStatsDto;
 import med.goeasy.cmohotel.presentation.dto.statistic.RoomTypeStatsDto;
 import med.goeasy.cmohotel.utils.UtilsService;
+import med.goeasy.cmohotel.utils.MissingNights;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -530,6 +531,20 @@ public class ReservationService {
         }
 
         reservationDetails = reservationDetailsRepository.save(reservationDetails);
+
+        // Régularisation : solder les nuitées manquantes du séjour avant d'émettre la facture
+        int regularized = invoiceService.completeMissingNights(reservationDetails);
+        if (regularized > 0) {
+            activityLogService.logActivity(
+                    EAuditActionTarget.RESERVATION,
+                    EAuditActionOperation.UPDATE,
+                    String.format("Régularisation automatique au check-out : %d nuitée(s) manquante(s) ajoutée(s) pour la réservation (#%d).",
+                            regularized, reservationDetails.getCode()),
+                    activityLogService.getClientIp(request),
+                    authentication.getName()
+            );
+        }
+
         invoiceService.activateInvoice(reservationDetails);
 
         if (mode != null) {
@@ -624,6 +639,25 @@ public class ReservationService {
         )).toList();
     }
 
+    /**
+     * Séjours de la journée sélectionnée. Lorsque la date est nulle, on
+     * conserve le comportement historique (tous les séjours confirmés).
+     */
+    public List<ReservationDetailsResponseDto> getSejours(LocalDate day) {
+        if (day == null) {
+            return getSejours();
+        }
+
+        List<ReservationDetails> reservations = reservationDetailsRepository.getArchiveMainCourante(
+                day.atStartOfDay(),
+                day.atTime(LocalTime.MAX)
+        );
+        return reservations.stream().map(reservationDetails -> ReservationDetailsResponseDto.mapWithValidatedNightToDto(
+                reservationDetails,
+                invoiceService.getValidatedNights(reservationDetails)
+        )).toList();
+    }
+
     public List<ReservationDetailsResponseDto> getDepartPrevu(LocalDateTime start, LocalDateTime end) {
         List<ReservationDetails> reservations = reservationDetailsRepository.getDepartPrevu(start,end);
         return reservations.stream().map(reservationDetails -> ReservationDetailsResponseDto.mapWithValidatedNightToDto(
@@ -638,7 +672,27 @@ public class ReservationService {
                 start != null ? start.atStartOfDay() : null,
                 start != null ? end.atTime(23, 59, 59) : null
                 );
-        return rangeReservations.stream().map(ReservationCalenderResponseDto::mapToDto).toList();
+
+        // Nuitées déjà validées (audit) par séjour, en une seule requête (évite le N+1).
+        List<Long> codes = rangeReservations.stream().map(ReservationDetails::getCode).toList();
+        Map<Long, Set<LocalDate>> validatedByCode = new HashMap<>();
+        if (!codes.isEmpty()) {
+            validatedNightRepository.getValidatedNightsByReservationCodes(codes).forEach(vn -> {
+                if (vn.getInvoice() != null && vn.getInvoice().getReservationDetails() != null) {
+                    validatedByCode
+                            .computeIfAbsent(vn.getInvoice().getReservationDetails().getCode(), k -> new HashSet<>())
+                            .add(vn.getNightDate());
+                }
+            });
+        }
+
+        return rangeReservations.stream()
+                .map(details -> ReservationCalenderResponseDto.mapWithMissingNights(details, MissingNights.of(
+                        details.getCheckin(),
+                        details.getCheckout(),
+                        validatedByCode.getOrDefault(details.getCode(), Set.of())
+                )))
+                .toList();
     }
 
     public ReservationDetailsResponseDto getReservationByCode(Authentication authentication, Long code) {
@@ -707,13 +761,22 @@ public class ReservationService {
         )).toList();
     }
 
-    @Transactional(readOnly = true)
     public List<OccupationStatsDto> calculateOccupationStatistics() {
+        return calculateOccupationStatistics(null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OccupationStatsDto> calculateOccupationStatistics(LocalDate day) {
         // 1. Récupérer toutes les chambres pour connaître la capacité totale par pavillon/type
         List<Room> allRooms = roomRepository.getRooms(null,null);
 
-        // 2. Récupérer les séjours actifs
-        List<ReservationDetails> activeSejours = reservationDetailsRepository.getSejoursWithDepth();
+        // 2. Récupérer les séjours actifs (à la date demandée si fournie)
+        List<ReservationDetails> activeSejours = (day == null)
+                ? reservationDetailsRepository.getSejoursWithDepth()
+                : reservationDetailsRepository.getSejoursWithDepthByDay(
+                        day.atStartOfDay(),
+                        day.atTime(LocalTime.MAX)
+                );
 
         // 3. Identifier les chambres réellement occupées et compter les occupants
         // Map<RoomId, ReservationDetails> pour savoir quelle chambre est prise et comment
@@ -789,9 +852,18 @@ public class ReservationService {
     }
 
     public byte[] generateMainCourantePdf(Authentication authentication) throws Exception {
-        List<ReservationDetails> sejours = reservationDetailsRepository.getSejours();
+        return generateMainCourantePdf(authentication, null);
+    }
 
-        List<OccupationStatsDto> occupationStats = calculateOccupationStatistics();
+    public byte[] generateMainCourantePdf(Authentication authentication, LocalDate day) throws Exception {
+        List<ReservationDetails> sejours = (day == null)
+                ? reservationDetailsRepository.getSejours()
+                : reservationDetailsRepository.getArchiveMainCourante(
+                        day.atStartOfDay(),
+                        day.atTime(LocalTime.MAX)
+                );
+
+        List<OccupationStatsDto> occupationStats = calculateOccupationStatistics(day);
 
         List<Map<String, Object>> rows = sejours.stream().map(details -> {
             Map<String, Object> rowMap = new HashMap<>();
@@ -843,6 +915,7 @@ public class ReservationService {
         context.setVariable("rows", rows);
         context.setVariable("occupationStats", occupationStats);
         context.setVariable("now", LocalDateTime.now());
+        context.setVariable("reportDay", day != null ? day : LocalDate.now());
         context.setVariable("generatedBy", authentication.getName());
 
         String logoBase64 = utilsService.getAppLogoAs64();

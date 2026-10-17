@@ -13,7 +13,9 @@ import med.goeasy.cmohotel.persistence.entity.*;
 import med.goeasy.cmohotel.persistence.entity.enums.*;
 import med.goeasy.cmohotel.persistence.repository.*;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
+import med.goeasy.cmohotel.presentation.dto.invoice.request.NightCorrectionDto;
 import med.goeasy.cmohotel.presentation.dto.invoice.request.NightValidationDto;
+import med.goeasy.cmohotel.presentation.dto.invoice.request.PrestationCorrectionDto;
 import med.goeasy.cmohotel.presentation.dto.invoice.request.PaymentRequestDto;
 import med.goeasy.cmohotel.presentation.dto.invoice.response.InvoiceResponseDto;
 import med.goeasy.cmohotel.presentation.dto.prices.PriceEstimationResponse;
@@ -43,6 +45,7 @@ public class InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
     private final ValidatedNightRepository validatedNightRepository;
+    private final InvoicePrestationRepository invoicePrestationRepository;
     private final PrestationRepository prestationRepository;
     private final ReservationDetailsRepository reservationDetailsRepository;
     private final InvoiceDetailsRepository invoiceDetailsRepository;
@@ -58,25 +61,36 @@ public class InvoiceService {
 
     @Transactional
     public void validateInvoiceNight(Authentication authentication, NightValidationDto dto) {
-        // if night already validated
-        if (validatedNightRepository.isNightValidated(dto.nightDate())){
-            throw new OperationNotPermittedException("Nuitée déja validée");
-        }
         // 1. Récupérer tous les dossiers concernés
         List<ReservationDetails> detailsList = reservationDetailsRepository.findAllById(dto.reservationCode());
 
+        int created = 0;
         for (ReservationDetails details : detailsList) {
+            LocalDate checkinDate = details.getCheckin() != null ? details.getCheckin().toLocalDate() : null;
+            LocalDate checkoutDate = details.getCheckout() != null ? details.getCheckout().toLocalDate() : null;
+            // Borne haute : date de départ si le client est parti, sinon aujourd'hui
+            LocalDate upper = checkoutDate != null ? checkoutDate : LocalDate.now();
+
+            // Hors séjour → on ignore ce dossier (ex. nuitée après le check-out)
+            if (checkinDate != null && (dto.nightDate().isBefore(checkinDate) || !dto.nightDate().isBefore(upper))) {
+                continue;
+            }
+
             // Initialiser ou récupérer l'Invoice unique pour ce dossier
             Invoice invoice = getOrCreateInvoice(details);
 
             // 2. Grouper les réservations actives par chambre pour cette nuit
-            // On ne valide que les réservations CONFIRMED (pas CLOSED ou CANCELLED)
             Map<Room, List<Reservation>> roomGroups = details.getReservations().stream()
                     .filter(r -> r.getRoom() != null)
                     .collect(Collectors.groupingBy(Reservation::getRoom));
 
             for (Map.Entry<Room, List<Reservation>> entry : roomGroups.entrySet()) {
                 Room room = entry.getKey();
+                // Idempotence par dossier/chambre/date (remplace l'ancien contrôle global par date)
+                if (validatedNightRepository.existsByInvoiceReservationDetailsCodeAndNightDateAndRoomAppliedId(
+                        details.getCode(), dto.nightDate(), room.getId())) {
+                    continue;
+                }
                 List<Reservation> guestsInRoom = entry.getValue();
                 Double price = guestsInRoom.stream()
                         .map(Reservation::getAppliedPrice)
@@ -104,10 +118,15 @@ public class InvoiceService {
                         .build();
                 invoice.getValidatedNights().add(night);
                 validatedNightRepository.save(night);
+                created++;
             }
 
             // 6. Mettre à jour les totaux de la facture
             updateInvoiceTotals(invoice);
+        }
+
+        if (created == 0) {
+            throw new OperationNotPermittedException("Aucune nuitée à valider : date hors séjour ou déjà validée pour ce(s) dossier(s).");
         }
 
         activityLogService.logActivity(
@@ -120,8 +139,215 @@ public class InvoiceService {
     }
 
 
+    /**
+     * Régularisation au check-out : crée les nuitées manquantes du séjour
+     * [checkin, checkout[ pour que la facture soit toujours complète,
+     * même si l'audit de nuit a raté un jour ou un dossier.
+     */
+    @Transactional
+    public int completeMissingNights(ReservationDetails details) {
+        if (details.getCheckin() == null || details.getCheckout() == null) {
+            return 0;
+        }
+        LocalDate start = details.getCheckin().toLocalDate();
+        LocalDate end = details.getCheckout().toLocalDate();
+        if (!start.isBefore(end) || details.getReservations() == null) {
+            return 0;
+        }
+        Invoice invoice = getOrCreateInvoice(details);
+        Map<Room, List<Reservation>> roomGroups = details.getReservations().stream()
+                .filter(r -> r.getRoom() != null)
+                .collect(Collectors.groupingBy(Reservation::getRoom));
+
+        int created = 0;
+        for (LocalDate d = start; d.isBefore(end); d = d.plusDays(1)) {
+            for (Map.Entry<Room, List<Reservation>> entry : roomGroups.entrySet()) {
+                Room room = entry.getKey();
+                if (validatedNightRepository.existsByInvoiceReservationDetailsCodeAndNightDateAndRoomAppliedId(
+                        details.getCode(), d, room.getId())) {
+                    continue;
+                }
+                Double price = entry.getValue().stream()
+                        .map(Reservation::getAppliedPrice)
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .orElse(0.0);
+                ValidatedNight night = ValidatedNight.builder()
+                        .invoice(invoice)
+                        .nightDate(d)
+                        .roomApplied(room)
+                        .roomName(room.getName())
+                        .roomPriceApplied(price)
+                        .observation("Nuitée régularisée automatiquement au check-out")
+                        .build();
+                invoice.getValidatedNights().add(night);
+                validatedNightRepository.save(night);
+                created++;
+            }
+        }
+        if (created > 0) {
+            updateInvoiceTotals(invoice);
+        }
+        return created;
+    }
+
+
     public LocalDate getLastValidatedNight(){
         return validatedNightRepository.lastNight();
+    }
+
+    /// /////////////////////////////////////////////////////////////////////////////
+    ///                         CORRECTIONS DE FACTURATION                         ///
+    /// /////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Correction d'une nuitée d'hébergement facturée : prix appliqué et/ou observation.
+     */
+    @Transactional
+    public void updateValidatedNight(Authentication authentication, String nightId, NightCorrectionDto dto) {
+        ValidatedNight night = validatedNightRepository.findById(nightId)
+                .orElseThrow(() -> new BadRequestException("Nuitée non trouvée."));
+        Invoice invoice = night.getInvoice();
+
+        if (dto.price() == null && dto.observation() == null) {
+            throw new BadRequestException("Aucune correction à appliquer.");
+        }
+        if (dto.price() != null && dto.price() <= 0) {
+            throw new BadRequestException("Le prix de la nuitée doit être strictement positif.");
+        }
+
+        if (dto.price() != null) {
+            night.setRoomPriceApplied(dto.price());
+        }
+        if (dto.observation() != null) {
+            night.setObservation(dto.observation());
+        }
+        validatedNightRepository.save(night);
+
+        recalculerTotauxFacture(invoice);
+        invoiceRepository.save(invoice);
+
+        activityLogService.logActivity(
+                EAuditActionTarget.INVOICE,
+                EAuditActionOperation.UPDATE,
+                String.format("Nuitée facturée corrigée (facture %s, nuitée du %s).",
+                        invoice.getNum(), night.getNightDate()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+    }
+
+    /**
+     * Suppression d'une nuitée d'hébergement facturée : la nuitée redevient « non validée »
+     * pour la réservation et réapparaît donc dans les nuitées manquantes de la facture.
+     */
+    @Transactional
+    public void deleteValidatedNight(Authentication authentication, String nightId) {
+        ValidatedNight night = validatedNightRepository.findById(nightId)
+                .orElseThrow(() -> new BadRequestException("Nuitée non trouvée."));
+        Invoice invoice = night.getInvoice();
+        LocalDate nightDate = night.getNightDate();
+
+        validatedNightRepository.delete(night);
+        validatedNightRepository.flush();
+
+        recalculerTotauxFacture(invoice);
+        invoiceRepository.save(invoice);
+
+        activityLogService.logActivity(
+                EAuditActionTarget.INVOICE,
+                EAuditActionOperation.DELETE,
+                String.format("Nuitée facturée supprimée (facture %s, nuitée du %s).",
+                        invoice.getNum(), nightDate),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+    }
+
+    /**
+     * Correction d'une prestation facturée : libellé, quantité et/ou prix unitaire.
+     */
+    @Transactional
+    public void updateInvoicePrestation(Authentication authentication, Long prestationId, PrestationCorrectionDto dto) {
+        InvoicePrestation prestation = invoicePrestationRepository.findById(prestationId)
+                .orElseThrow(() -> new BadRequestException("Prestation non trouvée."));
+        Invoice invoice = prestation.getInvoice();
+
+        if (dto.name() == null && dto.quantity() == null && dto.price() == null) {
+            throw new BadRequestException("Aucune correction à appliquer.");
+        }
+        if (dto.quantity() != null && dto.quantity() <= 0) {
+            throw new BadRequestException("La quantité doit être strictement positive.");
+        }
+        if (dto.price() != null && dto.price() <= 0) {
+            throw new BadRequestException("Le prix unitaire doit être strictement positif.");
+        }
+
+        if (dto.name() != null && !dto.name().isBlank()) {
+            prestation.setName(dto.name().trim());
+        }
+        if (dto.quantity() != null) {
+            prestation.setQuantity(dto.quantity());
+        }
+        if (dto.price() != null) {
+            prestation.setPrice(dto.price());
+        }
+        invoicePrestationRepository.save(prestation);
+
+        recalculerTotauxFacture(invoice);
+        invoiceRepository.save(invoice);
+
+        activityLogService.logActivity(
+                EAuditActionTarget.INVOICE,
+                EAuditActionOperation.UPDATE,
+                String.format("Prestation facturée corrigée (facture %s, %s).",
+                        invoice.getNum(), prestation.getName()),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+    }
+
+    /**
+     * Suppression d'une prestation facturée.
+     */
+    @Transactional
+    public void deleteInvoicePrestation(Authentication authentication, Long prestationId) {
+        InvoicePrestation prestation = invoicePrestationRepository.findById(prestationId)
+                .orElseThrow(() -> new BadRequestException("Prestation non trouvée."));
+        Invoice invoice = prestation.getInvoice();
+        String libelle = prestation.getName();
+
+        invoicePrestationRepository.delete(prestation);
+        invoicePrestationRepository.flush();
+
+        recalculerTotauxFacture(invoice);
+        invoiceRepository.save(invoice);
+
+        activityLogService.logActivity(
+                EAuditActionTarget.INVOICE,
+                EAuditActionOperation.DELETE,
+                String.format("Prestation facturée supprimée (facture %s, %s).",
+                        invoice.getNum(), libelle),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+    }
+
+    /**
+     * Recalcule les totaux de la facture à partir des nuitées et des prestations réellement
+     * présentes en base (et non depuis les collections en mémoire, périmées après une suppression).
+     */
+    private void recalculerTotauxFacture(Invoice invoice) {
+        double totalRoomPrice = validatedNightRepository.findByInvoice_Num(invoice.getNum()).stream()
+                .mapToDouble(n -> n.getRoomPriceApplied() != null ? n.getRoomPriceApplied() : 0.0)
+                .sum();
+
+        double totalPrestationPrice = invoicePrestationRepository.findByInvoice_Num(invoice.getNum()).stream()
+                .mapToDouble(p -> (p.getPrice() != null ? p.getPrice() : 0.0) * (p.getQuantity() != null ? p.getQuantity() : 1))
+                .sum();
+
+        invoice.setTotalRoomPrice(totalRoomPrice);
+        invoice.setTotalPrestationPrice(totalPrestationPrice);
     }
 
     private Invoice getOrCreateInvoice(ReservationDetails details) {
@@ -167,6 +393,10 @@ public class InvoiceService {
             List<String> status,
             LocalDate start,
             LocalDate end,
+            LocalDateTime checkinFrom,
+            LocalDateTime checkinTo,
+            LocalDateTime checkoutFrom,
+            LocalDateTime checkoutTo,
             Integer page, Integer size) {
         Page<Invoice> invoices = invoiceRepository.search(
                 key,
@@ -176,8 +406,14 @@ public class InvoiceService {
                 (categories == null || categories.isEmpty()) ? null:categories,
                 (status == null || status.isEmpty()) ? null:status,
                 start != null ? start.atStartOfDay() : null,
-                start != null ? end.atTime(23, 59, 59) : null,
+                end != null ? end.atTime(23, 59, 59) : null,
                 start != null,
+                checkinFrom != null || checkinTo != null,
+                checkinFrom != null ? checkinFrom : LocalDateTime.of(1970, 1, 1, 0, 0),
+                checkinTo != null ? checkinTo : LocalDateTime.of(9999, 12, 31, 23, 59, 59),
+                checkoutFrom != null || checkoutTo != null,
+                checkoutFrom != null ? checkoutFrom : LocalDateTime.of(1970, 1, 1, 0, 0),
+                checkoutTo != null ? checkoutTo : LocalDateTime.of(9999, 12, 31, 23, 59, 59),
                 PageRequest.of(page, size)
         );
 
@@ -271,6 +507,43 @@ public class InvoiceService {
                 EAuditActionOperation.MANAGEMENT,
                 String.format(
                         "Paiement de la facture %s validé. Mode: %s.",
+                        invoice.getInvoiceNumber(),
+                        dto.paymentMode()
+                ),
+                activityLogService.getClientIp(request),
+                authentication.getName()
+        );
+    }
+
+    /**
+     * Modifie le mode de paiement d'une facture même après le check-out
+     * (facture UNPAID ou déjà PAID). Le statut est conservé.
+     */
+    @Transactional
+    public void changePaymentMode(Authentication authentication, PaymentRequestDto dto) {
+        Invoice invoice = invoiceRepository.findById(dto.num())
+                .orElseThrow(() -> new BadRequestException("Numero de facture invalide."));
+        if (invoice.getStatus() == EInvoiceStatus.CANCELED) {
+            throw new BadRequestException("Impossible de modifier une facture annulée.");
+        }
+        if (!EnumUtils.isValidEnum(EPaymentMode.class, dto.paymentMode()))
+            throw new BadRequestException("mode de paiement invalide : " + dto.paymentMode());
+
+        EPaymentMode paymentMode = EPaymentMode.valueOf(dto.paymentMode());
+        boolean priseEnCharge = paymentMode == EPaymentMode.PRISE_EN_CHARGE;
+        if (priseEnCharge && (dto.priseEnChargeRef() == null || dto.priseEnChargeRef().isBlank())) {
+            throw new BadRequestException("La référence de prise en charge est obligatoire.");
+        }
+        invoice.setPaymentMode(paymentMode);
+        invoice.setPriseEnCharge(priseEnCharge);
+        invoice.setPriseEnChargeReference(priseEnCharge ? dto.priseEnChargeRef() : null);
+        invoiceRepository.save(invoice);
+
+        activityLogService.logActivity(
+                EAuditActionTarget.INVOICE,
+                EAuditActionOperation.MANAGEMENT,
+                String.format(
+                        "Mode de paiement de la facture %s modifié. Nouveau mode: %s.",
                         invoice.getInvoiceNumber(),
                         dto.paymentMode()
                 ),

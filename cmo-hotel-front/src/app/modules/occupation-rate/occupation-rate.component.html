@@ -1,0 +1,172 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between px-6 py-6 md:px-10 border-b bg-card dark:bg-transparent transition-all duration-200">
+        <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary-500/20 via-transparent to-transparent"></div>
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center space-x-2 text-secondary font-medium text-sm mb-2">
+                <a class="hover:text-primary transition-colors cursor-pointer">Rapports</a>
+                <mat-icon class="icon-size-4" [svgIcon]="'heroicons_mini:chevron-right'"></mat-icon>
+                <span class="text-primary-600 dark:text-primary-400">Taux d'occupation</span>
+            </div>
+            <div class="flex items-center">
+                <div class="flex items-center justify-center p-3 mr-4 rounded-xl bg-primary-50 dark:bg-primary-500/10 text-primary shadow-sm">
+                    <mat-icon class="icon-size-10" [svgIcon]="'heroicons_outline:chart-pie'"></mat-icon>
+                </div>
+                <div class="flex flex-col">
+                    <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-none text-slate-900 dark:text-white">
+                        Taux d'occupation
+                    </h2>
+                    <p class="text-secondary font-medium mt-1 text-md hidden sm:block">
+                        Taux d'occupation par pavillon et par type de chambre.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu -->
+    <div class="space-y-8 p-6 md:p-8">
+        <div class="bg-card border flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+                <div class="flex items-center space-x-3">
+                    <div class="flex flex-col">
+                        <h2 class="text-xl font-semibold tracking-tight text-slate-800 dark:text-white leading-none">
+                            Taux d'occupation — {{ selectedDate | date:'dd/MM/yyyy' }}
+                        </h2>
+                    </div>
+
+                    <!-- Filtre date : consulter le taux d'occupation de n'importe quelle date -->
+                    <div class="relative">
+                        <input [matDatepicker]="occupationPicker"
+                               [value]="selectedDate"
+                               (dateChange)="onDateChange($event.value)"
+                               class="absolute opacity-0 w-0 h-0 pointer-events-none">
+
+                        <mat-datepicker #occupationPicker></mat-datepicker>
+
+                        <button mat-icon-button
+                                (click)="occupationPicker.open()"
+                                matTooltip="Choisir une date"
+                                class="!text-blue-600 dark:!text-blue-400 hover:!bg-blue-50 dark:hover:!bg-blue-950/30">
+                            <mat-icon [svgIcon]="'heroicons_outline:calendar'" class="!text-blue-600 dark:!text-blue-400"></mat-icon>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button mat-icon-button
+                            (click)="printReport()"
+                            matTooltip="Imprimer le rapport"
+                            class="text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors rounded-xl shadow-sm border border-blue-100">
+                        <mat-icon [svgIcon]="'heroicons_outline:printer'"></mat-icon>
+                    </button>
+                </div>
+            </div>
+
+            <div id="occupation-print-area">
+            <div *ngFor="let pavillon of occupations" class="mb-10 p-4 bg-white">
+                <h2 class="text-xl font-bold mb-4 text-blue-900 border-b-2 border-blue-100 pb-2 pavillon-title">
+                    PAVILLON : {{ pavillon.pavillonName }}
+                </h2>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border-collapse border border-gray-300">
+                        <thead class="bg-gray-100">
+                        <tr>
+                            <th class="border border-gray-300 p-2 text-left bg-gray-50 w-48">Désignation</th>
+                            <th *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-2 text-center">
+                                {{ type.typeName }}
+                            </th>
+                            <th class="border border-gray-300 p-2 text-center font-bold bg-blue-50">TOTAL</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- Row 2: Nombre de chambres -->
+                        <tr>
+                            <td class="border border-gray-300 p-2 font-medium">Nombre de chambres</td>
+                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-2 text-center">
+                                {{ type.totalRoomsOfType }}
+                            </td>
+                            <td class="border border-gray-300 p-2 text-center font-bold">{{ pavillon.totalRooms }}</td>
+                        </tr>
+
+                        <!-- Row 3 & 4: Mode de règlement (Labels & Valeurs) -->
+                        <tr>
+                            <td class="border border-gray-300 p-2 font-medium">Mode de règlement</td>
+                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-0">
+                                <div class="grid grid-cols-2 text-[10px] text-center border-b">
+                                    <div class="border-r p-1 bg-green-50">ESP</div>
+                                    <div class="p-1 bg-orange-50">PEC</div>
+                                </div>
+                                <div class="grid grid-cols-2 text-center">
+                                    <div class="border-r p-1">{{ type.occupantsDirectPay }}</div>
+                                    <div class="p-1">{{ type.occupantsPriseEnCharge }}</div>
+                                </div>
+                            </td>
+                            <td class="border border-gray-300 p-0 bg-blue-50">
+                                <div class="grid grid-cols-2 text-center font-bold">
+                                    <div class="border-r p-1">{{ getTotalDirect(pavillon) }}</div>
+                                    <div class="p-1">{{ getTotalPEC(pavillon) }}</div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Row 5: Nombre d'occupants -->
+                        <tr>
+                            <td class="border border-gray-300 p-2 font-medium">Total Occupants</td>
+                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-2 text-center">
+                                {{ type.occupantsDirectPay + type.occupantsPriseEnCharge }}
+                            </td>
+                            <td class="border border-gray-300 p-2 text-center font-bold">
+                                {{ getTotalDirect(pavillon) + getTotalPEC(pavillon) }}
+                            </td>
+                        </tr>
+
+                        <!-- Row 6: Chambres Libres -->
+                        <tr>
+                            <td class="border border-gray-300 p-2 font-medium">Chambres Libres</td>
+                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-2 text-center text-red-600">
+                                {{ type.totalRoomsOfType - type.occupiedRoomsOfType }}
+                            </td>
+                            <td class="border border-gray-300 p-2 text-center font-bold">
+                                {{ pavillon.totalRooms - pavillon.totalOccupiedRooms }}
+                            </td>
+                        </tr>
+
+                        <!-- Row 7: Taux % -->
+                        <tr class="bg-gray-50">
+                            <td class="border border-gray-300 p-2 font-medium">Taux d'occupation %</td>
+                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-2 text-center font-bold text-blue-700">
+                                {{ type.occupationRate | number:'1.0-2' }}%
+                            </td>
+                            <td class="border border-gray-300 p-2 text-center font-bold text-blue-800">
+                                {{ pavillon.globalOccupationRate | number:'1.0-2' }}%
+                            </td>
+                        </tr>
+
+                        <!-- Row 8: Répartition PEC / ESP % -->
+                        <tr>
+                            <td class="border border-gray-300 p-2 font-medium">Répartition (%)</td>
+                            <td *ngFor="let type of pavillon.roomTypeStats" class="border border-gray-300 p-1 text-md text-center  font-bold">
+                                <span class="text-green-700">E: {{ getPercent(type.occupantsDirectPay, type) }}%</span> |
+                                <span class="text-orange-700">P: {{ getPercent(type.occupantsPriseEnCharge, type) }}%</span>
+                            </td>
+                            <td class="border border-gray-300 p-1 text-md text-center font-bold">
+                                ESP: {{ getGlobalPercent(pavillon, 'ESP') }}% | PEC: {{ getGlobalPercent(pavillon, 'PEC') }}%
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            </div>
+
+            <div *ngIf="isLoading" class="p-8 text-center text-2xl font-semibold tracking-tight text-secondary">
+                Chargement...
+            </div>
+            <div *ngIf="!isLoading && occupations.length === 0" class="p-8 text-center text-2xl font-semibold tracking-tight text-secondary">
+                Aucune donnée d'occupation.
+            </div>
+        </div>
+    </div>
+</div>

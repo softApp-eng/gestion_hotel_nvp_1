@@ -100,7 +100,7 @@
     </div>
     <div class="header-right">
         <div class="title-doc">MAIN COURANTE</div>
-        <div class="report-date" th:text="${'JOURNÉE DU ' + #temporals.format(now, 'dd/MM/yyyy')}"></div>
+        <div class="report-date" th:text="${'JOURNÉE DU ' + #temporals.format(reportDay, 'dd/MM/yyyy')}"></div>
     </div>
 </div>
 

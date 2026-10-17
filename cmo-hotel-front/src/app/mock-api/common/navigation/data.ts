@@ -142,42 +142,6 @@ export const defaultNavigation: FuseNavigationItem[] = [
                             },
                         ],
                     },
-                    {
-                        id: 'reservations.mainc',
-                        title: 'Main courante',
-                        type: 'basic',
-                        icon: 'heroicons_outline:book-open',
-                        link: '/managements/main/courante/list',
-                        data: {
-                            permissions: [
-                                APP_PERMISSIONS.RESERVATION_MAIN_COURANTE,
-                            ],
-                        },
-                    },
-                    {
-                        id: 'reservations.depart-prevu',
-                        title: 'Départs prévus',
-                        type: 'basic',
-                        icon: 'exit_to_app',
-                        link: '/managements/depart/list',
-                        data: {
-                            permissions: [
-                                APP_PERMISSIONS.RESERVATION_MAIN_COURANTE,
-                            ],
-                        },
-                    },
-                    {
-                        id: 'reservations.archive-mainc',
-                        title: 'Historique M.C',
-                        type: 'basic',
-                        icon: 'heroicons_outline:clock',
-                        link: '/managements/archive-main-courante/list',
-                        data: {
-                            permissions: [
-                                APP_PERMISSIONS.RESERVATION_MAIN_COURANTE,
-                            ],
-                        },
-                    },
                 ],
             },
             {
@@ -277,6 +241,72 @@ export const defaultNavigation: FuseNavigationItem[] = [
                         type: 'basic',
                         icon: 'heroicons_outline:users',
                         link: '/managements/housekeeping/permanence-femmes-chambre',
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        id: 'rapport-group',
+        title: 'RAPPORT',
+        subtitle: 'Main courante & statistiques',
+        type: 'group',
+        icon: 'heroicons_outline:document-chart-bar',
+        children: [
+            {
+                id: 'rapport',
+                title: 'Rapport',
+                subtitle: "Main courante & taux d'occupation",
+                type: 'collapsable',
+                icon: 'heroicons_outline:document-chart-bar',
+                children: [
+                    {
+                        id: 'rapport.mainc',
+                        title: 'Main courante',
+                        type: 'basic',
+                        icon: 'heroicons_outline:book-open',
+                        link: '/managements/main/courante/list',
+                        data: {
+                            permissions: [
+                                APP_PERMISSIONS.RESERVATION_MAIN_COURANTE,
+                            ],
+                        },
+                    },
+                    {
+                        id: 'rapport.depart-prevu',
+                        title: 'Départs prévus',
+                        type: 'basic',
+                        icon: 'exit_to_app',
+                        link: '/managements/depart/list',
+                        data: {
+                            permissions: [
+                                APP_PERMISSIONS.RESERVATION_MAIN_COURANTE,
+                            ],
+                        },
+                    },
+                    {
+                        id: 'rapport.occupation-rate',
+                        title: "Taux d'occupation",
+                        type: 'basic',
+                        icon: 'heroicons_outline:chart-pie',
+                        link: '/managements/occupation-rate',
+                        data: {
+                            permissions: [
+                                APP_PERMISSIONS.RESERVATION_MAIN_COURANTE,
+                            ],
+                        },
+                    },
+                    {
+                        id: 'rapport.archive-mainc',
+                        title: 'Historique M.C',
+                        type: 'basic',
+                        icon: 'heroicons_outline:clock',
+                        link: '/managements/archive-main-courante/list',
+                        data: {
+                            permissions: [
+                                APP_PERMISSIONS.RESERVATION_MAIN_COURANTE,
+                            ],
+                        },
                     },
                 ],
             },
@@ -385,11 +415,11 @@ export const defaultNavigation: FuseNavigationItem[] = [
                         link: '/admin/audit/logs',
                     },
                     {
-                        id: 'settings.plateforme',
-                        title: 'Paramètres Plateforme',
+                        id: 'billing.corrections',
+                        title: 'Corrections facturation',
                         type: 'basic',
-                        icon: 'heroicons_outline:adjustments-vertical',
-                        link: '/admin/configurations/manage',
+                        icon: 'heroicons_outline:pencil-square',
+                        link: '/admin/billing/corrections',
                     },
                 ],
             },

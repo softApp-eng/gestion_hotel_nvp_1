@@ -101,6 +101,10 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
         status: [],
         startDate: null,
         endDate: null,
+        checkinFrom: null,
+        checkinTo: null,
+        checkoutFrom: null,
+        checkoutTo: null,
     };
 
     /**
@@ -150,6 +154,8 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
         if (this.filters.paymentModes.length > 0) count++;
         if (this.filters.status.length > 0) count++;
         if (this.filters.startDate || this.filters.endDate) count++;
+        if (this.filters.checkinFrom || this.filters.checkinTo) count++;
+        if (this.filters.checkoutFrom || this.filters.checkoutTo) count++;
         return count;
     }
 
@@ -163,6 +169,10 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
             status: [],
             startDate: null,
             endDate: null,
+            checkinFrom: null,
+            checkinTo: null,
+            checkoutFrom: null,
+            checkoutTo: null,
         };
         this.search();
     }
@@ -229,6 +239,18 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
                     : '',
                 this.filters.endDate
                     ? this._utilsService.convertToDate(this.filters.endDate)
+                    : '',
+                this.filters.checkinFrom
+                    ? this._utilsService.convertToDate(this.filters.checkinFrom)
+                    : '',
+                this.filters.checkinTo
+                    ? this._utilsService.convertToDate(this.filters.checkinTo)
+                    : '',
+                this.filters.checkoutFrom
+                    ? this._utilsService.convertToDate(this.filters.checkoutFrom)
+                    : '',
+                this.filters.checkoutTo
+                    ? this._utilsService.convertToDate(this.filters.checkoutTo)
                     : '',
                 this.currentPage,
                 this.pageSize
@@ -302,6 +324,14 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
             this.filters.startDate = null;
             this.filters.endDate = null;
         }
+        if (filter == 'checkinRange') {
+            this.filters.checkinFrom = null;
+            this.filters.checkinTo = null;
+        }
+        if (filter == 'checkoutRange') {
+            this.filters.checkoutFrom = null;
+            this.filters.checkoutTo = null;
+        }
         this.search();
     }
 
@@ -339,11 +369,12 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
     }
 
     getNightsTooltip(row: any): string {
-        if (!row.validatedNights || row.validatedNights.length === 0) {
+        const missing = row.missingNights || [];
+        if ((!row.validatedNights || row.validatedNights.length === 0) && missing.length === 0) {
             return "Aucune nuitée n'a encore été validée.";
         }
 
-        const details = row.validatedNights
+        const details = (row.validatedNights || [])
             .map((n) => {
                 const date = new Date(n.nightDate).toLocaleDateString('fr-FR', {
                     day: '2-digit',
@@ -353,17 +384,30 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
             })
             .join('\n'); // Le \n sera maintenant interprété grâce au CSS global
 
-        const totalAmount = row.validatedNights.reduce(
+        const totalAmount = (row.validatedNights || []).reduce(
             (sum, n) => sum + (n.roomPriceApplied || 0),
             0
         );
+
+        const missingDetails = missing
+            .map((m) => {
+                const date = new Date(m).toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                });
+                return `• Le ${date} (non validée)`;
+            })
+            .join('\n');
 
         return (
             `DÉTAIL DES NUITS :\n` +
             `--------------------------\n` +
             `${details}\n` +
             `--------------------------\n` +
-            `TOTAL : ${totalAmount} Dhs`
+            `TOTAL : ${totalAmount} Dhs` +
+            (missing.length > 0
+                ? `\n--------------------------\nNUITS NON VALIDÉES (${missing.length}) :\n${missingDetails}`
+                : '')
         );
     }
 
@@ -390,7 +434,26 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
                 disableClose: true,
             })
             .afterClosed()
-            .subscribe();
+            .subscribe((result) => {
+                if (result?.reload) {
+                    this.search();
+                }
+            });
+    }
+
+    openChangePaymentModeModal(row) {
+        if (!row?.num) return;
+        this._matDialog
+            .open(PaymentModel, {
+                data: { invoice: row, changeModeOnly: true },
+                disableClose: true,
+            })
+            .afterClosed()
+            .subscribe((result) => {
+                if (result?.reload) {
+                    this.search();
+                }
+            });
     }
 
     isOverdue(plannedEnd: any) {

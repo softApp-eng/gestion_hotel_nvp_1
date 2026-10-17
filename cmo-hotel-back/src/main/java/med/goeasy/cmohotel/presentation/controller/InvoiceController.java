@@ -6,7 +6,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import med.goeasy.cmohotel.presentation.dto.ApiResponse;
 import med.goeasy.cmohotel.presentation.dto.PageDto;
+import med.goeasy.cmohotel.presentation.dto.invoice.request.NightCorrectionDto;
 import med.goeasy.cmohotel.presentation.dto.invoice.request.NightValidationDto;
+import med.goeasy.cmohotel.presentation.dto.invoice.request.PaymentRequestDto;
+import med.goeasy.cmohotel.presentation.dto.invoice.request.PrestationCorrectionDto;
 import med.goeasy.cmohotel.presentation.dto.invoice.response.InvoiceResponseDto;
 import med.goeasy.cmohotel.service.InvoiceService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -47,6 +50,10 @@ public class InvoiceController {
             @RequestParam(required = false) List<String> status,
             @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate end,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate checkinFrom,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate checkinTo,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate checkoutFrom,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate checkoutTo,
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "20") Integer size
     ){
@@ -60,6 +67,10 @@ public class InvoiceController {
                 categories,
                 status,
                 start, end,
+                checkinFrom != null ? checkinFrom.atStartOfDay() : null,
+                checkinTo != null ? checkinTo.atTime(23, 59, 59) : null,
+                checkoutFrom != null ? checkoutFrom.atStartOfDay() : null,
+                checkoutTo != null ? checkoutTo.atTime(23, 59, 59) : null,
                 page, size
         ));
     }
@@ -89,6 +100,44 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceService.getLastValidatedNight());
     }
 
+    @PutMapping("/night/update")
+    ResponseEntity<ApiResponse> updateValidatedNight(
+            Authentication authentication,
+            @RequestParam String id,
+            @Valid @RequestBody NightCorrectionDto dto
+    ) {
+        invoiceService.updateValidatedNight(authentication, id, dto);
+        return ResponseEntity.ok(ApiResponse.builder().message("Nuitée corrigée avec succès.").build());
+    }
+
+    @DeleteMapping("/night/delete")
+    ResponseEntity<ApiResponse> deleteValidatedNight(
+            Authentication authentication,
+            @RequestParam String id
+    ) {
+        invoiceService.deleteValidatedNight(authentication, id);
+        return ResponseEntity.ok(ApiResponse.builder().message("Nuitée supprimée avec succès.").build());
+    }
+
+    @PutMapping("/prestation/update")
+    ResponseEntity<ApiResponse> updateInvoicePrestation(
+            Authentication authentication,
+            @RequestParam Long id,
+            @Valid @RequestBody PrestationCorrectionDto dto
+    ) {
+        invoiceService.updateInvoicePrestation(authentication, id, dto);
+        return ResponseEntity.ok(ApiResponse.builder().message("Prestation corrigée avec succès.").build());
+    }
+
+    @DeleteMapping("/prestation/delete")
+    ResponseEntity<ApiResponse> deleteInvoicePrestation(
+            Authentication authentication,
+            @RequestParam Long id
+    ) {
+        invoiceService.deleteInvoicePrestation(authentication, id);
+        return ResponseEntity.ok(ApiResponse.builder().message("Prestation supprimée avec succès.").build());
+    }
+
     @PostMapping("/pay")
     ResponseEntity<ApiResponse> payInvoice(
             Authentication authentication,
@@ -96,6 +145,15 @@ public class InvoiceController {
     ) {
         invoiceService.payInvoice(authentication,dto);
         return ResponseEntity.ok(ApiResponse.builder().message("Facture enregistrée").build());
+    }
+
+    @PutMapping("/payment-mode")
+    ResponseEntity<ApiResponse> changePaymentMode(
+            Authentication authentication,
+            @Valid @RequestBody PaymentRequestDto dto
+    ) {
+        invoiceService.changePaymentMode(authentication,dto);
+        return ResponseEntity.ok(ApiResponse.builder().message("Mode de paiement modifié").build());
     }
 
     @GetMapping("/download/invoice")
